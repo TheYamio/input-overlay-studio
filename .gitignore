@@ -1,4 +1,11 @@
 TODO.md
+.tools/
+release/
+studio/artifacts/
+studio/*.tsbuildinfo
+ws-server/src/studio/
+ws-server/src-tauri/web-bundle/
+ws-server/src-tauri/target/
 **/__pycache__/
 **/*.pyc
 **/*.pyo

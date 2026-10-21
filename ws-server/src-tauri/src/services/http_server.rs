@@ -8,16 +8,25 @@ use tokio::sync::oneshot;
 struct WebAssets;
 
 pub struct HttpServer {
-    _stop_tx: oneshot::Sender<()>,
+    stop_tx: Option<oneshot::Sender<()>>,
+    task: Option<tauri::async_runtime::JoinHandle<()>>,
 }
 
 impl HttpServer {
     pub fn start(host: &str, port: u16) -> Option<Self> {
         let (stop_tx, stop_rx) = oneshot::channel();
         let bind_addr = format!("{host}:{port}");
-        tauri::async_runtime::spawn(run(bind_addr, stop_rx));
-        Some(HttpServer { _stop_tx: stop_tx })
+        let task = tauri::async_runtime::spawn(run(bind_addr, stop_rx));
+        Some(HttpServer { stop_tx: Some(stop_tx), task: Some(task) })
     }
+    pub async fn stop(mut self) {
+        self.stop_tx.take();
+        if let Some(task) = self.task.take() { let _ = task.await; }
+    }
+}
+
+impl Drop for HttpServer {
+    fn drop(&mut self) { self.stop_tx.take(); }
 }
 
 async fn run(bind_addr: String, mut stop_rx: oneshot::Receiver<()>) {

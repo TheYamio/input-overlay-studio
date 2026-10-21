@@ -4,6 +4,7 @@ use std::path::Path;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
 pub struct Config {
+    pub capture_enabled: bool,
     pub host: String,
     pub port: u16,
     pub auth_token: String,
@@ -23,7 +24,8 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            host: "localhost".to_string(),
+            capture_enabled: true,
+            host: "127.0.0.1".to_string(),
             port: 4455,
             auth_token: String::new(),
             key_whitelist: Vec::new(),
@@ -31,7 +33,7 @@ impl Default for Config {
             send_mouse_move: true,
             cpu_affinity: vec![0, 1],
             analog_keyboard: String::new(),
-            http_enabled: false,
+            http_enabled: true,
             http_port: 4456,
             linux_evdev_keyboard_device: String::new(),
             linux_raw_mouse_device: String::new(),
@@ -56,5 +58,12 @@ pub fn load(path: &Path) -> Config {
 
 pub fn save(path: &Path, config: &Config) -> std::io::Result<()> {
     let json = serde_json::to_string_pretty(config).expect("config serialize failed");
-    std::fs::write(path, json)
+    if path.exists() {
+        let previous = std::fs::read_to_string(path)?;
+        let backup = if serde_json::from_str::<Config>(&previous).is_ok() { "backup.json" } else { "invalid.json" };
+        std::fs::write(path.with_extension(backup), previous)?;
+    }
+    let temporary = path.with_extension("tmp");
+    std::fs::write(&temporary, json)?;
+    std::fs::rename(temporary, path)
 }

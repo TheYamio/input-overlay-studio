@@ -1,3 +1,7 @@
+mod input_state;
+mod motion;
+mod studio_store;
+mod studio_validation;
 mod services;
 mod ws_server;
 
@@ -12,12 +16,12 @@ use tauri::{
 use tokio::sync::{watch, RwLock};
 
 use services::config::Config;
-use tauri::Emitter;
 use ws_server::{InputEvent, ServerStatus, WsState};
 
 struct AppState {
     config: Arc<RwLock<Config>>,
     config_path: PathBuf,
+    startup_warning: Option<String>,
     status: Arc<Mutex<ServerStatus>>,
     ws_state: Arc<WsState>,
     #[cfg(windows)]
@@ -28,6 +32,30 @@ struct AppState {
     _evdev: Mutex<Option<services::linux::evdev_input::EvdevInputThread>>,
     analog: Mutex<Option<services::analog::AnalogThread>>,
     http: Mutex<Option<services::http_server::HttpServer>>,
+}
+
+#[tauri::command]
+fn get_startup_warning(state: tauri::State<'_, AppState>) -> Option<String> { state.startup_warning.clone() }
+
+#[derive(serde::Serialize)]
+struct DeviceStatus { keyboard_count: usize, mouse_count: usize, capture_running: bool }
+#[tauri::command]
+fn get_device_status(state: tauri::State<'_, AppState>) -> Result<DeviceStatus, String> {
+    #[cfg(windows)]
+    unsafe {
+        use windows::Win32::UI::Input::{GetRawInputDeviceList, RAWINPUTDEVICELIST, RIM_TYPEKEYBOARD, RIM_TYPEMOUSE};
+        let size = std::mem::size_of::<RAWINPUTDEVICELIST>() as u32;
+        let mut count = 0;
+        if GetRawInputDeviceList(None, &mut count, size) == u32::MAX || count > 1024 { return Err("device enumeration failed".into()); }
+        let mut devices = vec![RAWINPUTDEVICELIST::default(); count as usize];
+        if count == 0 { return Ok(DeviceStatus { keyboard_count: 0, mouse_count: 0, capture_running: state._raw_input.lock().unwrap().as_ref().is_some_and(|r| r.is_alive()) }); }
+        let read = GetRawInputDeviceList(Some(devices.as_mut_ptr()), &mut count, size);
+        if read == u32::MAX { return Err("devices changed during enumeration".into()); }
+        devices.truncate(read as usize);
+        Ok(DeviceStatus { keyboard_count: devices.iter().filter(|d| d.dwType == RIM_TYPEKEYBOARD).count(), mouse_count: devices.iter().filter(|d| d.dwType == RIM_TYPEMOUSE).count(), capture_running: state._raw_input.lock().unwrap().as_ref().is_some_and(|r| r.is_alive()) })
+    }
+    #[cfg(not(windows))]
+    { let _ = state; Err("device enumeration is currently Windows-only".into()) }
 }
 
 //tairi io-----------------------------------------------------------------------
@@ -41,19 +69,23 @@ async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Resu
     let (need_rebind, need_analog_restart, need_http_restart, need_evdev_restart) = {
         let old = state.config.read().await;
         (
-            old.host != new_cfg.host || old.port != new_cfg.port,
-            old.analog_keyboard != new_cfg.analog_keyboard,
+            old.host != new_cfg.host || old.port != new_cfg.port || old.auth_token != new_cfg.auth_token,
+            old.analog_keyboard != new_cfg.analog_keyboard || old.capture_enabled != new_cfg.capture_enabled,
             old.http_enabled != new_cfg.http_enabled
                 || old.http_port != new_cfg.http_port
                 || old.host != new_cfg.host,
             old.linux_evdev_keyboard_device != new_cfg.linux_evdev_keyboard_device
-                || old.linux_raw_mouse_device != new_cfg.linux_raw_mouse_device,
+                || old.linux_raw_mouse_device != new_cfg.linux_raw_mouse_device
+                || old.raw_mouse_min_delta != new_cfg.raw_mouse_min_delta
+                || old.capture_enabled != new_cfg.capture_enabled,
         )
     };
 
     services::config::save(&state.config_path, &new_cfg).map_err(|e| e.to_string())?;
 
     let new_analog_kb = new_cfg.analog_keyboard.clone();
+    let capture_enabled = new_cfg.capture_enabled;
+    let min_delta = new_cfg.raw_mouse_min_delta;
     let new_http_host = new_cfg.host.clone();
     let new_http_port = new_cfg.http_port;
     let new_http_on = new_cfg.http_enabled;
@@ -64,13 +96,14 @@ async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Resu
         new_cfg.raw_mouse_min_delta,
     );
     *state.config.write().await = new_cfg;
+    let _ = state.ws_state.input_tx.send(InputEvent::Reset);
 
     if need_rebind {
         let _ = state.ws_state.rebind_tx.send(());
     }
 
     if need_analog_restart {
-        let new_thread = if !new_analog_kb.is_empty() {
+        let new_thread = if capture_enabled && !new_analog_kb.is_empty() {
             Some(services::analog::AnalogThread::start(
                 state.ws_state.input_tx.clone(),
                 &new_analog_kb,
@@ -82,6 +115,8 @@ async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Resu
     }
 
     if need_http_restart {
+        let old = { state.http.lock().unwrap().take() };
+        if let Some(server) = old { server.stop().await; }
         let new_server = if new_http_on {
             services::http_server::HttpServer::start(&new_http_host, new_http_port)
         } else {
@@ -101,7 +136,13 @@ async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Resu
         *state._evdev.lock().unwrap() = Some(new_thread);
     }
     #[cfg(windows)]
-    let _ = need_evdev_restart;
+    if need_evdev_restart {
+        let mut raw = state._raw_input.lock().unwrap();
+        raw.take(); // Drop unregisters and joins before creating another Raw Input window.
+        if capture_enabled { *raw = Some(services::windows::raw_input::RawInputThread::start(state.ws_state.input_tx.clone(), min_delta)); }
+    }
+    #[cfg(not(windows))]
+    let _ = min_delta;
 
     Ok(())
 }
@@ -126,6 +167,8 @@ async fn toggle_http(
     port: u16,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
+    let old = { state.http.lock().unwrap().take() };
+    if let Some(server) = old { server.stop().await; }
     let new_server = if enabled {
         services::http_server::HttpServer::start(&host, port)
     } else {
@@ -334,11 +377,17 @@ pub fn run() {
         std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     }
 
-    let data_dir = std::env::current_exe()
-        .expect("failed to get exe path")
-        .parent()
-        .expect("exe has no parent dir")
-        .to_path_buf();
+    let portable_dir = std::env::current_exe()
+        .expect("failed to get exe path").parent().expect("exe has no parent dir").to_path_buf();
+    let data_dir = if let Some(path) = std::env::var_os("INPUT_OVERLAY_STUDIO_DATA_DIR") {
+        PathBuf::from(path)
+    } else if portable_dir.join("config.json").exists() {
+        portable_dir
+    } else {
+        std::env::var_os("LOCALAPPDATA").map(PathBuf::from)
+            .unwrap_or(portable_dir).join("InputOverlayStudio")
+    };
+    std::fs::create_dir_all(&data_dir).expect("cannot create application data directory");
 
     let log_dir = data_dir.join("logs");
     std::fs::create_dir_all(&log_dir).ok();
@@ -367,6 +416,10 @@ pub fn run() {
         }))
         .setup(move |app| {
             let config_path = data_dir.join("config.json");
+            let startup_warning = if config_path.exists() && std::fs::read_to_string(&config_path).ok()
+                .and_then(|text| serde_json::from_str::<Config>(&text).ok()).is_none() {
+                Some("Server settings were damaged. The original is retained as config.invalid.json; restore config.backup.json or review defaults in Settings.".to_string())
+            } else { None };
             let mut cfg = services::config::load(&config_path);
             if cfg.auth_token.is_empty() {
                 use rand::Rng;
@@ -376,12 +429,13 @@ pub fn run() {
                     .map(char::from)
                     .collect();
                 let _ = services::config::save(&config_path, &cfg);
-                tracing::info!("generated auth token: {}****", &cfg.auth_token[..4]);
+                tracing::info!("generated authentication token");
             }
 
             apply_cpu_affinity(&cfg.cpu_affinity.clone());
 
             let analog_kb = cfg.analog_keyboard.clone();
+            let capture_enabled = cfg.capture_enabled;
             let http_enabled = cfg.http_enabled;
             let http_host = cfg.host.clone();
             let http_port = cfg.http_port;
@@ -394,7 +448,7 @@ pub fn run() {
             let config = Arc::new(RwLock::new(cfg));
             let status = Arc::new(Mutex::new(ServerStatus::default()));
             let (rebind_tx, rebind_rx) = watch::channel(());
-            let (input_tx, input_rx) = tokio::sync::mpsc::unbounded_channel::<InputEvent>();
+            let (input_tx, input_rx) = ws_server::input_channel();
 
             let ws_state = Arc::new(WsState {
                 rebind_tx,
@@ -405,13 +459,15 @@ pub fn run() {
                 let cfg = Arc::clone(&config);
                 let st = Arc::clone(&status);
                 let ah = app.handle().clone();
+                let capture_tx = input_tx.clone();
+                let studio = Arc::new(studio_store::StudioStore::new(data_dir.join("studio.json")));
                 tauri::async_runtime::spawn(async move {
-                    ws_server::run(cfg, input_rx, st, rebind_rx, ah).await;
+                    ws_server::run(cfg, input_rx, st, rebind_rx, ah, studio, capture_tx).await;
                 });
             }
 
             #[cfg(windows)]
-            let raw_input_handle = {
+            let raw_input_handle = if capture_enabled {
                 let min_delta = config
                     .try_read()
                     .map(|c| c.raw_mouse_min_delta)
@@ -420,7 +476,7 @@ pub fn run() {
                     input_tx.clone(),
                     min_delta,
                 ))
-            };
+            } else { None };
 
             #[cfg(target_os = "linux")]
             let evdev_handle = Some(services::linux::evdev_input::EvdevInputThread::start(
@@ -430,7 +486,7 @@ pub fn run() {
                 evdev_min_delta,
             ));
 
-            let analog_handle = if !analog_kb.is_empty() {
+            let analog_handle = if capture_enabled && !analog_kb.is_empty() {
                 Some(services::analog::AnalogThread::start(input_tx, &analog_kb))
             } else {
                 None
@@ -445,6 +501,7 @@ pub fn run() {
             app.manage(AppState {
                 config,
                 config_path,
+                startup_warning,
                 status,
                 ws_state,
                 #[cfg(windows)]
@@ -457,27 +514,8 @@ pub fn run() {
                 http: Mutex::new(http_handle),
             });
 
-            {
-                let handle = app.handle().clone();
-                tauri::async_runtime::spawn(async move {
-                    let state = handle.state::<AppState>();
-                    let dismissed = state.config.read().await.dismissed_update_versions.clone();
-                    let current = handle.package_info().version.to_string();
-                    #[cfg(windows)]
-                    let check = services::windows::updater::check(&current, &dismissed).await;
-                    #[cfg(target_os = "linux")]
-                    let check = services::linux::updater::check(&current, &dismissed).await;
-                    if let Some(info) = check {
-                        *state.update_cache.lock().unwrap() = Some(info.clone());
-                        let _ = handle.emit("update-available", &info);
-                        if handle.get_webview_window("update").is_none() {
-                            let _ = open_update_window(&handle);
-                        }
-                    }
-                });
-            }
-
             build_tray(app)?;
+            if !std::env::args().any(|arg| arg == "--tray") { open_main_window(app.handle())?; }
             if post_update_version.is_some() {
                 let _ = open_post_update_window(app.handle());
             }
@@ -488,6 +526,8 @@ pub fn run() {
             {
                 tauri::generate_handler![
                     get_config,
+                    get_startup_warning,
+                    get_device_status,
                     save_config,
                     get_status,
                     get_autostart,
@@ -509,6 +549,8 @@ pub fn run() {
             {
                 tauri::generate_handler![
                     get_config,
+                    get_startup_warning,
+                    get_device_status,
                     save_config,
                     get_status,
                     get_autostart,
@@ -588,32 +630,6 @@ fn toggle_window(app: &tauri::AppHandle) {
     let _ = open_main_window(app);
 }
 
-fn open_update_window(app: &tauri::AppHandle) -> tauri::Result<()> {
-    let mut builder = tauri::WebviewWindowBuilder::new(
-        app,
-        "update",
-        tauri::WebviewUrl::App("update.html".into()),
-    )
-    .title("Update Available")
-    .inner_size(560.0, 600.0)
-    .decorations(false)
-    .resizable(false)
-    .center()
-    .focused(true);
-
-    #[cfg(windows)]
-    {
-        builder = builder.transparent(true).shadow(false);
-    }
-
-    if let Some(icon) = app.default_window_icon() {
-        builder = builder.icon(icon.clone())?;
-    }
-
-    builder.build()?;
-    Ok(())
-}
-
 fn open_post_update_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     let mut builder = tauri::WebviewWindowBuilder::new(
         app,
@@ -629,7 +645,7 @@ fn open_post_update_window(app: &tauri::AppHandle) -> tauri::Result<()> {
 
     #[cfg(windows)]
     {
-        builder = builder.transparent(true).shadow(false);
+        builder = builder.shadow(true);
     }
 
     if let Some(icon) = app.default_window_icon() {
@@ -637,22 +653,24 @@ fn open_post_update_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     }
 
     builder.build()?;
+    tracing::info!("studio: native window opened");
     Ok(())
 }
 
 fn open_main_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     let mut builder =
-        tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("index.html".into()))
-            .title("Input Overlay WS - Settings")
-            .inner_size(420.0, 580.0)
+        tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("studio/index.html".into()))
+            .title("Input Overlay Studio")
+            .inner_size(1480.0, 920.0)
+            .min_inner_size(1050.0, 680.0)
             .resizable(true)
-            .decorations(false)
+            .decorations(true)
             .skip_taskbar(false)
             .center();
 
     #[cfg(windows)]
     {
-        builder = builder.transparent(true).shadow(false);
+        builder = builder.shadow(true);
     }
 
     if let Some(icon) = app.default_window_icon() {
@@ -660,5 +678,6 @@ fn open_main_window(app: &tauri::AppHandle) -> tauri::Result<()> {
     }
 
     builder.build()?;
+    tracing::info!("studio: native window opened");
     Ok(())
 }

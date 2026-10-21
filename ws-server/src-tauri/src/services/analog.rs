@@ -6,7 +6,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use hidapi::HidApi;
-use tokio::sync::mpsc::UnboundedSender;
+use crate::ws_server::InputSender;
 
 use crate::services::consts::hid_to_vk;
 use crate::ws_server::InputEvent;
@@ -40,7 +40,7 @@ pub struct AnalogThread {
 
 impl AnalogThread {
     //filter is the analog_keyboard config value "auto" or a brandname.
-    pub fn start(tx: UnboundedSender<InputEvent>, filter: &str) -> Self {
+    pub fn start(tx: InputSender, filter: &str) -> Self {
         let stop = Arc::new(AtomicBool::new(false));
         let mut handles = Vec::new();
 
@@ -168,7 +168,7 @@ fn madlions_layout(pid: u16) -> Option<&'static [u16]> {
     }
 }
 
-fn device_thread(tx: UnboundedSender<InputEvent>, entry: DeviceEntry, stop: Arc<AtomicBool>) {
+fn device_thread(tx: InputSender, entry: DeviceEntry, stop: Arc<AtomicBool>) {
     let mut backoff = Duration::from_secs(1);
 
     while !stop.load(Ordering::Relaxed) {
@@ -195,6 +195,7 @@ fn device_thread(tx: UnboundedSender<InputEvent>, entry: DeviceEntry, stop: Arc<
                 Protocol::Madlions { layout } => run_madlions(&dev, &tx, layout, &stop),
                 Protocol::Bytech => run_bytech(&dev, &tx, &stop),
             }
+            let _ = tx.send(InputEvent::Reset);
             if !stop.load(Ordering::Relaxed) {
                 tracing::info!("analog: device disconnected, retrying in {}s", backoff.as_secs());
             }
@@ -210,7 +211,7 @@ fn device_thread(tx: UnboundedSender<InputEvent>, entry: DeviceEntry, stop: Arc<
 
 fn run_passive(
     dev: &hidapi::HidDevice,
-    tx: &UnboundedSender<InputEvent>,
+    tx: &InputSender,
     proto: &Protocol,
     stop: &AtomicBool,
 ) {
@@ -248,7 +249,7 @@ fn run_passive(
 }
 
 //3 byte entries: [scancode_hi, scancode_lo, value]. Stop when scancode == 0
-fn parse_wooting_v1(report: &[u8], tx: &UnboundedSender<InputEvent>) -> HashSet<u16> {
+fn parse_wooting_v1(report: &[u8], tx: &InputSender) -> HashSet<u16> {
     let mut active = HashSet::new();
     let mut i = 0;
     while i + 2 < report.len() {
@@ -270,7 +271,7 @@ fn parse_wooting_v1(report: &[u8], tx: &UnboundedSender<InputEvent>) -> HashSet<
 }
 
 //4 byte entries: [matrix_pos, scancode_lo, packed, value_hi]. Stop when scancode_lo == 0
-fn parse_wooting_v2(report: &[u8], tx: &UnboundedSender<InputEvent>) -> HashSet<u16> {
+fn parse_wooting_v2(report: &[u8], tx: &InputSender) -> HashSet<u16> {
     let mut active = HashSet::new();
     let mut i = 0;
     while i + 3 < report.len() {
@@ -303,7 +304,7 @@ fn parse_wooting_v2(report: &[u8], tx: &UnboundedSender<InputEvent>) -> HashSet<
 
 //V2: 2-byte pair [razer_scan, value], stop at 0
 //V3: 3-byte entries [razer_scan, value, skip], stop at 0
-fn parse_razer(report: &[u8], tx: &UnboundedSender<InputEvent>, v3: bool) -> HashSet<u16> {
+fn parse_razer(report: &[u8], tx: &InputSender, v3: bool) -> HashSet<u16> {
     let mut active = HashSet::new();
     let stride = if v3 { 3 } else { 2 };
     let mut i = 0;
@@ -328,7 +329,7 @@ fn parse_razer(report: &[u8], tx: &UnboundedSender<InputEvent>, v3: bool) -> Has
 }
 
 //buffered: byte 0 == 0xA0, scancode at bytes 2-3 (LE u16), value at byte 7
-fn parse_nuphy(report: &[u8], tx: &UnboundedSender<InputEvent>) {
+fn parse_nuphy(report: &[u8], tx: &InputSender) {
     if report.len() < 8 || report[0] != 0xA0 {
         return;
     }
@@ -340,7 +341,7 @@ fn parse_nuphy(report: &[u8], tx: &UnboundedSender<InputEvent>) {
     }
 }
 
-fn run_drunkdeer(dev: &hidapi::HidDevice, tx: &UnboundedSender<InputEvent>, stop: &AtomicBool) {
+fn run_drunkdeer(dev: &hidapi::HidDevice, tx: &InputSender, stop: &AtomicBool) {
     let mut req = [0u8; 64];
     req[0] = 0x04;
     req[1] = 0xb6;
@@ -408,7 +409,7 @@ fn run_drunkdeer(dev: &hidapi::HidDevice, tx: &UnboundedSender<InputEvent>, stop
 
 fn run_keychron(
     dev: &hidapi::HidDevice,
-    tx: &UnboundedSender<InputEvent>,
+    tx: &InputSender,
     layout: &'static [u16],
     stop: &AtomicBool,
 ) {
@@ -473,7 +474,7 @@ fn run_keychron(
 
 fn run_madlions(
     dev: &hidapi::HidDevice,
-    tx: &UnboundedSender<InputEvent>,
+    tx: &InputSender,
     layout: &'static [u16],
     stop: &AtomicBool,
 ) {
@@ -538,7 +539,7 @@ fn bytech_request() -> [u8; 64] {
     buf
 }
 
-fn run_bytech(dev: &hidapi::HidDevice, tx: &UnboundedSender<InputEvent>, stop: &AtomicBool) {
+fn run_bytech(dev: &hidapi::HidDevice, tx: &InputSender, stop: &AtomicBool) {
     let req = bytech_request();
     let mut last_poll = Instant::now() - Duration::from_secs(1);
     let mut buf = [0u8; 128];
@@ -601,7 +602,7 @@ fn run_bytech(dev: &hidapi::HidDevice, tx: &UnboundedSender<InputEvent>, stop: &
 
 //elpers
 #[inline]
-fn emit_hid(tx: &UnboundedSender<InputEvent>, hid: u16, depth: f32) {
+fn emit_hid(tx: &InputSender, hid: u16, depth: f32) {
     if let Some(vk) = hid_to_vk(hid) {
         let _ = tx.send(InputEvent::AnalogDepth { rawcode: vk, depth });
     }

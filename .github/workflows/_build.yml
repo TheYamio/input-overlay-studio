@@ -28,6 +28,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: build Studio
+        working-directory: studio
+        run: |
+          npm install --global pnpm@11.25.0
+          pnpm install --frozen-lockfile
+          pnpm test
+          pnpm build
+
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -35,6 +48,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ws-server/src-tauri
+
+      - name: Rust tests
+        working-directory: ws-server/src-tauri
+        run: cargo test --lib
 
       - name: build ws-server exe
         working-directory: ws-server/src-tauri
@@ -70,6 +87,19 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libudev-dev
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: build Studio
+        working-directory: studio
+        run: |
+          npm install --global pnpm@11.25.0
+          pnpm install --frozen-lockfile
+          pnpm test
+          pnpm build
 
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable

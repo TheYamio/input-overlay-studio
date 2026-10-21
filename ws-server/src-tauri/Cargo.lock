@@ -1882,7 +1882,7 @@ dependencies = [
 
 [[package]]
 name = "input-overlay-ws"
-version = "1.8.2"
+version = "0.3.1"
 dependencies = [
  "chrono",
  "evdev",
@@ -1891,10 +1891,12 @@ dependencies = [
  "libc",
  "log",
  "rand 0.8.6",
+ "regex",
  "reqwest 0.12.28",
  "rust-embed",
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-build",
  "tauri-plugin-single-instance",

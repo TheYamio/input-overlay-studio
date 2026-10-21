@@ -5,7 +5,7 @@ use std::thread;
 use std::time::Duration;
 
 use evdev::{Device, InputEventKind, Key, RelativeAxisType};
-use tokio::sync::mpsc::UnboundedSender;
+use crate::ws_server::InputSender;
 
 use crate::services::consts::{hid_to_vk, RAW_MOUSE_FLUSH_HZ};
 use crate::ws_server::InputEvent;
@@ -196,7 +196,7 @@ pub struct EvdevInputThread {
 
 impl EvdevInputThread {
     pub fn start(
-        tx: UnboundedSender<InputEvent>,
+        tx: InputSender,
         kbd_path: &str,
         mouse_path: &str,
         min_delta: i32,
@@ -255,7 +255,7 @@ impl Drop for EvdevInputThread {
     }
 }
 
-fn run_keyboard(mut dev: Device, tx: UnboundedSender<InputEvent>, stop: Arc<AtomicBool>) {
+fn run_keyboard(mut dev: Device, tx: InputSender, stop: Arc<AtomicBool>) {
     unsafe {
         let fd = dev.as_raw_fd();
         let flags = libc::fcntl(fd, libc::F_GETFL, 0);
@@ -333,7 +333,7 @@ fn run_keyboard(mut dev: Device, tx: UnboundedSender<InputEvent>, stop: Arc<Atom
 
 fn run_mouse(
     mut dev: Device,
-    tx: UnboundedSender<InputEvent>,
+    tx: InputSender,
     stop: Arc<AtomicBool>,
     min_delta: i32,
 ) {
@@ -364,7 +364,7 @@ fn run_mouse(
                     let dx = std::mem::take(&mut *adx.lock().unwrap());
                     let dy = std::mem::take(&mut *ady.lock().unwrap());
                     if dx != 0 || dy != 0 {
-                        let _ = tx2.send(InputEvent::MouseMove { dx, dy });
+                        let _ = tx2.send(InputEvent::MouseMove { dx, dy, distance_counts: None });
                     }
                 }
             })

@@ -1,12 +1,14 @@
 #![cfg(windows)]
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use crate::motion::Motion;
 use std::thread;
 use std::time::Duration;
 
-use tokio::sync::mpsc::UnboundedSender;
+use crate::ws_server::InputSender;
 use windows::core::PCWSTR;
-use windows::Win32::Foundation::{BOOL, HWND, LPARAM, WPARAM};
+use windows::Win32::Foundation::{BOOL, HWND};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::System::Threading::{
     GetCurrentThread, SetThreadPriority, SetThreadPriorityBoost, THREAD_PRIORITY_BELOW_NORMAL,
@@ -16,10 +18,10 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 };
 use windows::Win32::UI::Input::{
     GetRawInputBuffer, RegisterRawInputDevices, RAWINPUT, RAWINPUTDEVICE, RAWINPUTHEADER,
-    RIDEV_INPUTSINK, RIDEV_REMOVE, RIM_TYPEKEYBOARD, RIM_TYPEMOUSE,
+    RIDEV_INPUTSINK, RIDEV_DEVNOTIFY, RIDEV_REMOVE, RIM_TYPEKEYBOARD, RIM_TYPEMOUSE,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    CreateWindowExW, DestroyWindow, PeekMessageW, PostMessageW, HWND_MESSAGE, MSG, PM_REMOVE,
+    CreateWindowExW, DestroyWindow, PeekMessageW, HWND_MESSAGE, MSG, PM_REMOVE,
     WINDOW_EX_STYLE, WINDOW_STYLE, WM_INPUT, WM_QUIT, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
 };
 
@@ -50,30 +52,26 @@ const BTN_MAP: &[(u16, u16, u8)] = &[
 ];
 
 pub struct RawInputThread {
-    hwnd_ref: Arc<Mutex<Option<isize>>>,
+    stop: Arc<AtomicBool>,
     handle: Option<thread::JoinHandle<()>>,
 }
 
 impl RawInputThread {
-    pub fn start(tx: UnboundedSender<InputEvent>, min_delta: i32) -> Self {
-        let hwnd_ref = Arc::new(Mutex::new(None::<isize>));
-        let hwnd_clone = Arc::clone(&hwnd_ref);
+    pub fn start(tx: InputSender, min_delta: i32) -> Self {
+        let stop = Arc::new(AtomicBool::new(false));
+        let stop_clone = Arc::clone(&stop);
         let handle = thread::Builder::new()
             .name("RawInputBuffer".into())
-            .spawn(move || run_raw_input(tx, min_delta, hwnd_clone))
+            .spawn(move || run_raw_input(tx, min_delta, stop_clone))
             .expect("failed to spawn raw input thread");
         RawInputThread {
-            hwnd_ref,
+            stop,
             handle: Some(handle),
         }
     }
 
     pub fn stop(&mut self) {
-        if let Some(hwnd) = *self.hwnd_ref.lock().unwrap() {
-            unsafe {
-                let _ = PostMessageW(HWND(hwnd as *mut _), WM_QUIT, WPARAM(0), LPARAM(0));
-            }
-        }
+        self.stop.store(true, Ordering::Relaxed);
         if let Some(h) = self.handle.take() {
             let _ = h.join();
         }
@@ -92,9 +90,9 @@ impl Drop for RawInputThread {
 }
 
 fn run_raw_input(
-    tx: UnboundedSender<InputEvent>,
+    tx: InputSender,
     min_delta: i32,
-    hwnd_out: Arc<Mutex<Option<isize>>>,
+    stop: Arc<AtomicBool>,
 ) {
     unsafe {
         set_background_priority();
@@ -106,7 +104,6 @@ fn run_raw_input(
                 return;
             }
         };
-        *hwnd_out.lock().unwrap() = Some(hwnd.0 as isize);
 
         if !register_devices(hwnd) {
             tracing::error!("raw_input: RegisterRawInputDevices failed");
@@ -122,45 +119,26 @@ fn run_raw_input(
         )
         .unwrap_or(windows::Win32::UI::Input::KeyboardAndMouse::HKL(std::ptr::null_mut()));
 
-        let accum_dx: Arc<Mutex<i32>> = Arc::new(Mutex::new(0));
-        let accum_dy: Arc<Mutex<i32>> = Arc::new(Mutex::new(0));
-
-        {
-            let flush_tx = tx.clone();
-            let adx = Arc::clone(&accum_dx);
-            let ady = Arc::clone(&accum_dy);
-            let _ = thread::Builder::new()
-                .name("RawInputFlush".into())
-                .spawn(move || {
-                    let iv = Duration::from_micros(
-                        1_000_000 / crate::services::consts::RAW_MOUSE_FLUSH_HZ as u64,
-                    );
-                    loop {
-                        thread::sleep(iv);
-                        let dx = {
-                            let mut g = adx.lock().unwrap();
-                            std::mem::take(&mut *g)
-                        };
-                        let dy = {
-                            let mut g = ady.lock().unwrap();
-                            std::mem::take(&mut *g)
-                        };
-                        if dx != 0 || dy != 0 {
-                            let _ = flush_tx.send(InputEvent::MouseMove { dx, dy });
-                        }
-                    }
-                });
-        }
+        let mut motion = Motion::default();
+        // One reused, 8-byte-aligned 64 KiB buffer; no per-report allocation.
+        let mut buffer = vec![0u64; 8192];
 
         let interval =
             Duration::from_micros(1_000_000 / crate::services::consts::RAW_MOUSE_FLUSH_HZ as u64);
         let mut msg = MSG::default();
 
-        loop {
+        while !stop.load(Ordering::Relaxed) {
             thread::sleep(interval);
-            drain_buffer(&tx, us_layout, min_delta, &accum_dx, &accum_dy);
+            drain_buffer(&tx, us_layout, min_delta, &mut motion, &mut buffer);
+            let batch = motion.take();
+            if batch.distance_counts > 0.0 {
+                let _ = tx.send(InputEvent::MouseMove { dx: batch.dx, dy: batch.dy, distance_counts: Some(batch.distance_counts) });
+            }
 
             while PeekMessageW(&mut msg, HWND::default(), 0, WM_INPUT - 1, PM_REMOVE).as_bool() {
+                if msg.message == 0x00FE {
+                    let _ = tx.send(InputEvent::Reset);
+                }
                 if msg.message == WM_QUIT {
                     unregister_devices();
                     let _ = DestroyWindow(hwnd);
@@ -169,6 +147,10 @@ fn run_raw_input(
                 }
             }
         }
+        unregister_devices();
+        let _ = DestroyWindow(hwnd);
+        let _ = tx.send(InputEvent::Reset);
+        tracing::info!("raw_input: stopped");
     }
 }
 
@@ -202,13 +184,13 @@ unsafe fn register_devices(hwnd: HWND) -> bool {
         RAWINPUTDEVICE {
             usUsagePage: 0x01,
             usUsage: 0x06,
-            dwFlags: RIDEV_INPUTSINK,
+            dwFlags: RIDEV_INPUTSINK | RIDEV_DEVNOTIFY,
             hwndTarget: hwnd,
         },
         RAWINPUTDEVICE {
             usUsagePage: 0x01,
             usUsage: 0x02,
-            dwFlags: RIDEV_INPUTSINK,
+            dwFlags: RIDEV_INPUTSINK | RIDEV_DEVNOTIFY,
             hwndTarget: hwnd,
         },
     ];
@@ -234,26 +216,16 @@ unsafe fn unregister_devices() {
 }
 
 unsafe fn drain_buffer(
-    tx: &UnboundedSender<InputEvent>,
+    tx: &InputSender,
     us_layout: windows::Win32::UI::Input::KeyboardAndMouse::HKL,
     min_delta: i32,
-    accum_dx: &Mutex<i32>,
-    accum_dy: &Mutex<i32>,
+    motion: &mut Motion,
+    buffer: &mut [u64],
 ) {
-    loop {
-        let mut sz: u32 = 0;
-        if GetRawInputBuffer(None, &mut sz, std::mem::size_of::<RAWINPUTHEADER>() as u32) != 0 {
-            break;
-        }
-        if sz == 0 {
-            break;
-        }
-        let alloc = (sz * 8).max(std::mem::size_of::<RAWINPUT>() as u32) as usize;
-        let mut buf = vec![0u8; alloc];
-        let mut read_sz = alloc as u32;
-
+    for _ in 0..16 {
+        let mut read_sz = std::mem::size_of_val(buffer) as u32;
         let count = GetRawInputBuffer(
-            Some(buf.as_mut_ptr() as *mut RAWINPUT),
+            Some(buffer.as_mut_ptr() as *mut RAWINPUT),
             &mut read_sz,
             std::mem::size_of::<RAWINPUTHEADER>() as u32,
         );
@@ -264,11 +236,11 @@ unsafe fn drain_buffer(
         let ri_sz = std::mem::size_of::<RAWINPUT>();
         let mut offset = 0usize;
         for _ in 0..count {
-            if offset + ri_sz > buf.len() {
+            if offset + ri_sz > read_sz as usize {
                 break;
             }
-            let ri = &*(buf.as_ptr().add(offset) as *const RAWINPUT);
-            handle_rawinput(ri, tx, us_layout, min_delta, accum_dx, accum_dy);
+            let ri = &*((buffer.as_ptr() as *const u8).add(offset) as *const RAWINPUT);
+            handle_rawinput(ri, tx, us_layout, min_delta, motion);
             let item_sz = ri.header.dwSize as usize;
             offset = (offset + item_sz + 7) & !7;
         }
@@ -277,22 +249,21 @@ unsafe fn drain_buffer(
 
 unsafe fn handle_rawinput(
     ri: &RAWINPUT,
-    tx: &UnboundedSender<InputEvent>,
+    tx: &InputSender,
     us_layout: windows::Win32::UI::Input::KeyboardAndMouse::HKL,
     min_delta: i32,
-    accum_dx: &Mutex<i32>,
-    accum_dy: &Mutex<i32>,
+    motion: &mut Motion,
 ) {
     if ri.header.dwType == RIM_TYPEKEYBOARD.0 {
         handle_keyboard(&ri.data.keyboard, tx, us_layout);
     } else if ri.header.dwType == RIM_TYPEMOUSE.0 {
-        handle_mouse(&ri.data.mouse, tx, min_delta, accum_dx, accum_dy);
+        handle_mouse(&ri.data.mouse, tx, min_delta, motion);
     }
 }
 
 unsafe fn handle_keyboard(
     kb: &windows::Win32::UI::Input::RAWKEYBOARD,
-    tx: &UnboundedSender<InputEvent>,
+    tx: &InputSender,
     us_layout: windows::Win32::UI::Input::KeyboardAndMouse::HKL,
 ) {
     if kb.VKey == 0xFF {
@@ -304,7 +275,7 @@ unsafe fn handle_keyboard(
     } else {
         let ext_scan = kb.MakeCode
             | if (kb.Flags & RI_KEY_E0) != 0 {
-                0x100
+                0xE000
             } else {
                 0
             };
@@ -327,13 +298,20 @@ unsafe fn handle_keyboard(
 
 unsafe fn handle_mouse(
     m: &windows::Win32::UI::Input::RAWMOUSE,
-    tx: &UnboundedSender<InputEvent>,
+    tx: &InputSender,
     min_delta: i32,
-    accum_dx: &Mutex<i32>,
-    accum_dy: &Mutex<i32>,
+    motion: &mut Motion,
 ) {
+    if m.usFlags.0 & 0x0001 == 0 {
+        motion.add(m.lLastX, m.lLastY, min_delta);
+    }
     let flags = m.Anonymous.Anonymous.usButtonFlags;
     if flags != 0 {
+        // Preserve cursor position ordering for click markers on the trail.
+        let batch = motion.take();
+        if batch.distance_counts > 0.0 {
+            let _ = tx.send(InputEvent::MouseMove { dx: batch.dx, dy: batch.dy, distance_counts: Some(batch.distance_counts) });
+        }
         for &(dn, up, btn) in BTN_MAP {
             if flags & dn != 0 {
                 let _ = tx.send(InputEvent::MouseButton {
@@ -362,17 +340,19 @@ unsafe fn handle_mouse(
             }
         }
     }
-    if m.usFlags.0 & 0x0001 != 0 {
-        return;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn extended_scan_codes_distinguish_left_and_right_modifiers() {
+        unsafe {
+            let layout = LoadKeyboardLayoutW(windows::core::w!("00000409"), windows::Win32::UI::Input::KeyboardAndMouse::ACTIVATE_KEYBOARD_LAYOUT_FLAGS(0)).unwrap();
+            assert_eq!(MapVirtualKeyExW(0x1D, MAPVK_VSC_TO_VK_EX, layout), 162);
+            assert_eq!(MapVirtualKeyExW(0xE01D, MAPVK_VSC_TO_VK_EX, layout), 163);
+            assert_eq!(MapVirtualKeyExW(0x38, MAPVK_VSC_TO_VK_EX, layout), 164);
+            assert_eq!(MapVirtualKeyExW(0xE038, MAPVK_VSC_TO_VK_EX, layout), 165);
+        }
     }
-    let dx = m.lLastX;
-    let dy = m.lLastY;
-    if dx == 0 && dy == 0 {
-        return;
-    }
-    if min_delta > 0 && dx.abs() + dy.abs() < min_delta {
-        return;
-    }
-    *accum_dx.lock().unwrap() += dx;
-    *accum_dy.lock().unwrap() += dy;
 }

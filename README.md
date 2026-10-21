@@ -1,100 +1,68 @@
-<div align="center">
+# Input Overlay Studio
 
-# input-overlay
+Текущая версия: **0.3.1**.
 
-**Input overlay for OBS using RawInputBuffer with analog keyboard support**
+Локальное Windows-приложение для визуализации ввода в OBS. Развитие [girlglock/input-overlay](https://github.com/girlglock/input-overlay), GPL-3.0. Механизмы RawInputBuffer, WebSocket-аутентификации, HTTP и аналоговых клавиатур сохранены. Оригинальный README — [README.upstream.md](README.upstream.md).
 
-[![releases](https://img.shields.io/github/v/release/girlglock/input-overlay?style=flat-square&color=c9a0dc&label=release)](https://github.com/girlglock/input-overlay/releases)
-[![nightly](https://img.shields.io/badge/nightly-available-6a9fb5?style=flat-square)](https://nightly.link/girlglock/input-overlay/workflows/nightly/main)
-[![license](https://img.shields.io/github/license/girlglock/input-overlay?style=flat-square&color=aaa)](./LICENSE)
+## Возможности
 
-</div>
+- Studio: холст 1920×1080, drag/resize, сетка, привязка к соседним элементам, выравнивание, сброс позиции, safe area, слои, блокировка, дублирование, undo/redo.
+- Keyboard: одновременные нажатия, левые/правые модификаторы, собственные подписи и позиции, analog fill.
+- Mouse Buttons: M1–M5, прокрутка, компактный режим и схема мыши.
+- Mouse Trail: пять стилей, fade, click ripple, fixed field / recenter, ручной и DPI-нормализованный масштаб.
+- Distance: длина исходных перемещений до прореживания, смена DPI без пересчёта накопленного расстояния, общий сброс, сохранение между запусками.
+- Profiles: CS2, Valorant, Apex, Overwatch 2, KovaaK’s с явным выбором шкалы, custom yaw и ручным cm/360.
+- Семь заводских тем, пользовательские пресеты, проверяемый JSON-импорт/экспорт, резервные копии.
+- Прозрачный OBS-рендерер с пропорциональным масштабированием под размер Browser Source, включая 2560×1440. Настройки синхронизируются через авторизованный WebSocket; редактор можно закрыть.
+- Изменение оформления не очищает текущий след; после reconnect удержания восстанавливаются через snapshot.
+- Demo включается явно для предпросмотра. Copy OBS URL всегда создаёт источник реального ввода.
 
-> [!NOTE]
-> hello, this project is pretty much just something i made for myself and a few friends. im going to try to fix bugs etc as best as i can but keep in mind that im not that skilled of a dev so expect updates to roll out slowly or eventually to stop due to lack of time
->
-> you can read up more on how to create your very own HTML overlay that uses the desktop app [here](https://github.com/girlglock/input-overlay/wiki/Creating-your-own-Overlay)
+Сохранение, конфликты двух редакторов и восстановление: [инструкция](docs/SAVING_AND_SYNC.md).
 
----
+## Запуск Windows-сборки
 
-## features
+В каталоге `release/Input Overlay Studio` запустите `Input Overlay Studio.exe` **вместе с DLL из того же каталога**. Нужен Microsoft Edge WebView2 Runtime. Повседневная работа не требует интернета.
 
-- **websocket connection with authentication** with support to stream your inputs to a secondary PC (e.g. a dedicated streaming PC)
-- **hall effect keyboard support** via the [AnalogSense SDK ported to rust](https://github.com/AnalogSense/JavaScript-SDK)
-  - if you want to PR/request a new device please do so on [AnalogSense](https://github.com/AnalogSense) instead this of repo.
-- **mouse movement tracking** via the RawInputBuffer windows api to keep track while tabbed into games
-- **customizable layouts and labels** (labels support html `img src` tags, not officially though)
-- **dual PC support** (e.g. gaming PC to dedicated streaming PC)
+1. Откройте Studio. Capture connected подтверждает авторизацию, а не присутствие конкретного USB-устройства.
+2. В Profiles укажите DPI, игру и sensitivity.
+3. Выберите тему, расположите модули, измените свойства.
+4. Нажмите Copy OBS URL, добавьте Browser Source 1920×1080 в OBS.
+5. Закройте окно Studio, оставив приложение в трее. Выход — Exit в меню трея.
 
-<table>
-  <tr>
-    <td><img src="https://files.catbox.moe/qzqhnc.avif" width="400"/></td>
-    <td><img src="https://femboy.beauty/AvwAox.png" width="400"/></td>
-    <td><img src="https://femboy.beauty/B2tyyA.png" width="400"/></td>
-  </tr>
-</table>
+Инструкция: [docs/OBS_SETUP.md](docs/OBS_SETUP.md). Ручные сценарии: [docs/TESTING.md](docs/TESTING.md). Фактические результаты: [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md).
 
----
+## Разработка и сборка
 
-## single PC setup
+Нужны Node.js 22.12+ (либо 24+), pnpm, Rust stable и Windows C/C++ toolchain. Стандартный путь — MSVC Build Tools с Windows SDK. Альтернативный путь этой среды: Rust `stable-x86_64-pc-windows-gnullvm` и LLVM-MinGW UCRT. Обычный `windows-gnu` нельзя смешивать с LLVM-MinGW UCRT.
 
-1. download the [`input-overlay-ws`](https://github.com/girlglock/input-overlay/releases) server
-2. run it and right-click the tray icon to open settings
-3. copy your auth token *(you can change it to whatever you like)*
-4. paste the token in the auth token field in the configurator
-5. configure your overlay to your liking, click **`⎘ copy url`**, and paste the copied url as an OBS browser source
-
-<details>
-   <summary>nightly builds</summary>
-   <br>
-
-   | platform | download |
-   |----------|----------|
-   | windows | [input-overlay-ws-windows.zip](https://nightly.link/girlglock/input-overlay/workflows/nightly/main/input-overlay-ws-windows.zip) |
-   | linux | [input-overlay-ws-linux.zip](https://nightly.link/girlglock/input-overlay/workflows/nightly/main/input-overlay-ws-linux.zip) |
-
-</details>
-
-> [!TIP]
-> you can configure the key whitelist in the server settings to ensure you're only sending keys over your network that are configured in the overlay
-
----
-
-## sending keys to another PC
-
-*(e.g. from gaming PC to streaming PC)*
-
-1. run the `input-overlay-ws` server on your **gaming PC** and enable the HTTP server in its settings
-2. find your gaming PC's local IP, run `ipconfig` in cmd and copy the IPv4 address (usually `192.168.X.X`)
-3. click **`open in browser`** inside the HTTP server settings
-4. enter the gaming PC's address in both the **input-overlay-ws** field and the hosted **configurator**
-5. click **`⎘ copy url`** to copy the hosted overlay url and add it as a browser source in OBS on the streaming PC
-
----
-
-## building from source
-
-> [!NOTE]
-> released binaries are already built via GitHub Actions, you only need this if you want to build from source yourself
-
-**1. install prerequisites**
-
-- [Rust stable toolchain](https://rustup.rs)
-- Tauri CLI: `cargo install tauri-cli --version "^2"`
-
-<details>
-<summary><b>linux additional dependencies</b></summary>
-
-```bash
-sudo apt install libwebkit2gtk-4.1-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+```powershell
+cd studio
+pnpm install --frozen-lockfile
+pnpm build
+pnpm test
+pnpm exec playwright install chromium
+pnpm test:browser
+cd ..
+cargo test --manifest-path ws-server/src-tauri/Cargo.toml --lib
+cargo build --release --manifest-path ws-server/src-tauri/Cargo.toml
 ```
 
-</details>
+`pnpm build` подготавливает Studio для Tauri. `build.rs` встраивает тот же frontend в существующий HTTP-сервер. Сначала собирайте frontend. `scripts/build-studio.ps1` выполняет сборку и упаковку. Для разработки UI: `cd studio; pnpm dev`. Реальный ввод поступает только из запущенного native server.
 
-**2. build** (run from the `ws-server/` directory)
+## Данные и приватность
 
-```bash
-cargo tauri build
-```
+Новые установки сохраняют `config.json`, `studio.json`, опциональный `distance.json` и логи в `%LOCALAPPDATA%/InputOverlayStudio`. Существующий portable `config.json` рядом с exe сохраняет прежнее расположение. Для разработки: `INPUT_OVERLAY_STUDIO_DATA_DIR`; флаг `--tray` запускает без окна.
 
-output binary will be at `src-tauri/target/release/input-overlay-ws`
+По умолчанию: `127.0.0.1:4455` (WS) и `127.0.0.1:4456` (HTTP). OBS: `/studio/overlay.html`; оригинальный web editor: `/`. LAN требует явного изменения bind host и адресов источника. Токен находится во фрагменте OBS URL, не в HTTP query; не публикуйте ссылку. Экспортируемые профили не содержат токен. Телеметрии, истории текстового ввода, внедрения DLL в игры и фоновой проверки обновлений нет.
+
+## Лицензия
+
+Неизменённая [GPL-3.0](LICENSE). Attribution оригинала сохранён. При распространении сборок предоставляйте соответствующие исходники и скрипты сборки. Зависимости сохраняют собственные лицензии: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Визуальная настройка v0.3
+
+Общий рисунок на кейкапах: загрузка PNG/JPEG/WebP, единая непрерывная картинка с прозрачными промежутками, редактор положения/масштаба/поворота, смешивание и цветокоррекция, настройки поведения при нажатии. Изображения встроены в конфигурацию и экспорт отдельных пресетов.
+
+Также доступны индивидуальные стили клавиш и кнопок, независимая прозрачность фона, типографика, рамки, полноценная геометрия Mouse Diagram и дополнительные настройки Trail. Формат v1 мигрирует в v2 с сохранением исходной копии.
+
+[Как настроить оформление](docs/CUSTOMIZATION.md) · [Результаты проверки](docs/TEST_RESULTS.md).
