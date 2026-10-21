@@ -34,6 +34,16 @@ try {
     await page.getByRole('button', { name: 'Profiles', exact: true }).click(); await page.getByLabel('Profile name', { exact: true }).fill('Native persisted');
     await expect.poll(async () => JSON.parse(await readFile(new URL('studio.json', data), 'utf8')).profiles[0].name).toBe('Native persisted');
   });
+  await check('HTTP root opens Studio and removed editor assets are not shipped', async () => {
+    const base = 'http://127.0.0.1:4466';
+    const root = await page.request.get(base, { maxRedirects: 0 }); expect(root.status()).toBe(302); expect(root.headers()['location']).toBe('/studio/index.html');
+    const studio = await page.request.get(`${base}/studio/`); expect(studio.status()).toBe(200); expect(studio.headers()['content-type']).toContain('text/html');
+    const html = await studio.text();
+    const assets = [...html.matchAll(/(?:src|href)="(\.\/[^"#]+)"/g)].map(match => new URL(match[1], `${base}/studio/`));
+    expect(assets.length).toBeGreaterThan(1);
+    for (const url of assets) expect((await page.request.get(url.toString())).status(), url.toString()).toBe(200);
+    for (const path of ['/style.css', '/scripts/main.js', '/update.html', '/post-update.html']) expect((await page.request.get(`${base}${path}`)).status()).toBe(404);
+  });
   await check('embedded keycap artwork is accepted and saved by the actual native backend', async () => {
     await page.getByRole('button', { name: 'Studio', exact: true }).click(); await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
     const image = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = c.height = 64; const ctx = c.getContext('2d'); ctx.fillStyle = '#4488ee'; ctx.fillRect(0, 0, 64, 64); return c.toDataURL('image/png'); });

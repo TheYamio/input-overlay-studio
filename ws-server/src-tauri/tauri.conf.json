@@ -4,7 +4,7 @@
   "version": "0.4.0",
   "identifier": "com.input-overlay-ws.app",
   "build": {
-    "frontendDist": "../src"
+    "frontendDist": "../../studio/dist"
   },
   "app": {
     "withGlobalTauri": true,

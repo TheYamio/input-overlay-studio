@@ -13,27 +13,11 @@ fn stage_web_assets() {
         .expect("failed to resolve repo root");
     let staging = Path::new(&manifest_dir).join("web-bundle");
 
-    println!(
-        "cargo:rerun-if-changed={}",
-        repo_root.join("index.html").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        repo_root.join("style.css").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        repo_root.join("scripts").display()
-    );
-
     if staging.exists() {
         std::fs::remove_dir_all(&staging).unwrap();
     }
     std::fs::create_dir_all(&staging).unwrap();
 
-    std::fs::copy(repo_root.join("index.html"), staging.join("index.html")).unwrap();
-    std::fs::copy(repo_root.join("style.css"), staging.join("style.css")).unwrap();
-    copy_dir(&repo_root.join("scripts"), &staging.join("scripts"));
     let studio = repo_root.join("studio/dist");
     println!("cargo:rerun-if-changed={}", studio.display());
     assert!(studio.join("index.html").exists(), "Build Studio first: cd studio && pnpm install && pnpm build");

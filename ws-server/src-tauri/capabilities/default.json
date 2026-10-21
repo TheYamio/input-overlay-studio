@@ -3,9 +3,7 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": [
-    "main",
-    "update",
-    "post-update"
+    "main"
   ],
   "permissions": [
     "core:default",

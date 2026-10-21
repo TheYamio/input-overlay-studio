@@ -1,4 +1,4 @@
-name: build ws-server
+name: Build and test Input Overlay Studio
 
 on:
   workflow_call:

@@ -3,7 +3,6 @@ TODO.md
 release/
 studio/artifacts/
 studio/*.tsbuildinfo
-ws-server/src/studio/
 ws-server/src-tauri/web-bundle/
 ws-server/src-tauri/target/
 **/__pycache__/
@@ -39,3 +38,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local working notes and generated reports
+/docs/TEST_RESULTS*.md
+/docs/performance/
+/docs/AUDIT_*.md
+/docs/UX_UI_REDESIGN_PROPOSAL.md

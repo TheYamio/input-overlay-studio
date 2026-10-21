@@ -1,6 +1,6 @@
 # Attribution and third-party software
 
-Input Overlay Studio modifies **girlglock/input-overlay**, upstream commit `d31469bd4c7e2295888fad78174ae821db966961`, https://github.com/girlglock/input-overlay. The GPL-3.0 LICENSE is retained unchanged. Original code, resources, AnalogSense-compatible HID readers and the original README remain. Studio modifications: October 2026.
+Input Overlay Studio modifies the capture backend from **girlglock/input-overlay**, upstream commit `d31469bd4c7e2295888fad78174ae821db966961`, https://github.com/girlglock/input-overlay. The GPL-3.0 LICENSE is retained unchanged. Raw Input capture, AnalogSense-compatible HID readers and platform services retain their original attribution. The original browser editor, settings frontend, demo media and upstream updater have been removed. Studio modifications: October 2026.
 
 React / React DOM (MIT), TypeScript (Apache-2.0), Vite (MIT), Zod (MIT), Lucide (ISC), Tauri (MIT/Apache-2.0), Tokio (MIT), tungstenite (MIT), windows-rs (MIT/Apache-2.0), hidapi and other dependencies retain their original licenses. Lockfiles record resolved packages; inspect the LICENSE files supplied with their dependency distributions. Original bundled resources retain their upstream notices. Raster validation uses image 0.25 (MIT/Apache-2.0) with PNG/JPEG/WebP decoders and base64 0.22 (MIT/Apache-2.0); their resolved transitive dependencies are recorded in Cargo.lock.
 

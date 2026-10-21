@@ -83,8 +83,13 @@ async fn serve(stream: tokio::net::TcpStream, _addr: SocketAddr) {
     if method != "GET" { return; }
 
     let path = raw_path.split('?').next().unwrap_or("/");
+    // Keep a single canonical base so relative Studio assets resolve correctly.
+    if matches!(path, "/" | "/index.html" | "/studio") {
+        let _ = write_half.write_all(b"HTTP/1.0 302 Found\r\nLocation: /studio/index.html\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").await;
+        return;
+    }
     let rel  = path.trim_start_matches('/');
-    let key  = if rel.is_empty() { "index.html".into() } else { rel.to_string() };
+    let key = if rel.ends_with('/') { format!("{rel}index.html") } else { rel.to_string() };
 
     let asset = WebAssets::get(&key)
         .or_else(|| WebAssets::get(&format!("{key}/index.html")));

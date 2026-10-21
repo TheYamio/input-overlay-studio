@@ -1,4 +1,4 @@
-name: nightly ws-server
+name: Input Overlay Studio CI
 
 on:
   workflow_dispatch:
@@ -16,6 +16,6 @@ jobs:
   build:
     uses: ./.github/workflows/_build.yml
     with:
-      windows-artifact-name: input-overlay-ws-windows
-      linux-artifact-name: input-overlay-ws-linux
+      windows-artifact-name: studio-windows-capture
+      linux-artifact-name: studio-linux-capture
       retention-days: 60

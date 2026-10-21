@@ -1,17 +1,13 @@
-# Публикация Input Overlay Studio
+# Выпуск Input Overlay Studio
 
-Релиз Studio публикуется из проверенной Windows portable-сборки. Старый workflow `legacy ws-server release (manual)` оставлен только для ручного запуска: его server-only ZIP не является дистрибутивом Studio. CI `nightly` проверяет исходники отдельно.
+1. Обновить версию frontend, Cargo и Tauri, README и CHANGELOG.
+2. Собрать frontend и выполнить [проверки](TESTING.md), включая рабочее пространство, синхронизацию и изображения.
+3. Собрать Rust с `--locked`, проверить нативное окно, настоящий захват и OBS.
+4. Проверить ProductVersion/FileVersion и собственную иконку. Зафиксировать исходники релиза; упаковщик требует чистого рабочего дерева.
+5. Выполнить `pwsh -File scripts/build-studio.ps1 -SkipBuild`. Без `-SkipBuild` скрипт также собирает приложение. Для LLVM-MinGW можно передать `-Toolchain stable-x86_64-pc-windows-gnullvm`.
+6. Проверить Windows ZIP: только exe и необходимые DLL. README, документация, тестовые результаты, пользовательские данные и настройки в него не входят. Исходники, лицензии и attribution находятся в отдельном Source ZIP из HEAD. Контрольные суммы — в SHA256SUMS.
+7. Опубликовать проверенный commit и тег, создать draft GitHub Release, загрузить архивы и SHA256SUMS, сверить содержимое и хеши, затем опубликовать.
 
-1. Обновить версию в `studio/package.json`, `studio/src/main.tsx`, `Cargo.toml`, `Cargo.lock`, `tauri.conf.json`; обновить README, CHANGELOG и отчёт проверки.
-2. Собрать frontend: `pnpm --dir studio build`, выполнить `pnpm --dir studio test` и browser/visual/sync/editor/customization/visual-features suites из [TESTING.md](TESTING.md).
-3. Собрать и проверить Rust с `--locked`; проверить настоящий native exe и OBS. Для LLVM-MinGW выставить соответствующий PATH, CARGO_HOME и RUSTUP_HOME. Не смешивать MSVC и GNU DLL.
-4. Убедиться, что exe имеет новую ProductVersion/FileVersion, проверить новую иконку. Сохранить SHA-256 exe в отчёте. Commit всех исходников релиза; рабочее дерево должно быть чистым.
-5. Выполнить `pwsh -File scripts/build-studio.ps1 -SkipBuild`. Для полной сборки из уже подготовленного исходного дерева использовать скрипт без `-SkipBuild`, при необходимости с `-Toolchain stable-x86_64-pc-windows-gnullvm`.
-6. Скрипт создаёт `release/Input Overlay Studio <version>/`, версионный Windows x64 ZIP, Source ZIP точно из HEAD и SHA256SUMS. Существующий каталог той же версии блокирует упаковку, чтобы исключить остаточные файлы. Проверить содержимое ZIP, соответствие exe и DLL, запустить native-проверку на копии из архива.
-7. Обычный push ветки, тег `v<version>` на проверенном commit, push тега. Создать GitHub Release сначала как draft и загрузить оба ZIP и SHA256SUMS; сверить опубликованные assets и их SHA-256, затем опубликовать релиз.
+CI проверяет исходники; автоматической публикации через старый server-only workflow нет. Установленный Microsoft Edge WebView2 Runtime — внешнее требование. Подпись кода и автообновление пока не предусмотрены.
 
-Установки пользователей и их данные не включать в архив. Нужен установленный Microsoft Edge WebView2 Runtime. Старые архивы разных версий сохраняются отдельно. Подпись кода и автоматическое обновление в этом выпуске не предусмотрены.
-
-## Иконка
-
-Собственный векторный оригинал — `studio/public/logo.svg`. Он используется в Studio и favicon. Native-экспорты — `ws-server/src-tauri/icons/icon.png`, `icon.ico`, `icon.icns`; Windows ICO содержит размеры от 16 до 256 px. При изменении оригинала обновить все экспорты перед сборкой. PNG экспортируется с прозрачностью; ICO/ICNS можно сформировать из PNG через Pillow.
+Собственная иконка начинается с `studio/public/logo.svg`. При её изменении обновить экспорты в `ws-server/src-tauri/icons/` (PNG, ICO, ICNS).

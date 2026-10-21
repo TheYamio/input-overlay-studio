@@ -6,7 +6,7 @@
   "license": "GPL-3.0-only",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build && node scripts/stage.mjs",
+    "build": "tsc -b && vite build",
     "test": "node scripts/schema-contract.mjs --check && vitest run",
     "typecheck": "tsc -b",
     "preview": "vite preview --host 127.0.0.1",

@@ -14,7 +14,7 @@
 <p align="center">
   <a href="#в-игре">Посмотреть в деле</a> ·
   <a href="#быстрый-старт">Установка</a> ·
-  <a href="docs/CUSTOMIZATION_0.3.3.md">Кастомизация</a> ·
+  <a href="docs/CUSTOMIZATION.md">Кастомизация</a> ·
   <a href="https://github.com/TheYamio/input-overlay-studio/releases/tag/v0.4.0">Что нового в v0.4</a>
 </p>
 
@@ -49,7 +49,7 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 
 ![Редактор общего рисунка на кейкапах](docs/media/keycap-editor.webp)
 
-[Настройка оформления](docs/CUSTOMIZATION.md) · [Общий рисунок и визуальные возможности](docs/VISUAL_FEATURES_0.3.3.md)
+[Настройка оформления](docs/CUSTOMIZATION.md) · [Общий рисунок и визуальные возможности](docs/VISUAL_FEATURES.md)
 
 </details>
 
@@ -68,9 +68,8 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 
 | Задача | Инструкция |
 | :--- | :--- |
-| Настроить клавиши, стили и назначение кнопок | [Кастомизация](docs/CUSTOMIZATION_0.3.3.md) |
+| Настроить клавиши, стили и назначение кнопок | [Кастомизация](docs/CUSTOMIZATION.md) |
 | Разобраться с сохранением и конфликтами | [Сохранение и синхронизация](docs/SAVING_AND_SYNC.md) |
-| Посмотреть проверенные сценарии и нагрузку | [201 проверка v0.4.0](docs/TEST_RESULTS_0.4.0.md) · [Замеры производительности](docs/PERFORMANCE_0.3.3.md) |
 | Собрать приложение или помочь проекту | [Разработка и сборка](docs/DEVELOPMENT.md) · [Сообщить об ошибке](https://github.com/TheYamio/input-overlay-studio/issues) |
 
 <details>
@@ -80,10 +79,10 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 
 Настройки и логи: `%LOCALAPPDATA%/InputOverlayStudio`. Существующий portable `config.json` рядом с exe сохраняет прежнее расположение данных. Для разработки можно задать `INPUT_OVERLAY_STUDIO_DATA_DIR`; `--tray` запускает захват без окна.
 
-OBS-страница: `/studio/overlay.html`; исходный web editor: `/`. Для LAN нужно явно изменить bind host и адреса источника. Ссылка OBS содержит токен доступа во фрагменте — не публикуй её. Экспортируемые профили токена не содержат. Формат документа — v2, настройки v1 мигрируют с сохранением исходной копии.
+OBS-страница: `/studio/overlay.html`, web-редактор: `/studio/index.html`. Корень локального HTTP-сервера открывает Studio. Для LAN нужно явно изменить bind host и адреса источника. Ссылка OBS содержит токен доступа во фрагменте — не публикуй её. Экспортируемые профили токена не содержат. Формат документа — v2, настройки v1 мигрируют с сохранением исходной копии.
 
 </details>
 
 ---
 
-**Открытый код · GPL-3.0.** Проект развивается на основе [girlglock/input-overlay](https://github.com/girlglock/input-overlay). Благодарность авторам исходного capture backend; [оригинальный README](README.upstream.md), [лицензия](LICENSE) и [лицензии зависимостей](THIRD_PARTY_NOTICES.md) сохранены. Исходники и скрипты сборки доступны вместе с релизами.
+**Открытый код · GPL-3.0.** Захват ввода развивается на основе [girlglock/input-overlay](https://github.com/girlglock/input-overlay). [Лицензия](LICENSE), сведения об исходных авторах и [лицензии зависимостей](THIRD_PARTY_NOTICES.md) сохранены. Исходники и скрипты сборки доступны вместе с релизами.

@@ -39,20 +39,11 @@ try {
         if ($clang) { $unwind = Join-Path (Split-Path -Parent $clang.Source) 'libunwind.dll' }
     }
     if (Test-Path -LiteralPath $unwind) { Copy-Item -LiteralPath $unwind -Destination $package }
-    foreach ($notice in @('LICENSE', 'README.md', 'README.upstream.md', 'THIRD_PARTY_NOTICES.md')) {
-        Copy-Item -LiteralPath (Join-Path $taskRoot $notice) -Destination $package
-    }
-    Copy-Item -LiteralPath (Join-Path $taskRoot 'docs') -Destination $package -Recurse -Force
-    # Include the WebView2 SDK notice if the dependency supplies one.
-    $dependencyRoot = if ($env:CARGO_HOME) { Join-Path $env:CARGO_HOME 'registry/src' } else { Join-Path $env:USERPROFILE '.cargo/registry/src' }
-    if (Test-Path -LiteralPath $dependencyRoot) {
-        Get-ChildItem -LiteralPath $dependencyRoot -Directory | ForEach-Object {
-            Get-ChildItem -LiteralPath $_.FullName -Directory -Filter 'webview2-com-sys-*' | ForEach-Object {
-                Get-ChildItem -LiteralPath $_.FullName -File | Where-Object { $_.Name -match 'LICENSE|NOTICE' } | ForEach-Object {
-                    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $package ("WebView2-" + $_.Name))
-                }
-            }
-        }
+    # Keep the portable directory limited to runtime files. Guides, attribution
+    # and dependency licenses accompany it in the source archive below.
+    foreach ($requiredNotice in @('LICENSE', 'THIRD_PARTY_NOTICES.md', 'docs/LLVM-RUNTIME-LICENSE.txt', 'docs/WEBVIEW2-SDK-LICENSE.txt', 'docs/WEBVIEW2-SDK-NOTICE.txt')) {
+        & git cat-file -e "HEAD:$requiredNotice"
+        if ($LASTEXITCODE -ne 0) { throw "Source archive is missing required notice: $requiredNotice" }
     }
     $archive = Join-Path $taskRoot "release/Input-Overlay-Studio-$version-Windows-x64.zip"
     Compress-Archive -LiteralPath $package -DestinationPath $archive -Force

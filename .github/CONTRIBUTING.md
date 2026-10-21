@@ -1,7 +1,7 @@
-## Regarding new Analog device support
+# Участие в Input Overlay Studio
 
-First of all thanks for wanting to contribute!
+Для ошибки опишите шаги воспроизведения, ожидаемый результат, версию Windows/OBS и Studio. Приложите минимальный профиль, если проблема связана с оформлением. Токен соединения не нужен.
 
-analog keyboard support is a port of the [AnalogSense SDK](https://github.com/AnalogSense/JavaScript-SDK), so if you'd like to add or request a new device, please do so over on [AnalogSense](https://github.com/AnalogSense) instead of this repo (either universal plugin or js sdk).
+Для изменений сначала прочитайте [инструкцию сборки](../docs/DEVELOPMENT.md) и выполните подходящие [проверки](../docs/TESTING.md). Изменения протокола и схемы проверяйте на сохранении, миграции и переподключении. Для редактора проверяйте Undo/Redo и маленькие окна.
 
-This benefits all projects that decide to use the sdk rather than isolating the newly added device to this repo only :p
+Поддержка аналоговых устройств использует HID-реализации на основе AnalogSense. Указывайте модель и аппаратные идентификаторы; сведения об исходных компонентах находятся в [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).

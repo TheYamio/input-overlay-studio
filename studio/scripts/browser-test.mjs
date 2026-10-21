@@ -9,7 +9,9 @@ const artifacts = new URL('../artifacts/', import.meta.url);
 await mkdir(artifacts, { recursive: true });
 const vite = await createServer({ server: { host: '127.0.0.1', port: 5173, strictPort: true } });
 await vite.listen();
-const wss = new WebSocketServer({ host: '127.0.0.1', port: 4455 });
+const wss = new WebSocketServer({ host: '127.0.0.1', port: 0 });
+await new Promise((resolve, reject) => { wss.once('listening', resolve); wss.once('error', reject); });
+const testPort = wss.address().port;
 let document = null; let revision = 0;
 let sequence = 0; const heldKeys = new Map(), heldButtons = new Set();
 const broadcast = packet => {
@@ -37,7 +39,7 @@ wss.on('connection', ws => {
 const heartbeat = setInterval(() => broadcast({ type: 'heartbeat' }), 3000);
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1560, height: 1000 }, permissions: ['clipboard-write', 'clipboard-read'] });
-await context.addInitScript(() => localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4455', token: 'integration-test' })));
+await context.addInitScript(port => localStorage.setItem('studio.connection', JSON.stringify({ url: `ws://127.0.0.1:${port}`, token: 'integration-test' })), testPort);
 const page = await context.newPage();
 const errors = []; page.on('pageerror', e => errors.push(e.message));
 const results = [];
