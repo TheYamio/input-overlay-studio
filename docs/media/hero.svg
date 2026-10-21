@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="364" viewBox="0 0 1280 364" role="img" aria-labelledby="title desc">
+<title id="title">Input Overlay Studio</title><desc id="desc">Your input. In focus. Локальный редактор оверлея для OBS.</desc>
+<defs>
+ <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#151b21"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#a5ef6b" stop-opacity=".10"/><stop offset="1" stop-color="#a5ef6b" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#a5ef6b" stroke-opacity=".045"/></pattern>
+</defs>
+<rect x="1" y="1" width="1278" height="362" rx="24" fill="url(#bg)" stroke="#2b343e"/>
+<rect x="740" y="2" width="514" height="360" fill="url(#grid)"/>
+<ellipse cx="1024" cy="170" rx="250" ry="190" fill="url(#glow)"/>
+<g transform="translate(50 42) scale(.14)">
+ <rect x="16" y="16" width="480" height="480" rx="112" fill="#1e282e"/>
+ <rect x="80" y="80" width="304" height="304" rx="64" fill="#a5ef6b"/>
+ <path d="M144 176v64a32 32 0 0 0 32 32h48" fill="none" stroke="#1b2a18" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M272 232v208l58-58 40 78 49-25-40-77h82Z" fill="#f1f6ec" stroke="#151b21" stroke-width="24" stroke-linejoin="round"/>
+</g>
+<g font-family="Segoe UI,Arial,sans-serif">
+ <text x="142" y="72" font-size="13" letter-spacing="3" fill="#a5ef6b">YOUR INPUT. IN FOCUS.</text>
+ <text x="142" y="97" font-size="12" fill="#8a97a4">WINDOWS · OBS · LOCAL</text>
+ <text x="54" y="193" font-size="66" font-weight="700" letter-spacing="-2" fill="#f0f4f8">Input Overlay</text>
+ <text x="56" y="252" font-size="50" font-weight="300" letter-spacing="1" fill="#a5ef6b">Studio</text>
+ <text x="58" y="310" font-size="17" fill="#a4b1bf">Твой ввод. Твой стиль. Твой стрим.</text>
+</g>
+<g transform="translate(853 58)" font-family="Segoe UI,Arial,sans-serif" font-size="20" font-weight="600" text-anchor="middle">
+ <g fill="#1d272f" stroke="#35424c" stroke-width="1.5">
+  <rect x="72" y="0" width="62" height="62" rx="12" fill="#a5ef6b" stroke="#c3fa99"/>
+  <rect x="0" y="72" width="62" height="62" rx="12"/><rect x="72" y="72" width="62" height="62" rx="12"/><rect x="144" y="72" width="62" height="62" rx="12"/>
+  <rect x="0" y="144" width="62" height="48" rx="10"/><rect x="72" y="144" width="134" height="48" rx="10"/>
+ </g>
+ <text x="103" y="39" fill="#1b2a18">W</text><g fill="#b7c4cf"><text x="31" y="111">A</text><text x="103" y="111">S</text><text x="175" y="111">D</text><text x="31" y="174" font-size="11">CTRL</text><text x="139" y="174" font-size="12">SPACE</text></g>
+</g>
+<path d="M818 302C875 302 893 289 929 291S989 330 1033 309 1077 250 1135 267 1168 295 1214 280" fill="none" stroke="#a5ef6b" stroke-opacity=".2" stroke-width="2"/>
+<path d="M929 291C963 293 989 330 1033 309S1077 250 1135 267 1168 295 1214 280" fill="none" stroke="#a5ef6b" stroke-width="2"/>
+<circle cx="1214" cy="280" r="5" fill="#a5ef6b"/>
+<g transform="translate(1111 81)"><rect width="79" height="122" rx="38" fill="#1b242c" stroke="#405049" stroke-width="1.5"/><path d="M40 0v45M0 46h79" fill="none" stroke="#405049" stroke-width="1.5"/><rect x="35" y="19" width="10" height="20" rx="5" fill="#a5ef6b"/></g>
+</svg>
