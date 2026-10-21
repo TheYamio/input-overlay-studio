@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { consistentArtworkGroups } from './artwork-groups.ts';
 import { normalizeBounds } from './editing.ts';
 import { MAX_DOCUMENT_BYTES, MAX_IMPORT_BYTES, utf8Bytes } from './limits.ts';
 import { appearanceSchema, assetSchema, defaultAppearance, defaultImageSettings, defaultTrailAppearance, elementStyleSchema, imageSettingsSchema, mouseGeometrySchema, trailAppearanceSchema } from './visual.ts';
@@ -43,10 +44,12 @@ export const profileSchema = z.object({
   caption: label, theme: z.enum(themeNames), modules: z.array(moduleSchema).max(32),
 }).superRefine((p, ctx) => {
   if (new Set(p.modules.map(m => m.id)).size !== p.modules.length) ctx.addIssue({ code: 'custom', message: 'Duplicate module IDs' });
+  if (!consistentArtworkGroups(p.modules)) ctx.addIssue({ code: 'custom', message: 'Artwork group members must share the same image settings' });
 });
 export type Profile = z.infer<typeof profileSchema>;
 export const presetSchema = z.object({ id, name: label.min(1), theme: z.enum(themeNames), modules: z.array(moduleSchema).max(32) }).superRefine((p, ctx) => {
   if (new Set(p.modules.map(m => m.id)).size !== p.modules.length) ctx.addIssue({ code: 'custom', message: 'Duplicate module IDs' });
+  if (!consistentArtworkGroups(p.modules)) ctx.addIssue({ code: 'custom', message: 'Artwork group members must share the same image settings' });
 });
 export const currentDocumentSchema = z.object({
   version: z.literal(2), assets: z.record(id, assetSchema).default({}), activeProfileId: id, profiles: z.array(profileSchema).min(1).max(50), presets: z.array(presetSchema).max(50),
@@ -103,6 +106,26 @@ export function factoryModules(theme: Profile['theme'] = 'Obsidian'): OverlayMod
   Object.assign(modules[2], { x: 790, y: 400, w: 550, h: 430 });
   Object.assign(modules[3], { x: 1400, y: 510, w: 300, h: 100 });
   Object.assign(modules[4], { x: 440, y: 890, w: 980, h: 65 });
+  const place = (index: number, x: number, y: number, w: number, h: number) => Object.assign(modules[index], { x, y, w, h });
+  if (theme === 'Essential') {
+    place(0, 80, 850, 180, 150); modules[0].keys = layoutKeys('WASD'); modules[0].layout = 'WASD';
+    place(1, 285, 850, 250, 95); modules[2].visible = false; modules[3].visible = false; place(4, 80, 1010, 500, 50);
+  } else if (theme === 'Competitive') {
+    place(0, 80, 680, 330, 330); modules[0].keys = layoutKeys('FPS Extended'); modules[0].layout = 'FPS Extended';
+    place(1, 440, 800, 300, 110); place(2, 800, 760, 330, 250); place(3, 1180, 920, 240, 70); place(4, 440, 930, 480, 65);
+  } else if (theme === 'Neon') {
+    place(0, 150, 640, 380, 320); place(1, 570, 700, 220, 270); modules[1].mouseMode = 'Mouse Diagram';
+    place(2, 900, 600, 720, 420); place(3, 1640, 820, 240, 90); place(4, 150, 990, 650, 60);
+  } else if (theme === 'Glass') {
+    place(0, 1620, 260, 220, 300); place(1, 1620, 590, 220, 300); modules[1].mouseMode = 'Mouse Diagram';
+    place(2, 1220, 600, 340, 260); place(3, 1620, 930, 220, 70); place(4, 1260, 930, 310, 100); modules[4].textLayout = 'Vertical';
+  } else if (theme === 'Clean Recording') {
+    place(0, 630, 900, 160, 125); modules[0].keys = layoutKeys('WASD'); modules[0].layout = 'WASD';
+    place(1, 820, 900, 270, 100); modules[2].visible = false; modules[3].visible = false; place(4, 1120, 900, 330, 60); modules[4].sensitivityStyle = 'Minimal';
+  } else if (theme === 'Classic Input') {
+    place(0, 70, 340, 300, 405); place(1, 70, 780, 300, 110); place(2, 440, 560, 400, 330); place(3, 70, 920, 300, 60); place(4, 70, 1000, 850, 50);
+    modules.forEach(m => m.appearance.fontFamily = 'Consolas');
+  }
   return applyTheme(modules, theme);
 }
 export const themeColors: Record<Profile['theme'], string> = { Essential: '#e4e7eb', Competitive: '#a5ef6b', Obsidian: '#a5ef6b', Neon: '#be93ff', Glass: '#8acbff', 'Clean Recording': '#ffffff', 'Classic Input': '#efb574' };

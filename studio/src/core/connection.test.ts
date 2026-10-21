@@ -24,6 +24,11 @@ function setup() {
   return { connection, socket };
 }
 describe('revision-aware connection', () => {
+  it('retains advanced artwork locally when a server does not advertise visual support', () => {
+    const { connection, socket } = setup(), error = vi.fn(), d = initialDocument(); connection.onError = error;
+    d.profiles[0].modules[0].image.flipX = true; socket.receive({ type: 'studio_config', document: d, revision: 'r1' });
+    expect(connection.publish(d)).toBe(false); expect(error).toHaveBeenCalledWith(expect.stringContaining('local draft is kept')); expect(socket.sent.some(m => m.type === 'studio_set')).toBe(false); connection.stop();
+  });
   it('sends only one save at a time and acknowledges its actual document', () => {
     const { connection, socket } = setup(), first = initialDocument(), saved = vi.fn(); connection.onSaved = saved;
     socket.receive({ type: 'studio_config', document: first, revision: 'r1', config_sequence: 1 });

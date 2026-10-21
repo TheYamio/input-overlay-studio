@@ -49,6 +49,8 @@ jobs:
           pnpm test:visual
           pnpm test:sync
           pnpm test:editor
+          pnpm test:customization
+          pnpm test:visual-features
 
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable

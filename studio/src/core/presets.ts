@@ -15,6 +15,7 @@ export function importPreset(text: string) {
   d.profiles[0].modules = bundle.preset.modules; d.assets = bundle.assets; documentSchema.parse(d);
   const ids = new Map(Object.keys(bundle.assets).map(id => [id, uid()]));
   const assets = Object.fromEntries(Object.entries(bundle.assets).map(([id, value]) => [ids.get(id)!, value]));
-  const preset = { ...bundle.preset, id: uid(), modules: bundle.preset.modules.map(m => ({ ...m, id: uid(), image: { ...m.image, assetId: ids.get(m.image.assetId) || '' } })) };
+  const groups = new Map(bundle.preset.modules.flatMap(m => m.image.groupId ? [[m.image.groupId, uid()] as const] : []));
+  const preset = { ...bundle.preset, id: uid(), modules: bundle.preset.modules.map(m => ({ ...m, id: uid(), image: { ...m.image, assetId: ids.get(m.image.assetId) || '', ...(m.image.groupId ? { groupId: groups.get(m.image.groupId)! } : {}) } })) };
   return { preset, assets };
 }

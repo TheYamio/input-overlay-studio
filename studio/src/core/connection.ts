@@ -10,6 +10,7 @@ export class InputConnection {
   private watchdog?: ReturnType<typeof setInterval>;
   private stopped = true;
   private authenticated = false;
+  private visualFeaturesSupported = false;
   private heartbeatSupported = false;
   private lastInputSequence = -1;
   private lastConfigSequence = -1;
@@ -58,6 +59,7 @@ export class InputConnection {
       if (value.type === 'auth_response') {
         this.authenticated = value.status === 'success';
         this.revisionSupported = value.studio_revisions === true;
+        this.visualFeaturesSupported = value.studio_visuals === true;
         this.heartbeatSupported = typeof value.protocol === 'number' && value.protocol >= 2;
         if (!this.authenticated) { this.onStatus('Authentication failed'); this.stopped = true; this.engine.reset(); ws.close(); return; }
         this.attempts = 0; this.lastInputSequence = -1; this.lastConfigSequence = -1; this.engine.reset(); this.onStatus('Connected');
@@ -135,6 +137,7 @@ export class InputConnection {
   publish(document: StudioDocument, baseRevision = this.revision) {
     if (!this.authenticated || this.socket?.readyState !== WebSocket.OPEN || this.inFlight) return false;
     if (!this.revisionSupported) { this.onError('Update the capture server to enable safe saving.'); return false; }
+    if (!this.visualFeaturesSupported && [...document.profiles, ...document.presets].some(p => p.modules.some(m => m.image.groupId || m.image.flipX || m.image.flipY))) { this.onError('Update the native capture server to 0.3.3-dev.2 or newer to save shared artwork and image flips. Your local draft is kept.'); return false; }
     if (!baseRevision) return false;
     const id = ++this.sequence, json = JSON.stringify(document);
     const packet = JSON.stringify({ type: 'studio_set', document, base_revision: baseRevision, origin: this.clientId, request_id: id });

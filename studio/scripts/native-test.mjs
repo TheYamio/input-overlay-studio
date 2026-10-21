@@ -25,6 +25,11 @@ try {
   await context.addInitScript(() => localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4465', token: 'native-smoke-test' })));
   await check('compiled frontend uses the actual Rust server', async () => {
     await page.goto('http://127.0.0.1:4466/studio/index.html'); await expect(page.getByText('Capture connected')).toBeVisible();
+    const releaseVersion = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version;
+    await expect(page.locator('.version')).toContainText(releaseVersion);
+    await expect.poll(() => page.locator('.brand-mark img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    const logoResponse = await fetch('http://127.0.0.1:4466/studio/logo.svg');
+    expect(logoResponse.status).toBe(200); expect(await logoResponse.text()).toContain('Input Overlay Studio');
     await expect.poll(async () => { try { return JSON.parse(await readFile(new URL('studio.json', data), 'utf8')).version; } catch { return 0; } }).toBe(2);
     await page.getByRole('button', { name: 'Profiles', exact: true }).click(); await page.getByLabel('Profile name', { exact: true }).fill('Native persisted');
     await expect.poll(async () => JSON.parse(await readFile(new URL('studio.json', data), 'utf8')).profiles[0].name).toBe('Native persisted');
@@ -34,6 +39,13 @@ try {
     const image = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = c.height = 64; const ctx = c.getContext('2d'); ctx.fillStyle = '#4488ee'; ctx.fillRect(0, 0, 64, 64); return c.toDataURL('image/png'); });
     await page.getByLabel('Upload keycap image', { exact: true }).setInputFiles({ name: 'native.png', mimeType: 'image/png', buffer: Buffer.from(image.split(',')[1], 'base64') });
     await expect.poll(async () => { const d = JSON.parse(await readFile(new URL('studio.json', data), 'utf8')), m = d.profiles.find(p => p.id === d.activeProfileId).modules.find(m => m.type === 'keyboard'); return !!d.assets[m.image.assetId]?.data.startsWith('data:image/webp;base64,'); }).toBe(true);
+  });
+  await check('shared artwork and flips persist through the actual native backend', async () => {
+    await page.locator('.artwork-group summary').click(); await page.getByLabel('Share artwork with Mouse Buttons', { exact: true }).check();
+    await page.getByRole('button', { name: 'Position & scale image', exact: true }).click(); const editor = page.getByRole('dialog');
+    const flip = editor.getByRole('button', { name: 'Flip horizontally', exact: true }); if (await flip.getAttribute('aria-pressed') !== 'true') await flip.click();
+    await editor.getByRole('button', { name: 'Apply image placement', exact: true }).click();
+    await expect.poll(async () => { const d = JSON.parse(await readFile(new URL('studio.json', data), 'utf8')), modules = d.profiles.find(p => p.id === d.activeProfileId).modules, a = modules.find(m => m.type === 'keyboard'), b = modules.find(m => m.type === 'mouse'); return !!a.image.groupId && a.image.flipX === true && JSON.stringify(a.image) === JSON.stringify(b.image); }).toBe(true);
   });
   await check('incorrect token is rejected by native authentication', async () => {
     const answer = await new Promise((resolve, reject) => { const ws = new WebSocket('ws://127.0.0.1:4465'); const timer = setTimeout(() => { ws.terminate(); reject(Error('Auth timeout')); }, 5000); ws.on('open', () => ws.send(JSON.stringify({ type: 'auth', token: 'incorrect' }))); ws.on('message', text => { clearTimeout(timer); ws.close(); resolve(JSON.parse(text.toString())); }); ws.on('error', reject); });
@@ -106,5 +118,24 @@ try {
     }, { timeout: 20000 }).toContain('client authenticated');
   });
   expect(errors).toEqual([]);
+  if (process.env.STUDIO_NATIVE_RESOURCES === '1') {
+    const { processResources, resourceDelta } = await import('./process-resources.mjs');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    const before = await processResources(child.pid); await new Promise(resolve => setTimeout(resolve, 15000)); const after = await processResources(child.pid);
+    const resources = { mode: 'actual-native-editor-idle', ...resourceDelta(before, after), processes: after.processes, note: 'Includes this native app and its WebView2 descendants; excludes the separate test Chromium. Working-set sums include shared pages.' };
+    await check('closing the actual native editor keeps capture and the OBS source running', async () => {
+      // Send the standard close event only to the window of this test's own child.
+      const { execFile } = await import('node:child_process'), { promisify } = await import('node:util'); const execute = promisify(execFile);
+      const helper = fileURLToPath(new URL('./native-window.ps1', import.meta.url));
+      const runWindow = mode => execute('pwsh.exe', ['-NoProfile', '-NonInteractive', '-File', helper, '-TaskProcessId', String(child.pid), '-Mode', mode], { windowsHide: true });
+      await runWindow('close');
+      await expect.poll(async () => Number((await runWindow('count')).stdout.trim()), { timeout: 15000 }).toBe(0);
+      expect(child.exitCode).toBeNull();
+      const overlay = await context.newPage(); await overlay.goto('http://127.0.0.1:4466/studio/overlay.html#ws=ws%3A%2F%2F127.0.0.1%3A4465&token=native-smoke-test'); await expect(overlay.locator('.overlay-module')).toHaveCount(5); await overlay.close();
+    });
+    await new Promise(resolve => setTimeout(resolve, 5000)); const trayBefore = await processResources(child.pid); await new Promise(resolve => setTimeout(resolve, 15000)); const trayAfter = await processResources(child.pid);
+    resources.afterClosingEditor = { ...resourceDelta(trayBefore, trayAfter), processes: trayAfter.processes };
+    await writeFile(new URL('../artifacts/native-resources.json', import.meta.url), JSON.stringify(resources, null, 2)); console.log(JSON.stringify(resources));
+  }
   await mkdir(new URL('../artifacts/', import.meta.url), { recursive: true }); await writeFile(new URL('../artifacts/native-results.json', import.meta.url), JSON.stringify({ results, errors, physicalDevicesVerified: false }, null, 2));
 } finally { await context.close(); await browser.close(); await stop(); }

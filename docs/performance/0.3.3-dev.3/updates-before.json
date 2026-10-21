@@ -1,0 +1,32 @@
+{
+  "label": "before",
+  "production": true,
+  "chromium": "156.0.8078.4",
+  "updates": [
+    {
+      "modules": 5,
+      "keysPerKeyboard": 7,
+      "updates": 12,
+      "medianMs": 3.300000000745058,
+      "maxMs": 4.5,
+      "mainThreadMsPerUpdate": 3.704
+    },
+    {
+      "modules": 32,
+      "keysPerKeyboard": 32,
+      "updates": 12,
+      "medianMs": 58.69999999925494,
+      "maxMs": 69.19999999925494,
+      "mainThreadMsPerUpdate": 101.86699999999998
+    },
+    {
+      "modules": 32,
+      "keysPerKeyboard": 100,
+      "updates": 12,
+      "medianMs": 222.90000000037253,
+      "maxMs": 246.19999999925494,
+      "mainThreadMsPerUpdate": 366.272
+    }
+  ],
+  "errors": []
+}

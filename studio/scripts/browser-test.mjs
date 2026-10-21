@@ -48,9 +48,9 @@ try {
   await check('live simultaneous keys, modifiers, mouse and wheel', async () => {
     for (const rawcode of [87, 65, 160, 162, 32]) broadcast({ event_type: 'key_pressed', rawcode });
     for (const button of [1, 2, 4, 5]) broadcast({ event_type: 'mouse_pressed', button });
-    await expect(page.locator('[data-key="87"]')).toHaveClass(/pressed/); await expect(page.locator('[data-key="160"]')).toHaveClass(/pressed/); await expect(page.locator('[data-button="2"]')).toHaveClass(/pressed/);
-    broadcast({ event_type: 'mouse_wheel', rotation: -1 }); await expect(page.locator('[data-button="6"]')).toHaveClass(/pressed/); await expect(page.locator('[data-button="6"]')).not.toHaveClass(/pressed/, { timeout: 2000 });
-    broadcast({ event_type: 'input_reset' }); await expect(page.locator('.overlay-key.pressed')).toHaveCount(0);
+    await expect(page.locator('.preview-viewport [data-key="87"]')).toHaveClass(/pressed/); await expect(page.locator('.preview-viewport [data-key="160"]')).toHaveClass(/pressed/); await expect(page.locator('.preview-viewport [data-button="2"]')).toHaveClass(/pressed/);
+    broadcast({ event_type: 'mouse_wheel', rotation: -1 }); await expect(page.locator('.preview-viewport [data-button="6"]')).toHaveClass(/pressed/); await expect(page.locator('.preview-viewport [data-button="6"]')).not.toHaveClass(/pressed/, { timeout: 2000 });
+    broadcast({ event_type: 'input_reset' }); await expect(page.locator('.preview-viewport .overlay-key.pressed')).toHaveCount(0);
   });
   await check('profile calculation and explicit unknown KovaaK scale', async () => {
     await page.getByRole('button', { name: 'Profiles', exact: true }).click(); await expect(page.locator('.calculation>strong')).toContainText('39.97');
@@ -134,7 +134,7 @@ try {
   });
   await check('demo remains isolated from active OBS input', async () => {
     await page.getByRole('button', { name: 'Demo', exact: true }).click(); await expect(page.getByText('DEMO PREVIEW', { exact: true })).toBeVisible();
-    await expect(page.locator('.overlay-key.pressed').first()).toBeVisible(); await expect(overlay.locator('.overlay-key.pressed')).toHaveCount(0);
+    await expect(page.locator('.preview-viewport .overlay-key.pressed').first()).toBeVisible(); await expect(overlay.locator('.overlay-key.pressed')).toHaveCount(0);
     await page.getByRole('button', { name: 'Live', exact: true }).click();
   });
   await check('OBS receives real transport events and configuration updates', async () => {

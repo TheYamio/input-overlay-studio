@@ -1,0 +1,26 @@
+{
+  "label": "full-keyboard",
+  "production": true,
+  "chromium": "156.0.8078.4",
+  "results": [
+    {
+      "name": "overlay-full-100-key-keyboard",
+      "seconds": 15,
+      "transportHz": 121.4,
+      "mainThreadBusyPercent": 6.97,
+      "scriptMsPerSecond": 5.518,
+      "layoutMsPerSecond": 0.788,
+      "styleMsPerSecond": 16.236,
+      "appRafCallbacks": 900,
+      "frameP50Ms": 16.69999999999891,
+      "frameP95Ms": 16.700000000000728,
+      "frameP99Ms": 16.800000000000182,
+      "longTasks": 0,
+      "maxLongTaskMs": 0,
+      "heapMiB": 2.99,
+      "domNodes": 1124,
+      "nodeGrowth": 0
+    }
+  ],
+  "errors": []
+}

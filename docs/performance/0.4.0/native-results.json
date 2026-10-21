@@ -1,0 +1,17 @@
+{
+  "results": [
+    "native executable starts HTTP, WebSocket and Raw Input thread",
+    "compiled frontend uses the actual Rust server",
+    "embedded keycap artwork is accepted and saved by the actual native backend",
+    "shared artwork and flips persist through the actual native backend",
+    "incorrect token is rejected by native authentication",
+    "native revision checks reject stale writes and invalid full configurations",
+    "native ordered snapshots expose validated current state after authentication",
+    "native restart restores saved profiles and web client reconnects",
+    "compiled transparent OBS entry is served locally",
+    "native Tauri window starts and Studio bootstraps authentication",
+    "closing the actual native editor keeps capture and the OBS source running"
+  ],
+  "errors": [],
+  "physicalDevicesVerified": false
+}

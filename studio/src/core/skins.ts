@@ -1,6 +1,6 @@
 import type { OverlayModule, StudioDocument } from './config';
 import type { ElementStyle, ImageAsset, ImageSettings } from './visual';
-import { rasterDimensions } from './raster';
+import { rasterDimensions } from './raster.ts';
 
 export interface Cap { id: string; code: number; label: string; x: number; y: number; w: number; h: number; style?: ElementStyle; imageEnabled?: boolean }
 export function capsFor(m: OverlayModule): { caps: Cap[]; w: number; h: number } {
@@ -53,4 +53,10 @@ export async function readImageAsset(file: File): Promise<ImageAsset> {
     }
     return { name: file.name.slice(0, 100), data, width: canvas.width, height: canvas.height };
   } finally { URL.revokeObjectURL(url); }
+}
+
+/** A diagonal square covers every layout corner at any rotation, including narrow layouts. */
+export function tilePlane(w: number, h: number, x: number, y: number) {
+  const size = Math.ceil(Math.hypot(w, h)) + 2, left = (w - size) / 2, top = (h - size) / 2;
+  return { left, top, size, position: `${-left + x}px ${-top + y}px` };
 }

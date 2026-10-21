@@ -40,7 +40,7 @@ try {
     await page.getByLabel('Customize this key', { exact: true }).check();
     await page.getByLabel('Key Accent color', { exact: true }).fill('#ff6600');
     await expect.poll(() => keyboard().keys[0].style?.accent).toBe('#ff6600');
-    const color = await page.locator('[data-key="87"]').evaluate(el => ({ bg: getComputedStyle(el.querySelector('.key-surface')).backgroundColor, label: getComputedStyle(el.querySelector('.key-label')).opacity, accent: el.style.getPropertyValue('--active-bg') }));
+    const color = await page.locator('.preview-viewport [data-key="87"]').evaluate(el => ({ bg: getComputedStyle(el.querySelector('.key-surface')).backgroundColor, label: getComputedStyle(el.querySelector('.key-label')).opacity, accent: el.style.getPropertyValue('--active-bg') }));
     expect(color).toEqual({ bg: 'rgba(22, 27, 32, 0)', label: '1', accent: '#ff6600' });
     await page.getByLabel('Customize this key', { exact: true }).uncheck();
   });

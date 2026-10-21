@@ -83,8 +83,13 @@ pub fn valid_document(d: &Value) -> bool {
     for p in profiles.iter().chain(presets) {
         let modules = p["modules"].as_array().unwrap();
         if !unique(modules) { return false; }
+        let mut artwork_groups = std::collections::HashMap::new();
         for m in modules {
             if !unique(m["keys"].as_array().unwrap()) { return false; }
+            if let Some(group) = m["image"]["groupId"].as_str() {
+                if !matches!(m["type"].as_str(), Some("keyboard" | "mouse")) { return false; }
+                if artwork_groups.insert(group, &m["image"]).is_some_and(|previous| previous != &m["image"]) { return false; }
+            }
             if let Some(id) = m["image"]["assetId"].as_str().filter(|id| !id.is_empty()) { if candidate["assets"].get(id).is_none() { return false; } }
         }
     }
@@ -94,6 +99,21 @@ pub fn valid_document(d: &Value) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn artwork_groups_require_identical_settings_and_interactive_members() {
+        let mut d: Value = serde_json::from_str(include_str!("../schema/default-v2.json")).unwrap();
+        assert!(valid_document(&d)); // Old v2 files do not need group/flip fields.
+        let mut image = d["profiles"][0]["modules"][0]["image"].clone(); image["groupId"] = json!("shared"); image["flipX"] = json!(true);
+        d["profiles"][0]["modules"][0]["image"] = image.clone(); d["profiles"][0]["modules"][1]["image"] = image.clone(); assert!(valid_document(&d));
+        d["profiles"][0]["modules"][1]["image"]["opacity"] = json!(0.25); assert!(!valid_document(&d));
+        d["profiles"][0]["modules"][1]["image"] = image.clone(); d["profiles"][0]["modules"][2]["image"] = image; assert!(!valid_document(&d));
+    }
+    #[test]
+    fn image_flip_fields_require_booleans() {
+        let mut d: Value = serde_json::from_str(include_str!("../schema/default-v2.json")).unwrap();
+        d["profiles"][0]["modules"][0]["image"]["flipY"] = json!(1); assert!(!valid_document(&d));
+        d["profiles"][0]["modules"][0]["image"]["flipY"] = json!(false); assert!(valid_document(&d));
+    }
     #[test]
     fn full_contract_rejects_broken_modules_and_settings() {
         let d: Value = serde_json::from_str(include_str!("../schema/default-v2.json")).unwrap(); assert!(valid_document(&d));

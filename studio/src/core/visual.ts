@@ -15,6 +15,7 @@ export const defaultAppearance = () => ({ backgroundOpacity: 1, textColor: '#d9e
 export const elementStyleSchema = appearanceSchema.extend({ accent: color, background: color, radius: z.number().min(0).max(100), effect: z.enum(effects) }).partial();
 export type ElementStyle = z.infer<typeof elementStyleSchema>;
 export const imageSettingsSchema = z.object({
+  groupId: z.string().min(1).max(80).optional(), flipX: z.boolean().optional(), flipY: z.boolean().optional(),
   enabled: z.boolean(), assetId: z.string().max(80), fit: z.enum(['Cover', 'Contain', 'Original', 'Tile']),
   scale: z.number().min(.05).max(8), x: z.number().min(-5000).max(5000), y: z.number().min(-5000).max(5000), rotation: z.number().min(-180).max(180),
   opacity: z.number().min(0).max(1), blend: z.enum(['normal', 'multiply', 'screen', 'soft-light', 'overlay']),

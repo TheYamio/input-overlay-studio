@@ -364,6 +364,17 @@
                   },
                   "type": "object",
                   "properties": {
+                    "groupId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "flipX": {
+                      "type": "boolean"
+                    },
+                    "flipY": {
+                      "type": "boolean"
+                    },
                     "enabled": {
                       "type": "boolean"
                     },
@@ -1420,6 +1431,17 @@
                   },
                   "type": "object",
                   "properties": {
+                    "groupId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "flipX": {
+                      "type": "boolean"
+                    },
+                    "flipY": {
+                      "type": "boolean"
+                    },
                     "enabled": {
                       "type": "boolean"
                     },

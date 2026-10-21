@@ -213,7 +213,7 @@ async fn handle_connection(
                             break false;
                         } else if auth_token.is_empty() || token == auth_token {
                             let _ = write
-                                .send(Message::Text(r#"{"type":"auth_response","status":"success","protocol":4,"state_snapshot":true,"studio_revisions":true}"#.into()))
+                                .send(Message::Text(r#"{"type":"auth_response","status":"success","protocol":4,"state_snapshot":true,"studio_revisions":true,"studio_visuals":true}"#.into()))
                                 .await;
                             tracing::info!("client authenticated from {addr}");
                             break true;

@@ -1,0 +1,119 @@
+{
+  "obsVersion": "32.2.2",
+  "results": [
+    {
+      "name": "actual OBS Browser Source loads the production overlay and authenticates",
+      "passed": true
+    },
+    {
+      "name": "CEF output contains overlay graphics and an alpha-transparent background",
+      "passed": true
+    },
+    {
+      "name": "actual OBS 2560×1440 source preserves the logical scene proportions",
+      "passed": true
+    },
+    {
+      "name": "actual CEF paints one embedded image across keycaps with transparent gaps",
+      "passed": true
+    },
+    {
+      "name": "actual CEF shares and mirrors artwork across modules with transparent gaps",
+      "passed": true
+    },
+    {
+      "name": "OBS applies sensitivity/profile changes without refreshing the source",
+      "passed": true
+    },
+    {
+      "name": "OBS reconnects to a restarted native capture server without an editor",
+      "passed": true
+    }
+  ],
+  "base": {
+    "width": 1920,
+    "height": 1080,
+    "transparent": 1769186,
+    "visible": 304293,
+    "bounds": {
+      "left": 440,
+      "right": 1514,
+      "top": 400,
+      "bottom": 931
+    },
+    "sensitivityHash": 5538213,
+    "keycapSamples": [
+      [
+        22,
+        27,
+        32,
+        255
+      ],
+      [
+        22,
+        27,
+        32,
+        255
+      ],
+      [
+        22,
+        27,
+        32,
+        255
+      ],
+      [
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "larger": {
+    "width": 2560,
+    "height": 1440,
+    "transparent": 3144028,
+    "visible": 542210,
+    "bounds": {
+      "left": 586,
+      "right": 2018,
+      "top": 533,
+      "bottom": 1242
+    },
+    "sensitivityHash": 9996726,
+    "keycapSamples": [
+      [
+        22,
+        27,
+        32,
+        255
+      ],
+      [
+        22,
+        27,
+        32,
+        255
+      ],
+      [
+        22,
+        27,
+        32,
+        255
+      ],
+      [
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "stats": {
+    "activeFps": 60.0000024000001,
+    "renderTotalFrames": 643,
+    "renderSkippedFrames": 0
+  },
+  "physicalDevicesVerified": false,
+  "recordingTested": false,
+  "sourceURLContainsDemo": false
+}

@@ -1,7 +1,9 @@
+import { artworkBounds } from '../core/artwork-groups';
+import { inputPreview, previewDepth, type PreviewState } from '../core/preview';
 import { cm360, type OverlayModule, type Profile, type StudioDocument } from '../core/config';
 import { InputEngine, PointRing, type InputEvent } from '../core/input';
 import './overlay.css';
-import { capsFor, imagePlacement, resolvedStyle, rgba, type Cap } from '../core/skins';
+import { capsFor, imagePlacement, resolvedStyle, rgba, tilePlane, type Cap } from '../core/skins';
 
 class Trail {
   readonly points = new PointRing(2048);
@@ -87,6 +89,8 @@ class Trail {
 
 function mixColor(a: string, b: string, t: number) { return `rgb(${[1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t)).join(',')})`; }
 
+type Control = { el: HTMLElement; code: number; mouse: boolean; previous: number; flashUntil: number; wheelMs: number };
+
 export class Scene {
   private document!: StudioDocument;
   private profile!: Profile;
@@ -94,7 +98,10 @@ export class Scene {
   private trails = new Map<string, Trail>();
   private contents = new Map<string, string>();
   private moduleTypes = new Map<string, OverlayModule["type"]>();
-  private controls: { el: HTMLElement; code: number; mouse: boolean; previous: number; flashUntil: number; wheelMs: number }[] = [];
+  private controls: Control[] = [];
+  private controlByElement = new WeakMap<HTMLElement, Control>();
+  private capVersions = new Map<string, { signature: string; assetData?: string }>();
+  private distanceFormats = new Map<number, Intl.NumberFormat>();
   private distances: { el: HTMLElement; module: OverlayModule }[] = [];
   private measure = document.createElement('canvas').getContext('2d')!;
   private assetUrls = new Map<string, { data: string; url: string }>();
@@ -105,6 +112,10 @@ export class Scene {
   private lastFrame = 0;
   private lastRevision = -1;
   private lastDistance = -1;
+  private artworkModules: OverlayModule[] = [];
+  private artworkRegions = new Map<string, ReturnType<typeof artworkBounds>>();
+  private previewState = inputPreview();
+  private previewModuleId?: string;
   private dirty = true;
   private listener = (e: InputEvent, now: number) => {
     this.trails.forEach(t => t.input(e, now));
@@ -118,7 +129,10 @@ export class Scene {
   constructor(private root: HTMLElement, readonly engine: InputEngine) {
     root.classList.add('overlay-scene'); this.engine.listeners.add(this.listener); window.addEventListener('resize', this.resizeOutput);
   }
-  update(d: StudioDocument, p: Profile) {
+  setPreview(state: PreviewState, moduleId?: string) { this.previewState = state; this.previewModuleId = moduleId; this.dirty = true; this.wake(); }
+  private overridden(el: HTMLElement) { return this.previewState.mode !== 'Input' && (!this.previewModuleId || el.closest<HTMLElement>('[data-module-id]')?.dataset.moduleId === this.previewModuleId); }
+  update(d: StudioDocument, p: Profile, artworkModules = p.modules) {
+    this.artworkModules = artworkModules; this.artworkRegions.clear();
     const profileChanged = this.profile && this.profile.id !== p.id;
     this.document = d; this.profile = p; this.engine.dpi = p.dpi;
     this.wheelDuration = Math.max(50, ...p.modules.filter(m => m.type === 'mouse').map(m => m.wheelDuration));
@@ -126,17 +140,17 @@ export class Scene {
     for (const [id, cached] of this.assetUrls) if (!d.assets[id] || d.assets[id].data !== cached.data) { URL.revokeObjectURL(cached.url); this.assetUrls.delete(id); }
     if (profileChanged) {
       this.root.replaceChildren(); this.nodes.clear(); this.trails.clear(); this.contents.clear(); this.moduleTypes.clear();
-      this.controls = []; this.distances = [];
+      this.controls = []; this.distances = []; this.capVersions.clear();
     }
     const ids = new Set(p.modules.map(m => m.id));
     for (const [id, node] of this.nodes) {
-      if (!ids.has(id)) { node.remove(); this.nodes.delete(id); this.trails.delete(id); this.contents.delete(id); this.moduleTypes.delete(id); }
+      if (!ids.has(id)) { node.remove(); this.nodes.delete(id); this.trails.delete(id); this.contents.delete(id); this.moduleTypes.delete(id); this.capVersions.delete(id); }
     }
     let index = 0;
     for (const m of [...p.modules].sort((a, b) => a.z - b.z)) {
       let el = this.nodes.get(m.id);
       if (el && this.moduleTypes.get(m.id) !== m.type) {
-        el.remove(); this.nodes.delete(m.id); this.trails.delete(m.id); this.contents.delete(m.id); el = undefined;
+        el.remove(); this.nodes.delete(m.id); this.trails.delete(m.id); this.contents.delete(m.id); this.capVersions.delete(m.id); el = undefined;
       }
       if (!el) {
         el = document.createElement('div'); el.dataset.moduleId = m.id;
@@ -166,7 +180,12 @@ export class Scene {
       }
       if (m.type === 'distance') { el.classList.add('metric'); const metric = this.distances.find(v => v.module.id === m.id); if (metric) metric.module = m; }
       if (m.type === 'sensitivity') el.classList.add('sensitivity-strip');
-      if (m.type === 'keyboard' || m.type === 'mouse') this.renderCaps(el, m);
+      if (m.type === 'keyboard' || m.type === 'mouse') {
+        const signature = JSON.stringify([m, m.image.groupId ? this.artworkRegion(m) : null]), assetData = d.assets[m.image.assetId]?.data, cached = this.capVersions.get(m.id);
+        if (cached?.signature !== signature || cached.assetData !== assetData) {
+          this.renderCaps(el, m); this.capVersions.set(m.id, { signature, assetData });
+        }
+      }
       const trail = this.trails.get(m.id);
       if (trail) { trail.module = m; this.sizeTrail(trail); }
       const at = this.root.children[index];
@@ -208,17 +227,19 @@ export class Scene {
       }
     } else outline?.remove();
     const ids = new Set(caps.map(k => k.id));
-    for (const child of group.querySelectorAll<HTMLElement>('.overlay-key')) if (!ids.has(child.dataset.capId!)) child.remove();
+    const keys = new Map([...group.querySelectorAll<HTMLElement>('.overlay-key')].map(key => [key.dataset.capId!, key]));
+    for (const [id, child] of keys) if (!ids.has(id)) child.remove();
     for (const cap of caps) {
-      let key = [...group.querySelectorAll<HTMLElement>('.overlay-key')].find(k => k.dataset.capId === cap.id);
+      let key = keys.get(cap.id);
       if (!key) {
         key = document.createElement('div'); key.className = 'overlay-key'; key.dataset.capId = cap.id;
         const surface = document.createElement('div'); surface.className = 'key-surface';
         const active = document.createElement('div'); active.className = 'key-active'; surface.append(active);
         const label = document.createElement('span'); label.className = 'key-label'; key.append(surface, label); group.append(key);
-        this.controls.push({ el: key, code: cap.code, mouse: m.type === 'mouse', previous: -1, flashUntil: 0, wheelMs: m.wheelDuration });
+        const control = { el: key, code: cap.code, mouse: m.type === 'mouse', previous: -1, flashUntil: 0, wheelMs: m.wheelDuration };
+        this.controls.push(control); this.controlByElement.set(key, control);
       }
-      const control = this.controls.find(c => c.el === key)!; control.code = cap.code; control.wheelMs = m.wheelDuration;
+      const control = this.controlByElement.get(key)!; control.code = cap.code; control.wheelMs = m.wheelDuration;
       if (m.type === 'mouse') key.dataset.button = `${cap.code}`; else key.dataset.key = `${cap.code}`;
       key.querySelector('.key-label')!.textContent = cap.label;
       Object.assign(key.style, { position: 'absolute', left: `${cap.x}px`, top: `${cap.y}px`, width: `${cap.w}px`, height: `${cap.h}px` });
@@ -230,6 +251,12 @@ export class Scene {
       this.texture(key, cap, m, w, h);
     }
   }
+  private artworkRegion(m: OverlayModule) {
+    const id = m.image.groupId!;
+    let bounds = this.artworkRegions.get(id);
+    if (!bounds) { bounds = artworkBounds(m, this.artworkModules); this.artworkRegions.set(id, bounds); }
+    return bounds;
+  }
   private texture(key: HTMLElement, cap: Cap, m: OverlayModule, w: number, h: number) {
     const settings = m.image, asset = this.document.assets[settings.assetId], surface = key.querySelector('.key-surface')!;
     let art = surface.querySelector<HTMLElement>('.key-art');
@@ -238,7 +265,14 @@ export class Scene {
     key.style.setProperty('--image-opacity', `${settings.opacity}`); key.style.setProperty('--press-tint', `${settings.pressTint}`);
     if (!enabled) { art?.remove(); return; }
     if (!art) { art = document.createElement('div'); art.className = 'key-art'; surface.prepend(art); }
+    let left = -cap.x, top = -cap.y, planeScale = 1;
+    if (settings.groupId) {
+      const unit = Math.min(m.w / w, m.h / h);
+      const bounds = this.artworkRegion(m);
+      left += (bounds.x - m.x) / unit; top += (bounds.y - m.y) / unit; planeScale = 1 / unit; w = bounds.w; h = bounds.h;
+    }
     const url = this.assetUrl(settings.assetId), rect = imagePlacement(settings, asset, w, h);
+    const transform = `rotate(${settings.rotation}deg) scale(${settings.flipX ? -1 : 1},${settings.flipY ? -1 : 1})`;
     art.style.mixBlendMode = settings.blend;
     art.style.setProperty('--image-brightness', `${settings.brightness}`); art.style.setProperty('--image-contrast', `${settings.contrast}`); art.style.setProperty('--image-saturation', `${settings.saturation}`);
     const signature = `${url}:${settings.fit === 'Tile'}`;
@@ -248,12 +282,12 @@ export class Scene {
       const tint = document.createElement('div'); tint.className = 'image-tint'; art.append(tint); art.dataset.source = signature;
     }
     const plane = art.querySelector<HTMLElement>('.image-plane')!, image = art.querySelector<HTMLElement>('.image-content')!, tint = art.querySelector<HTMLElement>('.image-tint')!;
-    Object.assign(plane.style, { left: `${-cap.x}px`, top: `${-cap.y}px`, width: `${w}px`, height: `${h}px` });
+    Object.assign(plane.style, { left: `${left}px`, top: `${top}px`, width: `${w}px`, height: `${h}px`, transformOrigin: 'top left', transform: `scale(${planeScale})` });
     if (settings.fit === 'Tile') {
-      // Overscan keeps rotated patterns filled even at the layout corners.
-      Object.assign(image.style, { left: `${-w * 4}px`, top: `${-h * 4}px`, width: `${w * 9}px`, height: `${h * 9}px`, backgroundImage: `url("${url}")`, backgroundSize: `${rect.width}px ${rect.height}px`, backgroundRepeat: 'repeat', backgroundPosition: `${w * 4 + settings.x}px ${h * 4 + settings.y}px`, transformOrigin: 'center', transform: `rotate(${settings.rotation}deg)` });
+      const tile = tilePlane(w, h, settings.x, settings.y);
+      Object.assign(image.style, { left: `${tile.left}px`, top: `${tile.top}px`, width: `${tile.size}px`, height: `${tile.size}px`, backgroundImage: `url("${url}")`, backgroundSize: `${rect.width}px ${rect.height}px`, backgroundRepeat: 'repeat', backgroundPosition: tile.position, transformOrigin: 'center', transform });
     } else {
-      Object.assign(image.style, { left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.width}px`, height: `${rect.height}px`, backgroundImage: `url("${url}")`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', backgroundPosition: '0 0', transformOrigin: 'center', transform: `rotate(${settings.rotation}deg)` });
+      Object.assign(image.style, { left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.width}px`, height: `${rect.height}px`, backgroundImage: `url("${url}")`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', backgroundPosition: '0 0', transformOrigin: 'center', transform });
     }
     tint.style.background = rgba(settings.tint, settings.tintOpacity);
   }
@@ -270,7 +304,6 @@ export class Scene {
   }
   private fitTextModule(el: HTMLElement, m: OverlayModule) {
     const content = el.querySelector<HTMLElement>('.module-text-content'); if (!content || !m.visible) return;
-    content.style.transform = 'none';
     const width = content.scrollWidth, height = content.scrollHeight;
     const availableW = Math.max(1, m.w - 8 - m.appearance.borderWidth * 2), availableH = Math.max(1, m.h - 8 - m.appearance.borderWidth * 2);
     const scale = m.appearance.autoFitText ? Math.min(1, availableW / Math.max(1, width), availableH / Math.max(1, height)) : 1;
@@ -290,7 +323,7 @@ export class Scene {
     if (now - this.engine.lastWheel > this.wheelDuration && (this.engine.buttons[6] || this.engine.buttons[7])) { this.engine.buttons[6] = this.engine.buttons[7] = 0; this.engine.revision++; }
     if (this.lastRevision !== this.engine.revision || this.dirty || this.engine.buttons[6] || this.engine.buttons[7]) {
       for (const control of this.controls) {
-        const value = control.mouse ? (control.code >= 6 && now - this.engine.lastWheel >= control.wheelMs ? 0 : this.engine.buttons[control.code]) : this.engine.keys[control.code];
+        const value = this.overridden(control.el) ? previewDepth(this.previewState, control.mouse, control.code)! : control.mouse ? (control.code >= 6 && now - this.engine.lastWheel >= control.wheelMs ? 0 : this.engine.buttons[control.code]) : this.engine.keys[control.code];
         if (value === control.previous) continue;
         control.el.classList.toggle('pressed', value > 0); control.el.style.setProperty('--depth', `${value * 100}%`); control.previous = value;
       }
@@ -298,14 +331,17 @@ export class Scene {
     }
     if (this.engine.distanceCm !== this.lastDistance || this.dirty) {
       for (const { el, module: m } of this.distances) {
+        if (!m.visible) continue;
         const meters = m.unit === 'm' || (m.unit === 'Auto' && this.engine.distanceCm >= 100);
-        el.textContent = `${(this.engine.distanceCm / (meters ? 100 : 1)).toLocaleString('en-US', { minimumFractionDigits: m.decimals, maximumFractionDigits: m.decimals })} ${meters ? 'm' : 'cm'}`;
-        this.fitTextModule(el.closest<HTMLElement>('.overlay-module')!, m);
+        let format = this.distanceFormats.get(m.decimals);
+        if (!format) { format = new Intl.NumberFormat('en-US', { minimumFractionDigits: m.decimals, maximumFractionDigits: m.decimals }); this.distanceFormats.set(m.decimals, format); }
+        const text = `${format.format(this.engine.distanceCm / (meters ? 100 : 1))} ${meters ? 'm' : 'cm'}`;
+        if (el.textContent !== text) { el.textContent = text; this.fitTextModule(el.closest<HTMLElement>('.overlay-module')!, m); }
       }
       this.lastDistance = this.engine.distanceCm;
     }
     let animate = false;
-    for (const control of this.controls) { const flash = control.flashUntil > now && !control.el.classList.contains('pressed'); control.el.classList.toggle('tap-flash', flash); animate ||= control.flashUntil > now; }
+    for (const control of this.controls) { const flash = !this.overridden(control.el) && control.flashUntil > now && !control.el.classList.contains('pressed'); control.el.classList.toggle('tap-flash', flash); animate ||= !this.overridden(control.el) && control.flashUntil > now; }
     this.trails.forEach(t => {
       if (!t.module.visible) return;
       const movingCamera = Math.abs(t.x - t.cameraX) + Math.abs(t.y - t.cameraY) > .1 && t.module.position === 'Follow / Recenter';

@@ -2,7 +2,7 @@
 
 ## Автоматические команды
 
-Из `studio`: `pnpm test`, `pnpm build`, `pnpm test:browser`, `pnpm test:visual`, `node scripts/performance-test.mjs`. Последняя команда запускает 60 секунд синтетического 8000 Hz ввода, измеряет время Canvas и heap после GC. Для большей длительности задайте `STUDIO_STRESS_SECONDS=3600`. В UI доступен разработческий `?diagnostics=1`, где выбираются 1000/2000/4000/8000 Hz и длительность до часа.
+Из `studio`: `pnpm test`, `pnpm build`, `pnpm test:browser`, `pnpm test:visual`, `pnpm test:performance`. Последняя команда запускает 60 секунд синтетического 8000 Hz ввода, использует production build и измеряет время JS-отрисовки и heap после GC. Эти значения не включают GPU raster/compositing. Для большей длительности задайте `STUDIO_STRESS_SECONDS=3600`. В UI доступен разработческий `?diagnostics=1`, где выбираются 1000/2000/4000/8000 Hz и длительность до часа.
 
 Из корня: `cargo test --manifest-path ws-server/src-tauri/Cargo.toml --lib`. Для используемого в этой среде LLVM toolchain: `cargo +stable-x86_64-pc-windows-gnullvm ...`, с LLVM-MinGW/bin в PATH. После release build из `studio`: `node scripts/native-test.mjs`. Тест запускает именно Rust exe на 4465/4466 с изолированными данными, без остановки чужих процессов.
 
@@ -54,3 +54,27 @@ CS2, 800 DPI, sens 1.3, yaw .022 → **39.965… cm/360**. Изменить sens
 ## Ошибки редактора 0.3.2
 
 `pnpm test:editor` проверяет необычные ID, drag/resize, блокировку чисел и режима мыши, границы при gap 0/8/30, применимость полей, длинный текст, три растровых формата, повреждённые PNG/JSON, возврат в кадр, запоздавший decode и ошибки HTTP/копирования OBS URL. Native Rust tests проверяют настоящий bind занятого порта и содержимое растровых assets. Аппаратные тесты и длительная работа в играх остаются отдельной ручной приёмкой.
+
+## Локальная кастомизация 0.3.3
+
+`pnpm test:customization` проверяет выбор/drag/resize/nudge клавиш, единый Undo и отмену жеста, блокировку геометрии, browser/native назначение, подписи, наследование отдельных полей, перенос стилей между клавишами и мышью, массовую вставку, историю ползунков и текста, reload и 1366×768. `key-binding.test.ts` проверяет L/R-модификаторы, физические позиции, numpad, навигацию и неизвестные коды.
+
+## Локальный визуальный этап 0.3.3-dev.2
+
+`pnpm test:visual-features` проверяет общую картинку между модулями разного масштаба, прозрачные зазоры, Tile на узких раскладках, полное окно редактирования, source guide/compare, отражения, Undo, изоляцию состояний от OBS, hidden members, групповой экспорт/импорт, настоящие миниатюры, разные композиции, освобождение blob URLs и 1366×768. Native и OBS smoke дополнены реальным сохранением и CEF-отрисовкой групп и отражений.
+
+## Ресурсы и финальные проверки 0.3.3-dev.3
+
+Сначала `pnpm --dir studio build`. Затем `pnpm --dir studio test:resources`: production preview на 5196, синтетический WS на 4490, отдельные сценарии простоя/ввода/общей картинки/редактора/миниатюр и повторное открытие окон. `mainThreadBusyPercent` — CDP TaskDuration / wall time: 100% означает занятый главный поток, а не весь CPU компьютера. JS heap не включает всю память браузера/GPU.
+
+В PowerShell `$env:STUDIO_BENCH_CASE='updates'` выбирает замеры изменения одного модуля на обычной/1024/3200-key сценах; `'dense'` — активный ввод на 3200 клавишах. Без переменной выполняется основной набор. `$env:STUDIO_BENCH_LABEL='after'` выбирает имя JSON, `$env:STUDIO_BENCH_SECONDS='15'` длительность этапа. Удаляйте переменную CASE перед основным набором. Данные — `studio/artifacts/resources-*.json` и `updates-*.json`.
+
+`$env:STUDIO_STRESS_SECONDS='180'; pnpm --dir studio test:performance` проверяет 1 440 000 синтетических mouse-moved событий в InputEngine. Heap после GC снимается раз в 30 секунд. Этот путь не измеряет настоящий USB polling или Rust Raw Input под аппаратной нагрузкой.
+
+`$env:STUDIO_NATIVE_RESOURCES='1'` добавляет к `node scripts/native-test.mjs` замеры дерева native + WebView2 (ресурсный сценарий требует PowerShell 7 / `pwsh.exe`), стандартное событие WM_CLOSE только для собственного тестового окна, проверку продолжающего работать OBS-источника и замер после закрытия окна. `STUDIO_NATIVE_EXE` позволяет выбрать отдельный portable exe. Тестовые данные изолированы в `.tools/native-smoke`.
+
+`$env:STUDIO_OBS_PERF_SECONDS='60'` добавляет к `node scripts/obs-test.mjs` Windows CPU/memory/GPU и OBS GetStats: native idle, общий artwork с синтетическим WS-вводом и настройки Scene 60/30 FPS. Дополнительно `$env:STUDIO_OBS_PERF_CASE='soak'` проверяет длительную работу на 30 FPS, cooldown и 3200 клавиш. OBS продолжает компоновать 60 кадров/с: Scene Animation FPS и Browser Source FPS — разные настройки. Изменение одной настройки не гарантирует уменьшения всей стоимости OBS.
+
+`cpuMachinePercent` нормирован по всем логическим CPU; `cpuCorePercent` использует 100% на одно полностью занятое логическое ядро. Суммы Working Set и GPU DedicatedUsage по PID не являются уникальной физической памятью. Нагрузка OBS включает весь отдельный OBS с его CEF, а не только оверлей. Замеры разных приложений выполняются последовательно, без параллельной сборки.
+
+`STUDIO_OBS_RESOURCE_ONLY=1` выбирает прогон OBS без acceptance PNG-readback. Вместе с CASE=soak выполняются 60/30 Scene FPS (по половине SECONDS), cooldown и предельные 3200 клавиш. Перед каждым запуском создаётся отдельная пустая коллекция `input-overlay-acceptance.json` без audio devices; после CreateInput проверяется ровно один Browser Source. Это исключает скрытые страницы прежних запусков с `shutdown:false`. Выбор коллекции записывается в user.ini OBS 32 и передаётся через `--collection`; старые коллекции остаются в тестовом portable-каталоге.

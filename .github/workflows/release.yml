@@ -1,10 +1,9 @@
-name: release ws-server
+name: legacy ws-server release (manual)
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
+# Studio releases use the verified portable ZIP from scripts/build-studio.ps1.
+# Keep the legacy server-only publisher manual so it cannot overwrite Studio releases.
 
 permissions:
   contents: write

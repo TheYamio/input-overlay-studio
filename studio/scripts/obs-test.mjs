@@ -2,7 +2,7 @@
 // No desktop/game/microphone sources, streams or recordings are created.
 import { chromium, expect } from '@playwright/test';
 import WebSocket from 'ws';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,20 @@ const obsDirectory = fileURLToPath(new URL('bin/64bit/', portable));
 await mkdir(captureData, { recursive: true }); await mkdir(artifacts, { recursive: true });
 await mkdir(new URL('config/obs-studio/plugin_config/obs-websocket/', portable), { recursive: true });
 await writeFile(new URL('config/obs-studio/plugin_config/obs-websocket/config.json', portable), JSON.stringify({ first_load: false, server_enabled: true, server_port: 4475, auth_required: true, server_password: password, alerts_enabled: false }));
-await writeFile(new URL('config/obs-studio/global.ini', portable), '[General]\nFirstRun=false\nEnableAutoUpdates=false\nMaxLogs=3\n');
+await writeFile(new URL('config/obs-studio/global.ini', portable), '[General]\nFirstRun=false\nEnableAutoUpdates=false\nMaxLogs=3\n[Basic]\nSceneCollection=Input Overlay acceptance\nSceneCollectionFile=input-overlay-acceptance\n');
+// A fresh, explicitly silent fixture prevents hidden pages and default audio
+// devices from previous portable runs from contaminating the measurement.
+await mkdir(new URL('config/obs-studio/basic/scenes/', portable), { recursive: true });
+await writeFile(new URL('config/obs-studio/basic/scenes/input-overlay-acceptance.json', portable), JSON.stringify({
+  name: 'Input Overlay acceptance', DesktopAudioDevice1: null, DesktopAudioDevice2: null,
+  AuxAudioDevice1: null, AuxAudioDevice2: null, AuxAudioDevice3: null, AuxAudioDevice4: null,
+  sources: [{ name: 'Acceptance empty', uuid: randomUUID(), id: 'scene', versioned_id: 'scene', settings: { items: [], id_counter: 0 }, mixers: 0, volume: 1, enabled: true, muted: false, hotkeys: {}, canvas_uuid: '6c69626f-6273-4c00-9d88-c5136d61696e' }],
+  groups: [], scene_order: [{ name: 'Acceptance empty' }], current_scene: 'Acceptance empty', current_program_scene: 'Acceptance empty',
+  current_transition: 'Fade', transition_duration: 300, transitions: [{ name: 'Fade', id: 'fade_transition', settings: {} }], quick_transitions: [], saved_projectors: [], modules: {},
+}));
+const userIniPath = new URL('config/obs-studio/user.ini', portable), userIni = await readFile(userIniPath, 'utf8').catch(() => '');
+const selection = 'SceneCollection=Input Overlay acceptance\nSceneCollectionFile=input-overlay-acceptance.json\n';
+await writeFile(userIniPath, /\[Basic\]\r?\n/.test(userIni) ? userIni.replace(/(\[Basic\]\r?\n)([\s\S]*?)(?=\r?\n\[|$)/, (_, heading, body) => heading + body.replace(/^SceneCollection(?:File)?=.*(?:\r?\n|$)/gm, '') + '\n' + selection) : userIni + '\n[Basic]\n' + selection);
 await writeFile(new URL('config.json', captureData), JSON.stringify({ host: '127.0.0.1', port: 4485, auth_token: token, http_enabled: true, http_port: 4486, cpu_affinity: [] }));
 const doc = initialDocument(); await writeFile(new URL('studio.json', captureData), JSON.stringify(doc));
 let capture, obs, nativeSocket, obsSocket, browser;
@@ -77,18 +90,34 @@ try {
   startCapture();
   await expect.poll(async () => { try { return (await fetch('http://127.0.0.1:4486/studio/overlay.html')).status; } catch { return 0; } }, { timeout: 15000 }).toBe(200);
   await nativeObserver();
-  obs = spawn(fileURLToPath(new URL('bin/64bit/obs64.exe', portable)), ['--portable', '--multi', '--disable-updater', '--minimize-to-tray', '--disable-missing-files-check', '--websocket_ipv4_only'], { cwd: obsDirectory, windowsHide: true, stdio: 'ignore' });
+  obs = spawn(fileURLToPath(new URL('bin/64bit/obs64.exe', portable)), ['--portable', '--multi', '--collection', 'Input Overlay acceptance', '--disable-updater', '--minimize-to-tray', '--disable-missing-files-check', '--websocket_ipv4_only'], { cwd: obsDirectory, windowsHide: true, stdio: 'ignore' });
   await connectOBS();
   const version = await request('GetVersion');
+  // The portable test collection persists between runs. shutdown:false would keep
+  // old hidden Browser Sources alive and contaminate CPU/GPU/memory measurements.
+  const oldInputs = (await request('GetInputList')).inputs;
+  if (oldInputs.some(input => !/^Overlay [0-9]+$/.test(input.inputName))) throw Error('Unexpected source in the dedicated portable test collection; refusing to change it: ' + JSON.stringify(oldInputs.map(i => ({ name:i.inputName, kind:i.inputKind }))));
+  for (const input of oldInputs) await request('RemoveInput', { inputName: input.inputName });
   const sceneName = `Input Overlay acceptance ${Date.now()}`, sourceName = `Overlay ${Date.now()}`;
   await request('CreateScene', { sceneName }); await request('SetCurrentProgramScene', { sceneName });
+  for (const scene of (await request('GetSceneList')).scenes) if (scene.sceneName !== sceneName && /^Input Overlay acceptance [0-9]+$/.test(scene.sceneName)) await request('RemoveScene', { sceneName: scene.sceneName });
   await request('SetVideoSettings', { baseWidth: 1920, baseHeight: 1080, outputWidth: 1920, outputHeight: 1080, fpsNumerator: 60, fpsDenominator: 1 });
   const url = new URL('http://127.0.0.1:4486/studio/overlay.html'); url.hash = new URLSearchParams({ ws: 'ws://127.0.0.1:4485', token }).toString();
   await check('actual OBS Browser Source loads the production overlay and authenticates', async () => {
     const kinds = await request('GetInputKindList'); expect(kinds.inputKinds).toContain('browser_source');
     await request('CreateInput', { sceneName, inputName: sourceName, inputKind: 'browser_source', sceneItemEnabled: true, inputSettings: { url: url.toString(), width: 1920, height: 1080, is_local_file: false, shutdown: false, fps_custom: true, fps: 60, css: 'body { background: rgba(0,0,0,0); margin:0; overflow:hidden; }' } });
     await expect.poll(async () => (await logs()).match(/client authenticated/g)?.length || 0, { timeout: 25000 }).toBeGreaterThanOrEqual(2);
+    expect((await request('GetInputList')).inputs.map(input => input.inputName)).toEqual([sourceName]);
   });
+  if (process.env.STUDIO_OBS_RESOURCE_ONLY === '1') {
+    // Avoid PNG readback/staging allocations from the acceptance screenshots in this run.
+    browser = await chromium.launch({ headless: true }); const maker = await browser.newPage();
+    const data = await maker.evaluate(() => { const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const ctx = c.getContext('2d'), g = ctx.createLinearGradient(0, 0, 1024, 512); g.addColorStop(0, '#ef5588'); g.addColorStop(1, '#4466ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, 1024, 512); return c.toDataURL('image/webp', .85); });
+    await browser.close(); browser = undefined;
+    doc.assets.paint = { name: 'benchmark.webp', width: 1024, height: 512, data }; const keyboard = activeProfile(doc).modules.find(m => m.type === 'keyboard'); keyboard.image = { ...keyboard.image, enabled: true, assetId: 'paint' };
+    const { measureOBS } = await import('./obs-resource.mjs');
+    await measureOBS({ request, document: doc, url, sourceName, capture, obs, artifacts, seconds: Number(process.env.STUDIO_OBS_PERF_SECONDS || 120) });
+  } else {
   browser = await chromium.launch({ headless: true }); const decoder = await browser.newPage();
   const screenshot = async (width, height, name) => {
     const response = await request('GetSourceScreenshot', { sourceName, imageFormat: 'png', imageWidth: width, imageHeight: height });
@@ -128,6 +157,16 @@ try {
     await expect.poll(async () => { const report = await screenshot(2560, 1440, 'obs-keycaps.png'); const p = report.keycapSamples; return p[0][0] > p[1][0] + 30 && p[1][0] > p[2][0] + 30 && p[3][3] === 0; }, { timeout: 10000 }).toBe(true);
     const saved = JSON.parse(await readFile(new URL('studio.json', captureData), 'utf8')); expect(saved.assets.paint.data).toBe(data);
   });
+  await check('actual CEF shares and mirrors artwork across modules with transparent gaps', async () => {
+    const grouped = structuredClone(doc), modules = activeProfile(grouped).modules, keyboard = modules[0], mouse = modules[1]; modules.slice(2).forEach(m => m.visible = false);
+    Object.assign(keyboard, { x: 100, y: 200, w: 340, h: 100, keys: [65, 66, 67].map((code, i) => ({ id: String(code), code, label: '', x: i * 60, y: 0, w: 50, h: 50 })) }); Object.assign(mouse, { x: 700, y: 200, w: 300, h: 110 });
+    keyboard.appearance.backgroundOpacity = mouse.appearance.backgroundOpacity = 0; keyboard.appearance.borderWidth = mouse.appearance.borderWidth = 0;
+    keyboard.image = { ...keyboard.image, groupId: 'obs-shared', flipX: false }; mouse.image = structuredClone(keyboard.image);
+    const pixels = async filename => { const response = await request('GetSourceScreenshot', { sourceName, imageFormat: 'png', imageWidth: 1920, imageHeight: 1080 }); await writeFile(new URL(filename, artifacts), Buffer.from(response.imageData.split(',')[1], 'base64')); return decoder.evaluate(async data => { const image = await createImageBitmap(await (await fetch(data)).blob()), c = new OffscreenCanvas(1920, 1080), ctx = c.getContext('2d'); ctx.drawImage(image, 0, 0); return [[135, 215], [725, 215], [500, 230]].map(([x, y]) => [...ctx.getImageData(x, y, 1, 1).data]); }, response.imageData); };
+    await saveNativeDocument(grouped, 20); await expect.poll(async () => { const p = await pixels('obs-shared-artwork.png'); return p[0][0] > p[1][0] + 120 && p[2][3] === 0; }, { timeout: 10000 }).toBe(true);
+    keyboard.image.flipX = mouse.image.flipX = true; await saveNativeDocument(grouped, 21); await expect.poll(async () => { const p = await pixels('obs-shared-flipped.png'); return p[0][2] > p[1][2] + 120 && p[2][3] === 0; }, { timeout: 10000 }).toBe(true);
+    await saveNativeDocument(doc, 22);
+  });
   await check('OBS applies sensitivity/profile changes without refreshing the source', async () => {
     const before = larger.sensitivityHash; activeProfile(doc).sensitivity = 2.6;
     await saveNativeDocument(doc, 1);
@@ -145,9 +184,14 @@ try {
     const restored = await screenshot(2560, 1440, 'obs-reconnected.png'); expect(restored.visible).toBeGreaterThan(1000); expect(restored.keycapSamples[0][0]).toBeGreaterThan(restored.keycapSamples[2][0] + 50); expect(restored.keycapSamples[3][3]).toBe(0);
   });
   const stats = await request('GetStats');
+  if (process.env.STUDIO_OBS_PERF_SECONDS) {
+    const { measureOBS } = await import('./obs-resource.mjs');
+    await measureOBS({ request, document: doc, url, sourceName, capture, obs, artifacts, seconds: Number(process.env.STUDIO_OBS_PERF_SECONDS) });
+  }
   const report = { obsVersion: version.obsVersion, results, base, larger, stats: { activeFps: stats.activeFps, renderTotalFrames: stats.renderTotalFrames, renderSkippedFrames: stats.renderSkippedFrames }, physicalDevicesVerified: false, recordingTested: false, sourceURLContainsDemo: false };
   await writeFile(new URL('obs-results.json', artifacts), JSON.stringify(report, null, 2));
   console.log(`${results.length} actual OBS checks passed (OBS ${version.obsVersion}).`);
+  }
 } finally {
   for (const pending of requests.values()) clearTimeout(pending.timeout);
   nativeSocket?.close(); obsSocket?.close(); await browser?.close(); await stop(obs); await stop(capture);

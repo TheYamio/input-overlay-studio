@@ -1,0 +1,997 @@
+{
+  "syntheticInput": true,
+  "hardwarePollingVerified": false,
+  "note": "OBS plus CEF process-tree CPU measured by Windows process accounting; 100% core = one logical CPU. Working-set and GPU per-process allocation sums are not unique physical memory. No stream or recording.",
+  "records": [
+    {
+      "name": "shared-artwork-30-fps-soak",
+      "sourceWidth": 1920,
+      "sourceHeight": 1080,
+      "samples": 21,
+      "transportHz": 123.6,
+      "obsActiveFps": 60,
+      "obsAverageFrameRenderMs": 0.108,
+      "renderFrames": 7200,
+      "renderSkippedFrames": 0,
+      "obsReportedCpuPercent": 0.679,
+      "obsReportedMemoryMiB": 244.46,
+      "obsAndChildren": {
+        "seconds": 121.133,
+        "processCount": 15,
+        "exitedProcessesDuringSample": false,
+        "cpuCorePercent": 29.603,
+        "cpuMachinePercent": 1.85,
+        "summedWorkingSetMiB": 949.75,
+        "privateCommitMiB": 981.61
+      },
+      "native": {
+        "seconds": 121.903,
+        "processCount": 1,
+        "exitedProcessesDuringSample": false,
+        "cpuCorePercent": 0.231,
+        "cpuMachinePercent": 0.014,
+        "summedWorkingSetMiB": 19.93,
+        "privateCommitMiB": 8.34
+      },
+      "gpuSamples": [
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 2,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 435.05859375,
+          "sharedMiB": 127.90625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 314126336,
+              "SharedUsage": 109731840
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 142065664,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 2,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 443.68359375,
+          "sharedMiB": 128.03125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 314322944,
+              "SharedUsage": 109862912
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 436.30859375,
+          "sharedMiB": 128.03125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315437056,
+              "SharedUsage": 109862912
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 142065664,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 444.74609375,
+          "sharedMiB": 128.03125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315437056,
+              "SharedUsage": 109862912
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 436.56640625,
+          "sharedMiB": 128.15625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315707392,
+              "SharedUsage": 109993984
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 142065664,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.00390625,
+          "sharedMiB": 128.28125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315707392,
+              "SharedUsage": 110125056
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.00390625,
+          "sharedMiB": 128.28125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315707392,
+              "SharedUsage": 110125056
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 2,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 436.6640625,
+          "sharedMiB": 128.40625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315809792,
+              "SharedUsage": 110256128
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 142065664,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.1015625,
+          "sharedMiB": 128.53125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315809792,
+              "SharedUsage": 110387200
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.1015625,
+          "sharedMiB": 128.53125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315809792,
+              "SharedUsage": 110387200
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.1640625,
+          "sharedMiB": 128.65625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315875328,
+              "SharedUsage": 110518272
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.1640625,
+          "sharedMiB": 128.65625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315875328,
+              "SharedUsage": 110518272
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.28125,
+          "sharedMiB": 128.65625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110518272
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 2,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.28125,
+          "sharedMiB": 128.65625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110518272
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.28125,
+          "sharedMiB": 128.65625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110518272
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 436.84375,
+          "sharedMiB": 128.65625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110518272
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 142065664,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 436.84375,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 142065664,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 445.28125,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 150913024,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 1,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 816.53125,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 540196864,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 3,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 824.96875,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 549044224,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 2,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 841.84375,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 566738944,
+              "SharedUsage": 24387584
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cooldown-after-soak",
+      "sourceWidth": 1920,
+      "sourceHeight": 1080,
+      "samples": 3,
+      "transportHz": 0,
+      "obsActiveFps": 60,
+      "obsAverageFrameRenderMs": 0.078,
+      "renderFrames": 900,
+      "renderSkippedFrames": 0,
+      "obsReportedCpuPercent": 0.541,
+      "obsReportedMemoryMiB": 236.62,
+      "obsAndChildren": {
+        "seconds": 16.122,
+        "processCount": 15,
+        "exitedProcessesDuringSample": false,
+        "cpuCorePercent": 8.916,
+        "cpuMachinePercent": 0.557,
+        "summedWorkingSetMiB": 934.13,
+        "privateCommitMiB": 977.97
+      },
+      "native": {
+        "seconds": 16.881,
+        "processCount": 1,
+        "exitedProcessesDuringSample": false,
+        "cpuCorePercent": 0,
+        "cpuMachinePercent": 0,
+        "summedWorkingSetMiB": 19.95,
+        "privateCommitMiB": 8.34
+      },
+      "gpuSamples": [
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 850.28125,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 575586304,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 850.28125,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 575586304,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 850.28125,
+          "sharedMiB": 128.67578125,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 315998208,
+              "SharedUsage": 110538752
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 575586304,
+              "SharedUsage": 24387584
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extreme-3200-keys-active",
+      "sourceWidth": 1920,
+      "sourceHeight": 1080,
+      "samples": 3,
+      "transportHz": 123.3,
+      "obsActiveFps": 60,
+      "obsAverageFrameRenderMs": 0.087,
+      "renderFrames": 900,
+      "renderSkippedFrames": 0,
+      "obsReportedCpuPercent": 0.602,
+      "obsReportedMemoryMiB": 223.55,
+      "obsAndChildren": {
+        "seconds": 16.161,
+        "processCount": 15,
+        "exitedProcessesDuringSample": false,
+        "cpuCorePercent": 133.713,
+        "cpuMachinePercent": 8.357,
+        "summedWorkingSetMiB": 1213.82,
+        "privateCommitMiB": 1298.13
+      },
+      "native": {
+        "seconds": 16.943,
+        "processCount": 1,
+        "exitedProcessesDuringSample": false,
+        "cpuCorePercent": 0.184,
+        "cpuMachinePercent": 0.012,
+        "summedWorkingSetMiB": 19.95,
+        "privateCommitMiB": 8.34
+      },
+      "gpuSamples": [
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 15,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 919.4921875,
+          "sharedMiB": 131.81640625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 353181696,
+              "SharedUsage": 113831936
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 610975744,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 11,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 1079.8046875,
+          "sharedMiB": 131.81640625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 353181696,
+              "SharedUsage": 113831936
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 779075584,
+              "SharedUsage": 24387584
+            }
+          ]
+        },
+        {
+          "available": true,
+          "engines": {
+            "luid_0x00000000_0x0000BE76_phys_0_eng_0_engtype_3D": 8,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_10_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_11_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_12_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_13_engtype_Security_1": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_1_engtype_LegacyOverlay": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_2_engtype_VideoDecode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_3_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_4_engtype_Copy": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_5_engtype_Security": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_6_engtype_VideoEncode": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_7_engtype_OFA_0": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_8_engtype_VR": 0,
+            "luid_0x00000000_0x0000BE76_phys_0_eng_9_engtype_Copy": 0
+          },
+          "dedicatedMiB": 1172.6171875,
+          "sharedMiB": 131.81640625,
+          "processes": [
+            {
+              "Name": "pid_14744_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 353181696,
+              "SharedUsage": 113831936
+            },
+            {
+              "Name": "pid_7080_luid_0x00000000_0x0000BE76_phys_0",
+              "DedicatedUsage": 876396544,
+              "SharedUsage": 24387584
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

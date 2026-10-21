@@ -1,7 +1,7 @@
 {
   "name": "input-overlay-studio",
   "private": true,
-  "version": "0.3.2",
+  "version": "0.4.0",
   "type": "module",
   "license": "GPL-3.0-only",
   "scripts": {
@@ -13,7 +13,11 @@
     "test:browser": "node scripts/browser-test.mjs",
     "test:visual": "node scripts/visual-test.mjs",
     "test:sync": "node scripts/sync-test.mjs",
-    "test:editor": "node scripts/editor-test.mjs"
+    "test:editor": "node scripts/editor-test.mjs",
+    "test:customization": "node scripts/customization-test.mjs",
+    "test:visual-features": "node scripts/visual-features-test.mjs",
+    "test:performance": "node scripts/performance-test.mjs",
+    "test:resources": "node scripts/resource-test.mjs"
   },
   "dependencies": {
     "react": "^19.2.0",

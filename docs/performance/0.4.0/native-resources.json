@@ -1,0 +1,80 @@
+{
+  "mode": "actual-native-editor-idle",
+  "seconds": 15.421,
+  "processCount": 7,
+  "exitedProcessesDuringSample": false,
+  "cpuCorePercent": 0.101,
+  "cpuMachinePercent": 0.006,
+  "summedWorkingSetMiB": 390.18,
+  "privateCommitMiB": 246.9,
+  "processes": [
+    {
+      "id": 13004,
+      "name": "input-overlay-ws",
+      "cpuSeconds": 0.03125,
+      "workingSetBytes": 35934208,
+      "privateBytes": 11116544
+    },
+    {
+      "id": 20952,
+      "name": "msedgewebview2",
+      "cpuSeconds": 0.546875,
+      "workingSetBytes": 112820224,
+      "privateBytes": 33873920
+    },
+    {
+      "id": 13412,
+      "name": "msedgewebview2",
+      "cpuSeconds": 0.015625,
+      "workingSetBytes": 10956800,
+      "privateBytes": 2523136
+    },
+    {
+      "id": 2612,
+      "name": "msedgewebview2",
+      "cpuSeconds": 0.390625,
+      "workingSetBytes": 84180992,
+      "privateBytes": 133124096
+    },
+    {
+      "id": 19972,
+      "name": "msedgewebview2",
+      "cpuSeconds": 0.0625,
+      "workingSetBytes": 37621760,
+      "privateBytes": 11452416
+    },
+    {
+      "id": 11388,
+      "name": "msedgewebview2",
+      "cpuSeconds": 0.03125,
+      "workingSetBytes": 21356544,
+      "privateBytes": 7782400
+    },
+    {
+      "id": 20136,
+      "name": "msedgewebview2",
+      "cpuSeconds": 0.375,
+      "workingSetBytes": 106258432,
+      "privateBytes": 59019264
+    }
+  ],
+  "note": "Includes this native app and its WebView2 descendants; excludes the separate test Chromium. Working-set sums include shared pages.",
+  "afterClosingEditor": {
+    "seconds": 15.363,
+    "processCount": 1,
+    "exitedProcessesDuringSample": false,
+    "cpuCorePercent": 0.203,
+    "cpuMachinePercent": 0.013,
+    "summedWorkingSetMiB": 34.8,
+    "privateCommitMiB": 10.6,
+    "processes": [
+      {
+        "id": 13004,
+        "name": "input-overlay-ws",
+        "cpuSeconds": 0.0625,
+        "workingSetBytes": 36487168,
+        "privateBytes": 11116544
+      }
+    ]
+  }
+}

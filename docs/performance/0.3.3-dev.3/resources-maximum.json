@@ -1,0 +1,26 @@
+{
+  "label": "maximum",
+  "production": true,
+  "chromium": "156.0.8078.4",
+  "results": [
+    {
+      "name": "overlay-3200-keys-active",
+      "seconds": 15,
+      "transportHz": 124.3,
+      "mainThreadBusyPercent": 78.358,
+      "scriptMsPerSecond": 13.893,
+      "layoutMsPerSecond": 3.931,
+      "styleMsPerSecond": 73.17,
+      "appRafCallbacks": 610,
+      "frameP50Ms": 16.700000000000273,
+      "frameP95Ms": 50.100000000000364,
+      "frameP99Ms": 100.10000000000036,
+      "longTasks": 23,
+      "maxLongTaskMs": 135,
+      "heapMiB": 4.6,
+      "domNodes": 32089,
+      "nodeGrowth": 0
+    }
+  ],
+  "errors": []
+}

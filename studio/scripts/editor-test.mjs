@@ -49,7 +49,7 @@ try {
     await select('Keyboard');
     for (const gap of [0, 8, 30]) {
       await page.getByLabel('Key gap', { exact: true }).fill(String(gap)); await expect.poll(() => module('keyboard').gap).toBe(gap);
-      const inside = await page.locator('.module-keyboard').evaluate(el => {
+      const inside = await page.locator('.preview-viewport .module-keyboard').evaluate(el => {
         const box = el.getBoundingClientRect(); return [...el.querySelectorAll('.overlay-key')].every(k => { const r = k.getBoundingClientRect(); return r.right <= box.right + .5 && r.bottom <= box.bottom + .5; });
       }); expect(inside).toBe(true);
     }
@@ -61,14 +61,14 @@ try {
   });
   await check('long Distance text fits a narrow module and manual size remains clipped', async () => {
     await page.getByLabel('Caption', { exact: true }).fill('W'.repeat(100)); await page.getByLabel('Font size', { exact: true }).fill('96'); await page.getByLabel('Width', { exact: true }).fill('40'); await synced();
-    const fit = () => page.locator('.module-distance').evaluate(el => { const b = el.getBoundingClientRect(), c = el.querySelector('.module-text-content').getBoundingClientRect(); return { inside: c.right <= b.right + .5 && c.bottom <= b.bottom + .5, scale: el.querySelector('.module-text-content').style.transform, overflow: getComputedStyle(el).overflow }; });
+    const fit = () => page.locator('.preview-viewport .module-distance').evaluate(el => { const b = el.getBoundingClientRect(), c = el.querySelector('.module-text-content').getBoundingClientRect(); return { inside: c.right <= b.right + .5 && c.bottom <= b.bottom + .5, scale: el.querySelector('.module-text-content').style.transform, overflow: getComputedStyle(el).overflow }; });
     await expect.poll(async () => (await fit()).inside).toBe(true);
     await page.getByLabel('Fit text inside module', { exact: true }).uncheck(); expect((await fit()).overflow).toBe('hidden'); expect((await fit()).scale).toBe('scale(1)');
   });
   await check('Sensitivity fits both dimensions and shows only controls for its selected format', async () => {
     await select('Sensitivity'); await page.getByLabel('Format', { exact: true }).selectOption('Detailed'); await page.getByText('Text & typography', { exact: true }).click();
     await page.getByLabel('Font size', { exact: true }).fill('96'); await page.getByLabel('Width', { exact: true }).fill('60'); await page.getByLabel('Height', { exact: true }).fill('40'); await synced();
-    expect(await page.locator('.module-sensitivity').evaluate(el => { const b = el.getBoundingClientRect(), c = el.querySelector('.module-text-content').getBoundingClientRect(); return c.right <= b.right + .5 && c.bottom <= b.bottom + .5; })).toBe(true);
+    expect(await page.locator('.preview-viewport .module-sensitivity').evaluate(el => { const b = el.getBoundingClientRect(), c = el.querySelector('.module-text-content').getBoundingClientRect(); return c.right <= b.right + .5 && c.bottom <= b.bottom + .5; })).toBe(true);
     await page.getByLabel('Format', { exact: true }).selectOption('Minimal'); await expect(page.getByLabel('Game', { exact: true })).toHaveCount(0); await expect(page.getByLabel('DPI', { exact: true })).toHaveCount(0); await expect(page.getByLabel('cm/360', { exact: true })).toHaveCount(1);
   });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();

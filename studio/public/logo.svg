@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Input Overlay Studio</title>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="#151b21"/>
+  <rect x="80" y="80" width="304" height="304" rx="64" fill="#a5ef6b"/>
+  <path d="M144 176v64a32 32 0 0 0 32 32h48" fill="none" stroke="#1b2a18" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M272 232v208l58-58 40 78 49-25-40-77h82Z" fill="#f1f6ec" stroke="#151b21" stroke-width="24" stroke-linejoin="round"/>
+</svg>

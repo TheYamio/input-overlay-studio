@@ -3,6 +3,8 @@ $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 Push-Location $taskRoot
 try {
+    $version = (Get-Content -LiteralPath (Join-Path $taskRoot 'studio/package.json') -Raw | ConvertFrom-Json).version
+    if ($version -notmatch '^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$') { throw 'Invalid package version' }
     if (-not $SkipBuild) {
         Push-Location (Join-Path $taskRoot 'studio')
         try {
@@ -15,17 +17,21 @@ try {
         } finally { Pop-Location }
         $cargoArguments = @()
         if ($Toolchain) { $cargoArguments += "+$Toolchain" }
-        & cargo @cargoArguments test --manifest-path ws-server/src-tauri/Cargo.toml --lib
+        & cargo @cargoArguments test --locked --manifest-path ws-server/src-tauri/Cargo.toml --lib
         if ($LASTEXITCODE -ne 0) { throw 'Rust tests failed' }
-        & cargo @cargoArguments build --release --manifest-path ws-server/src-tauri/Cargo.toml
+        & cargo @cargoArguments build --locked --release --manifest-path ws-server/src-tauri/Cargo.toml
         if ($LASTEXITCODE -ne 0) { throw 'Rust release build failed' }
     }
     $binary = Join-Path $taskRoot 'ws-server/src-tauri/target/release/input-overlay-ws.exe'
     if (-not (Test-Path -LiteralPath $binary)) { throw 'Release binary does not exist' }
-    $package = Join-Path $taskRoot 'release/Input Overlay Studio'
+    if ((Get-Item -LiteralPath $binary).VersionInfo.ProductVersion -ne $version) { throw 'Binary version does not match package.json' }
+    if (& git status --porcelain) { throw 'Commit the release sources before packaging the corresponding source archive' }
+    $package = Join-Path $taskRoot "release/Input Overlay Studio $version"
+    if (Test-Path -LiteralPath $package) { throw "Package already exists: $package. Use a fresh release version or move the existing package first." }
     New-Item -ItemType Directory -Path $package -Force | Out-Null
     Copy-Item -LiteralPath $binary -Destination (Join-Path $package 'Input Overlay Studio.exe')
     $loader = Join-Path $taskRoot 'ws-server/src-tauri/target/release/WebView2Loader.dll'
+    if (-not (Test-Path -LiteralPath $loader)) { throw 'WebView2Loader.dll is missing from the release directory' }
     if (Test-Path -LiteralPath $loader) { Copy-Item -LiteralPath $loader -Destination $package }
     $unwind = Join-Path $taskRoot 'ws-server/src-tauri/target/release/libunwind.dll'
     if (-not (Test-Path -LiteralPath $unwind)) {
@@ -48,17 +54,13 @@ try {
             }
         }
     }
-    Compress-Archive -LiteralPath $package -DestinationPath (Join-Path $taskRoot 'release/Input-Overlay-Studio-Windows-x64.zip') -Force
-    $sourceRoot = Join-Path $taskRoot ('release/source-' + [guid]::NewGuid().ToString('N'))
-    New-Item -ItemType Directory -Path $sourceRoot -Force | Out-Null
-    $sourcePaths = & git -c core.quotepath=false ls-files --cached --others --exclude-standard
-    foreach ($relative in $sourcePaths) {
-        $sourceFile = Join-Path $taskRoot $relative
-        if (-not (Test-Path -LiteralPath $sourceFile -PathType Leaf)) { continue }
-        $destination = Join-Path $sourceRoot $relative
-        New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
-        Copy-Item -LiteralPath $sourceFile -Destination $destination
-    }
-    Compress-Archive -LiteralPath $sourceRoot -DestinationPath (Join-Path $taskRoot 'release/Input-Overlay-Studio-Source.zip') -Force
+    $archive = Join-Path $taskRoot "release/Input-Overlay-Studio-$version-Windows-x64.zip"
+    Compress-Archive -LiteralPath $package -DestinationPath $archive -Force
+    # A release source archive must correspond to the committed release, not ignored build state.
+    $source = Join-Path $taskRoot "release/Input-Overlay-Studio-$version-Source.zip"
+    & git archive --format=zip "--prefix=Input-Overlay-Studio-$version-Source/" "--output=$source" HEAD
+    if ($LASTEXITCODE -ne 0) { throw 'Source archive failed' }
+    $sums = @($archive, $source) | ForEach-Object { ((Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash.ToLowerInvariant()) + '  ' + (Split-Path -Leaf $_) }
+    $sums | Set-Content -LiteralPath (Join-Path $taskRoot "release/SHA256SUMS-$version.txt") -Encoding utf8NoBOM
     Write-Output "Packaged: $package"
 } finally { Pop-Location }
