@@ -55,6 +55,8 @@ try {
       const conflict = await request('studio_conflict', before.document, before.revision, 21); expect(conflict.document).toEqual(changed);
       const invalid = structuredClone(changed); invalid.performance = {};
       await request('studio_error', invalid, saved.revision, 22);
+      const badImage = structuredClone(changed); badImage.assets.bad = { name: 'not-image.png', width: 1, height: 1, data: 'data:image/png;base64,aGVsbG8=' };
+      await request('studio_error', badImage, saved.revision, 24);
       const after = await get(); expect(after.document).toEqual(changed); expect(after.revision).toBe(saved.revision);
       await request('studio_saved', before.document, after.revision, 23);
     } finally { ws.close(); }

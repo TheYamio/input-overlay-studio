@@ -108,7 +108,7 @@ try {
     expect(report).toEqual({ sameCanvas: true, sameKey: true, geometryPreserved: true, sameAfterResize: true, held: true, listenersAfterDispose: 0 });
   });
   await check('module properties, appearance and persistence after reload', async () => {
-    await page.getByLabel('Style', { exact: true }).selectOption('Neon Trail'); await page.getByLabel('Accent color', { exact: true }).fill('#82c7ff');
+    await page.getByLabel('Style', { exact: true }).selectOption('Neon Trail'); await page.getByLabel('Line color', { exact: true }).fill('#82c7ff');
     await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').accent).toBe('#82c7ff');
     await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); await page.getByRole('button', { name: 'Select Mouse Trail', exact: true }).click(); await expect(page.getByLabel('Style', { exact: true })).toHaveValue('Neon Trail');
   });
@@ -121,7 +121,7 @@ try {
   });
   const overlay = await context.newPage(); overlay.on('pageerror', e => errors.push(e.message));
   await check('OBS source is transparent and editor-free', async () => {
-    await page.getByRole('button', { name: /Copy OBS URL/ }).click(); const url = await page.evaluate(() => navigator.clipboard.readText());
+    await page.getByRole('button', { name: /Copy OBS URL/ }).click(); await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('overlay.html'); const url = await page.evaluate(() => navigator.clipboard.readText());
     if (url.includes('demo=')) throw Error('Demo leaked into OBS URL');
     await overlay.goto(url); await expect(overlay.locator('.overlay-module')).toHaveCount(document.profiles[0].modules.length);
     expect(await overlay.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)'); await expect(overlay.locator('nav,button,header')).toHaveCount(0);

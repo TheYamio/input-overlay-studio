@@ -1,3 +1,4 @@
+import { validateArtwork } from './artwork';
 import { MAX_MESSAGE_BYTES, utf8Bytes } from './limits';
 import { documentSchema, type StudioDocument } from './config';
 import { decodeInput, decodeSnapshot, type InputEngine } from './input';
@@ -12,6 +13,7 @@ export class InputConnection {
   private heartbeatSupported = false;
   private lastInputSequence = -1;
   private lastConfigSequence = -1;
+  private configGeneration = 0;
   private attempts = 0;
   private lastMessage = 0;
   private options?: ConnectionOptions;
@@ -82,20 +84,30 @@ export class InputConnection {
           if (sequence < this.lastConfigSequence) return;
           this.lastConfigSequence = sequence;
         }
-        if (value.origin === this.clientId && value.type === 'studio_config') return;
+        if (value.origin === this.clientId && value.type === 'studio_config') { this.configGeneration++; return; }
         const parsed = documentSchema.safeParse(value.document);
         const revision = typeof value.revision === 'string' ? value.revision : undefined;
         if (this.revisionSupported && !revision) { this.onError('Server did not provide a configuration revision.'); return; }
         if (parsed.success || value.document === null) {
-          this.revision = revision;
-          this.migrationRequired = !!value.document && typeof value.document === 'object' && 'version' in value.document && value.document.version === 1;
-          if (value.type === 'studio_conflict') { clearTimeout(this.saveTimer); this.inFlight = undefined; this.onConflict(parsed.success ? parsed.data : null, revision); }
-          else this.onDocument(parsed.success ? parsed.data : null, revision);
+          const apply = () => {
+            this.revision = revision;
+            this.migrationRequired = !!value.document && typeof value.document === 'object' && 'version' in value.document && value.document.version === 1;
+            if (value.type === 'studio_conflict') { clearTimeout(this.saveTimer); this.inFlight = undefined; this.onConflict(parsed.success ? parsed.data : null, revision); }
+            else this.onDocument(parsed.success ? parsed.data : null, revision);
+          };
+          const generation = ++this.configGeneration;
+          if (parsed.success && Object.keys(parsed.data.assets).length) {
+            void validateArtwork(parsed.data.assets).then(() => { if (this.socket === ws && generation === this.configGeneration) apply(); })
+              .catch(error => { if (this.socket === ws && generation === this.configGeneration) this.onError((error as Error).message); });
+          } else apply();
         } else this.onError('The server contains an unsupported configuration. Export your settings before replacing it.');
         return;
       }
       if (value.type === 'studio_saved') {
         if (this.inFlight && value.request_id === this.inFlight.id) {
+          if (Number.isSafeInteger(value.config_sequence) && (value.config_sequence as number) >= this.lastConfigSequence) {
+            this.lastConfigSequence = value.config_sequence as number; this.configGeneration++;
+          }
           const json = this.inFlight.json; this.inFlight = undefined; clearTimeout(this.saveTimer);
           this.revision = typeof value.revision === 'string' ? value.revision : this.revision;
           this.onSaved(json, this.revision);
@@ -136,7 +148,7 @@ export class InputConnection {
   }
   resetDistance() { if (this.authenticated) this.socket?.send(JSON.stringify({ type: 'distance_reset' })); }
   stop() {
-    this.stopped = true; clearTimeout(this.timer); clearTimeout(this.saveTimer); clearInterval(this.watchdog); this.authenticated = false; this.inFlight = undefined;
+    this.stopped = true; this.configGeneration++; clearTimeout(this.timer); clearTimeout(this.saveTimer); clearInterval(this.watchdog); this.authenticated = false; this.inFlight = undefined;
     if (this.socket) { this.socket.onclose = null; this.socket.close(); this.socket = undefined; }
     this.engine.reset();
   }

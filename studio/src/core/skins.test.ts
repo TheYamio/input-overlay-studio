@@ -4,7 +4,7 @@ import { capsFor, imagePlacement, pruneAssets, resolvedStyle } from './skins';
 import { defaultImageSettings } from './visual';
 import { exportPreset, importPreset } from './presets';
 
-const asset = { name: 'sample.png', width: 100, height: 200, data: 'data:image/png;base64,aGVsbG8=' };
+import asset from '../../../ws-server/src-tauri/schema/test-artwork.json';
 describe('visual schema and portable artwork', () => {
   it('upgrades v1 profiles and saved layouts without changing geometry or labels', () => {
     const d = initialDocument(), legacy = JSON.parse(JSON.stringify(d)); legacy.version = 1; delete legacy.assets;

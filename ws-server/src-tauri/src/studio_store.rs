@@ -114,7 +114,7 @@ mod tests {
     fn version_two_requires_bounded_embedded_raster_assets() {
         let mut d = config(); d["version"] = serde_json::json!(2);
         assert!(valid_document(&d)); d["assets"] = serde_json::json!({}); assert!(valid_document(&d));
-        d["assets"]["picture"] = serde_json::json!({"name":"picture","width":256,"height":256,"data":"data:image/webp;base64,aGVsbG8="});
+        d["assets"]["picture"] = serde_json::from_str(include_str!("../schema/test-artwork.json")).unwrap();
         assert!(valid_document(&d)); d["assets"]["picture"]["data"] = serde_json::json!("https://example.test/remote.png"); assert!(!valid_document(&d));
         d["version"] = serde_json::json!(99); assert!(!valid_document(&d));
     }

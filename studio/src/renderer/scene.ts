@@ -159,7 +159,7 @@ export class Scene {
         if (m.type === 'trail') { const trail = new Trail(m, this.engine); this.trails.set(m.id, trail); el.append(trail.canvas); }
         if (m.type === 'distance') {
           const caption = document.createElement('span'); caption.className = 'metric-caption'; caption.textContent = m.caption;
-          const value = document.createElement('strong'); el.append(caption, value); this.distances.push({ el: value, module: m });
+          const value = document.createElement('strong'), content = document.createElement('div'); content.className = 'module-text-content metric-content'; content.append(caption, value); el.append(content); this.distances.push({ el: value, module: m });
         }
         if (m.type === 'sensitivity') this.sensitivity(el, m);
         this.contents.set(m.id, signature);
@@ -171,6 +171,7 @@ export class Scene {
       if (trail) { trail.module = m; this.sizeTrail(trail); }
       const at = this.root.children[index];
       if (at !== el) this.root.insertBefore(el, at || null);
+      if (m.type === 'sensitivity' || m.type === 'distance') this.fitTextModule(el, m);
       index++;
     }
     this.controls = this.controls.filter(c => this.root.contains(c.el));
@@ -259,12 +260,23 @@ export class Scene {
   private sensitivity(el: HTMLElement, m: OverlayModule) {
     const p = this.profile, cm = cm360(p);
     el.classList.add('sensitivity-strip');
-    const add = (text: string, caption: string) => { const item = document.createElement('div'); const value = document.createElement('strong'); value.textContent = text; const sub = document.createElement('span'); sub.textContent = caption; item.append(value, sub); el.append(item); };
+    const content = document.createElement('div'); content.className = 'module-text-content sensitivity-content'; el.append(content);
+    const add = (text: string, caption: string) => { const item = document.createElement('div'); const value = document.createElement('strong'); value.textContent = text; const sub = document.createElement('span'); sub.textContent = caption; item.append(value, sub); content.append(item); };
     if (m.sensitivityStyle === 'Detailed' && m.showGame) add(p.game, p.caption || 'GAME');
     if (m.sensitivityStyle !== 'Minimal' && m.showDpi) add(p.dpi.toLocaleString('en-US'), 'DPI');
     if (m.sensitivityStyle !== 'Minimal' && m.showSens) add(p.sensitivity.toFixed(2), 'SENS');
     if (m.sensitivityStyle === 'Detailed' && m.showEdpi) add((p.dpi * p.sensitivity).toFixed(0), 'eDPI');
     if (m.showCm) add(cm === null ? 'Unknown scale' : cm.toFixed(2), 'CM / 360°');
+  }
+  private fitTextModule(el: HTMLElement, m: OverlayModule) {
+    const content = el.querySelector<HTMLElement>('.module-text-content'); if (!content || !m.visible) return;
+    content.style.transform = 'none';
+    const width = content.scrollWidth, height = content.scrollHeight;
+    const availableW = Math.max(1, m.w - 8 - m.appearance.borderWidth * 2), availableH = Math.max(1, m.h - 8 - m.appearance.borderWidth * 2);
+    const scale = m.appearance.autoFitText ? Math.min(1, availableW / Math.max(1, width), availableH / Math.max(1, height)) : 1;
+    content.style.transform = `scale(${scale})`;
+    content.style.top = `${4 + m.appearance.borderWidth + Math.max(0, (availableH - height * scale) / 2)}px`;
+    content.style.left = `${4 + m.appearance.borderWidth}px`;
   }
   private wake() {
     if (!this.disposed && !this.raf && !this.timer) this.raf = requestAnimationFrame(this.frame);
@@ -288,6 +300,7 @@ export class Scene {
       for (const { el, module: m } of this.distances) {
         const meters = m.unit === 'm' || (m.unit === 'Auto' && this.engine.distanceCm >= 100);
         el.textContent = `${(this.engine.distanceCm / (meters ? 100 : 1)).toLocaleString('en-US', { minimumFractionDigits: m.decimals, maximumFractionDigits: m.decimals })} ${meters ? 'm' : 'cm'}`;
+        this.fitTextModule(el.closest<HTMLElement>('.overlay-module')!, m);
       }
       this.lastDistance = this.engine.distanceCm;
     }

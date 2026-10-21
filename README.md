@@ -1,6 +1,6 @@
 # Input Overlay Studio
 
-Текущая версия: **0.3.1**.
+Текущая версия: **0.3.2**.
 
 Локальное Windows-приложение для визуализации ввода в OBS. Развитие [girlglock/input-overlay](https://github.com/girlglock/input-overlay), GPL-3.0. Механизмы RawInputBuffer, WebSocket-аутентификации, HTTP и аналоговых клавиатур сохранены. Оригинальный README — [README.upstream.md](README.upstream.md).
 

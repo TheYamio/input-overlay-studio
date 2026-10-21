@@ -1,6 +1,6 @@
 [package]
 name = "input-overlay-ws"
-version = "0.3.1"
+version = "0.3.2"
 description = "Input Overlay Studio - local input capture and OBS overlay editor"
 license = "GPL-3.0-only"
 authors = []
@@ -30,6 +30,8 @@ rust-embed = { version = "8", features = ["interpolate-folder-path"] }
 rand = "0.8"
 sha2 = "0.10"
 regex = "1"
+base64 = "0.22"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
 time = "=0.3.36"
 
 [target.'cfg(target_os = "linux")'.dependencies]

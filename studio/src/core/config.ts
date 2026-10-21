@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizeBounds } from './editing.ts';
 import { MAX_DOCUMENT_BYTES, MAX_IMPORT_BYTES, utf8Bytes } from './limits.ts';
 import { appearanceSchema, assetSchema, defaultAppearance, defaultImageSettings, defaultTrailAppearance, elementStyleSchema, imageSettingsSchema, mouseGeometrySchema, trailAppearanceSchema } from './visual.ts';
 
@@ -63,7 +64,8 @@ export const currentDocumentSchema = z.object({
   if (utf8Bytes(JSON.stringify(d)) > MAX_DOCUMENT_BYTES) ctx.addIssue({ code: 'custom', message: 'Configuration exceeds 1.8 MB. Remove unused images.' });
 });
 // v1 is upgraded in memory; the original storage remains available as a backup.
-export const documentSchema = z.preprocess(value => {
+export const documentSchema = z.preprocess(input => {
+  const value = normalizeBounds(input);
   if (value && typeof value === 'object' && 'version' in value && value.version === 1) {
     const migrate = (p: unknown) => {
       if (!p || typeof p !== 'object' || !('modules' in p) || !Array.isArray(p.modules)) return p;

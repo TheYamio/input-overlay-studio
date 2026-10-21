@@ -1,4 +1,5 @@
 mod input_state;
+mod artwork;
 mod motion;
 mod studio_store;
 mod studio_validation;
@@ -56,6 +57,11 @@ fn get_device_status(state: tauri::State<'_, AppState>) -> Result<DeviceStatus, 
     }
     #[cfg(not(windows))]
     { let _ = state; Err("device enumeration is currently Windows-only".into()) }
+}
+
+#[tauri::command]
+fn get_http_status(state: tauri::State<'_, AppState>) -> Option<services::http_server::HttpStatus> {
+    state.http.lock().unwrap().as_ref().map(|server| server.status())
 }
 
 //tairi io-----------------------------------------------------------------------
@@ -528,6 +534,7 @@ pub fn run() {
                     get_config,
                     get_startup_warning,
                     get_device_status,
+                    get_http_status,
                     save_config,
                     get_status,
                     get_autostart,
@@ -551,6 +558,7 @@ pub fn run() {
                     get_config,
                     get_startup_warning,
                     get_device_status,
+                    get_http_status,
                     save_config,
                     get_status,
                     get_autostart,

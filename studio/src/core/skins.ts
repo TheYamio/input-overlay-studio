@@ -1,10 +1,13 @@
 import type { OverlayModule, StudioDocument } from './config';
 import type { ElementStyle, ImageAsset, ImageSettings } from './visual';
+import { rasterDimensions } from './raster';
 
 export interface Cap { id: string; code: number; label: string; x: number; y: number; w: number; h: number; style?: ElementStyle; imageEnabled?: boolean }
 export function capsFor(m: OverlayModule): { caps: Cap[]; w: number; h: number } {
   if (m.type === 'keyboard') {
-    return { caps: m.keys.map(k => ({ ...k, w: Math.max(10, k.w + 8 - m.gap), h: Math.max(10, k.h + 8 - m.gap) })), w: Math.max(1, ...m.keys.map(k => k.x + k.w)), h: Math.max(1, ...m.keys.map(k => k.y + k.h)) };
+    // Gap changes the painted cap size; authored key anchors remain fixed.
+    const caps = m.keys.map(k => ({ ...k, w: Math.max(10, k.w + 8 - m.gap), h: Math.max(10, k.h + 8 - m.gap) }));
+    return { caps, w: Math.max(1, ...caps.map(k => k.x + k.w)), h: Math.max(1, ...caps.map(k => k.y + k.h)) };
   }
   const diagram = m.mouseMode === 'Mouse Diagram';
   const boxes = diagram ? [[18, 22, 74, 108], [128, 22, 74, 108], [96, 48, 28, 66], [12, 146, 40, 44], [12, 198, 40, 44], [86, 152, 48, 38], [86, 198, 48, 38]] : [[0, 0, 94, 62], [102, 0, 94, 62], [204, 0, 94, 62], [0, 70, 68, 40], [76, 70, 68, 40], [152, 70, 68, 40], [228, 70, 68, 40]];
@@ -30,6 +33,9 @@ export function pruneAssets(d: StudioDocument) {
 export async function readImageAsset(file: File): Promise<ImageAsset> {
   if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw Error('Choose a PNG, JPEG or WebP image.');
   if (file.size > 8_000_000) throw Error('Choose an image smaller than 8 MB.');
+  const size = rasterDimensions(`data:${file.type};base64`, new Uint8Array(await file.arrayBuffer()));
+  if (!size || !size.width || !size.height) throw Error('Image is damaged or has an unsupported raster header.');
+  if (size.width * size.height > 24_000_000) throw Error('Image exceeds 24 megapixels.');
   const url = URL.createObjectURL(file), image = new Image();
   try {
     image.src = url; await image.decode();

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { rasterDimensions } from './raster.ts';
 
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const effects = ['Instant', 'Soft Press', 'Glow', 'Pulse', 'Analog Fill'] as const;
@@ -23,7 +24,10 @@ export const imageSettingsSchema = z.object({
 export const defaultImageSettings = (): ImageSettings => ({ enabled: false, assetId: '', fit: 'Cover' as const, scale: 1, x: 0, y: 0, rotation: 0, opacity: .75, blend: 'normal' as const, brightness: 1, contrast: 1, saturation: 1, tint: '#ffffff', tintOpacity: 0, press: 'Tint' as const, pressTint: .55 });
 export type ImageSettings = z.infer<typeof imageSettingsSchema>;
 // Raster-only inline assets. No external paths, URLs or active SVG documents.
-export const assetSchema = z.object({ name: z.string().max(100), width: z.number().int().min(1).max(2048), height: z.number().int().min(1).max(2048), data: z.string().max(420_000).regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/).refine(value => value.split(',')[1]?.length % 4 === 0, 'Invalid base64 image') });
+export const assetSchema = z.object({ name: z.string().max(100), width: z.number().int().min(1).max(2048), height: z.number().int().min(1).max(2048), data: z.string().max(420_000).regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/).refine(value => value.split(',')[1]?.length % 4 === 0, 'Invalid base64 image') }).superRefine((asset, ctx) => {
+  const dimensions = rasterDimensions(asset.data);
+  if (!dimensions || dimensions.width !== asset.width || dimensions.height !== asset.height) ctx.addIssue({ code: 'custom', message: `Image “${asset.name}” has invalid raster data or dimensions.` });
+});
 export type ImageAsset = z.infer<typeof assetSchema>;
 export const mouseGeometrySchema = z.object({ x: z.number().min(0).max(1000), y: z.number().min(0).max(1000), w: z.number().min(10).max(1000), h: z.number().min(10).max(1000) }).partial();
 export const trailAppearanceSchema = z.object({

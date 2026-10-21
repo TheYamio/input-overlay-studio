@@ -79,7 +79,7 @@ pub fn valid_document(d: &Value) -> bool {
     let presets = candidate["presets"].as_array().unwrap();
     let unique = |items: &[Value]| { let mut ids = HashSet::new(); items.iter().all(|p| ids.insert(p["id"].as_str().unwrap())) };
     if !unique(profiles) || !unique(presets) || !profiles.iter().any(|p| p["id"] == candidate["activeProfileId"]) { return false; }
-    if candidate["assets"].as_object().is_some_and(|a| a.len() > 8 || a.values().any(|v| v["data"].as_str().unwrap().split_once(',').is_none_or(|(_, data)| data.len() % 4 != 0))) { return false; }
+    if candidate["assets"].as_object().is_some_and(|a| a.len() > 8 || a.values().any(|v| v["data"].as_str().unwrap().split_once(',').is_none_or(|(_, data)| data.len() % 4 != 0) || !crate::artwork::valid_asset(v))) { return false; }
     for p in profiles.iter().chain(presets) {
         let modules = p["modules"].as_array().unwrap();
         if !unique(modules) { return false; }

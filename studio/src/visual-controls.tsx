@@ -18,27 +18,28 @@ export function VRange({ label, value, min = 0, max = 1, step = .01, change }: {
 function Color({ label, value, change }: { label: string; value: string; change: (s: string) => void }) {
   return <label className="visual-color"><input type="color" aria-label={label} value={value} onChange={e => change(e.target.value)}/><span>{label}</span><code>{value}</code></label>;
 }
-export function StyleFields({ value: v, change, prefix = '' }: { value: ReturnType<typeof resolvedStyle>; change: (patch: ElementStyle) => void; prefix?: string }) {
+export function StyleFields({ value: v, change, prefix = '', kind = 'keyboard' }: { value: ReturnType<typeof resolvedStyle>; change: (patch: ElementStyle) => void; prefix?: string; kind?: OverlayModule['type'] }) {
   const name = (label: string) => `${prefix}${label}`;
+  const interactive = kind === 'keyboard' || kind === 'mouse', text = kind !== 'trail';
   return <div className="style-fields">
-    <Color label={name('Accent color')} value={v.accent} change={accent => change({ accent })}/><Color label={name('Surface color')} value={v.background} change={background => change({ background })}/>
+    <Color label={name(kind === 'trail' ? 'Line color' : 'Accent color')} value={v.accent} change={accent => change({ accent })}/><Color label={name('Surface color')} value={v.background} change={background => change({ background })}/>
     <VRange label={name('Background opacity')} value={v.backgroundOpacity} change={backgroundOpacity => change({ backgroundOpacity })}/>
-    <details className="visual-details"><summary>Text & typography</summary>
-      <label className="visual-check"><input type="checkbox" checked={v.autoFitText} onChange={e => change({ autoFitText: e.target.checked })}/>{name('Fit text inside key')}</label><Color label={name('Text color')} value={v.textColor} change={textColor => change({ textColor })}/><Color label={name('Pressed text color')} value={v.activeTextColor} change={activeTextColor => change({ activeTextColor })}/>
+    {text && <details className="visual-details"><summary>Text & typography</summary>
+      <label className="visual-check"><input type="checkbox" checked={v.autoFitText} onChange={e => change({ autoFitText: e.target.checked })}/>{name(interactive ? 'Fit text inside key' : 'Fit text inside module')}</label><Color label={name('Text color')} value={v.textColor} change={textColor => change({ textColor })}/>{interactive && <Color label={name('Pressed text color')} value={v.activeTextColor} change={activeTextColor => change({ activeTextColor })}/>}
       <VSelect label={name('Font family')} value={v.fontFamily} options={fonts} change={fontFamily => change({ fontFamily })}/>
       <div className="field-grid"><VNumber label={name('Font size')} value={v.fontSize} min={6} max={96} change={fontSize => change({ fontSize })}/><VNumber label={name('Font weight')} value={v.fontWeight} min={100} max={900} change={fontWeight => change({ fontWeight: Math.round(fontWeight) })}/><VNumber label={name('Letter spacing')} value={v.letterSpacing} min={-2} max={12} change={letterSpacing => change({ letterSpacing })}/><VNumber label={name('Text outline')} value={v.textOutline} max={3} step={.1} change={textOutline => change({ textOutline })}/><VNumber label={name('Text shadow')} value={v.textShadow} max={12} change={textShadow => change({ textShadow })}/></div>
-    </details>
+    </details>}
     <details className="visual-details"><summary>Borders & shape</summary>
-      <Color label={name('Border color')} value={v.borderColor} change={borderColor => change({ borderColor })}/><Color label={name('Pressed border color')} value={v.activeBorderColor} change={activeBorderColor => change({ activeBorderColor })}/>
+      <Color label={name('Border color')} value={v.borderColor} change={borderColor => change({ borderColor })}/>{interactive && <Color label={name('Pressed border color')} value={v.activeBorderColor} change={activeBorderColor => change({ activeBorderColor })}/>}
       <VRange label={name('Border opacity')} value={v.borderOpacity} change={borderOpacity => change({ borderOpacity })}/><div className="field-grid"><VNumber label={name('Border width')} value={v.borderWidth} max={8} step={.5} change={borderWidth => change({ borderWidth })}/><VNumber label={name('Corner radius')} value={v.radius} max={100} change={radius => change({ radius })}/></div>
     </details>
-    <details className="visual-details"><summary>Press & release</summary>
+    {interactive && <details className="visual-details"><summary>Press & release</summary>
       <VSelect label={name('Press effect')} value={v.effect} options={effects} change={effect => change({ effect })}/><div className="field-grid"><VNumber label={name('Press duration')} value={v.pressDuration} max={500} change={pressDuration => change({ pressDuration })}/><VNumber label={name('Release duration')} value={v.releaseDuration} max={1000} change={releaseDuration => change({ releaseDuration })}/><VNumber label={name('Press travel')} value={v.pressTravel} max={8} change={pressTravel => change({ pressTravel })}/><VNumber label={name('Glow strength')} value={v.glowStrength} max={40} change={glowStrength => change({ glowStrength })}/></div>
-    </details>
+    </details>}
   </div>;
 }
 export function ModuleAppearance({ module: m, change }: { module: OverlayModule; change: (patch: Partial<OverlayModule>) => void }) {
-  return <StyleFields value={resolvedStyle(m)} change={patch => {
+  return <StyleFields kind={m.type} value={resolvedStyle(m)} change={patch => {
     const { accent, background, radius, effect, ...appearance } = patch;
     change({ ...(accent !== undefined ? { accent } : {}), ...(background !== undefined ? { background } : {}), ...(radius !== undefined ? { radius } : {}), ...(effect !== undefined ? { effect } : {}), appearance: { ...m.appearance, ...appearance } });
   }}/>;
@@ -96,7 +97,7 @@ export function KeycapImagePanel({ document: d, module: m, change, upload }: { d
       <button className="secondary" onClick={() => setEditing(true)}>Position & scale image</button>
       <VRange label="Image opacity" value={image.opacity} change={opacity => patch({ opacity })}/><VSelect label="Image blending" value={image.blend} options={['normal', 'multiply', 'screen', 'soft-light', 'overlay']} change={blend => patch({ blend })}/>
       <details className="visual-details"><summary>Image adjustments</summary><VRange label="Image brightness" value={image.brightness} max={2} change={brightness => patch({ brightness })}/><VRange label="Image contrast" value={image.contrast} max={2} change={contrast => patch({ contrast })}/><VRange label="Image saturation" value={image.saturation} max={2} change={saturation => patch({ saturation })}/><Color label="Image tint" value={image.tint} change={tint => patch({ tint })}/><VRange label="Tint opacity" value={image.tintOpacity} change={tintOpacity => patch({ tintOpacity })}/></details>
-      <VSelect label="Image on press" value={image.press} options={['Tint', 'Brighten', 'Hide']} change={press => patch({ press })}/><VRange label="Pressed color overlay" value={image.pressTint} change={pressTint => patch({ pressTint })}/><button className="text-button danger" onClick={() => change({ image: defaultImageSettings() })}>Remove image from module</button>
+      <VSelect label="Image on press" value={image.press} options={['Tint', 'Brighten', 'Hide']} change={press => patch({ press })}/>{image.press === 'Tint' && <VRange label="Pressed color overlay" value={image.pressTint} change={pressTint => patch({ pressTint })}/>}<button className="text-button danger" onClick={() => change({ image: defaultImageSettings() })}>Remove image from module</button>
     </>}
     {editing && asset && <ImagePlacementEditor document={d} module={m} close={() => setEditing(false)} apply={image => change({ image })}/>}
   </section>;
