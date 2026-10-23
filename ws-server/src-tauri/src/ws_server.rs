@@ -193,6 +193,7 @@ async fn handle_connection(
     //handshake first message needs to be {"type":"auth","token":"..."}
     let auth_token = config.read().await.auth_token.clone();
 
+    let mut client_document_versions = Vec::new();
     let authed = tokio::time::timeout(Duration::from_secs(10), async { loop {
         match read.next().await {
             Some(Ok(Message::Text(msg))) => {
@@ -212,8 +213,9 @@ async fn handle_connection(
                             tracing::warn!("auth rejected from {addr}: no token");
                             break false;
                         } else if auth_token.is_empty() || token == auth_token {
+                            client_document_versions=crate::compatibility::client_write_versions(&serde_json::from_str::<serde_json::Value>(&msg).expect("validated auth JSON"));
                             let _ = write
-                                .send(Message::Text(r#"{"type":"auth_response","status":"success","protocol":4,"state_snapshot":true,"studio_revisions":true,"studio_visuals":true}"#.into()))
+                                .send(Message::Text(crate::compatibility::auth_response()))
                                 .await;
                             tracing::info!("client authenticated from {addr}");
                             break true;
@@ -289,6 +291,7 @@ async fn handle_connection(
                                 } else { break; }
                             }
                             Some("studio_get") => {
+                                if let Some(reply)=studio.unsupported_reply() {let _=write.send(Message::Text(reply)).await;continue;}
                                 if studio.recovery_required.load(Ordering::Relaxed) {
                                     let (_, revision, config_sequence) = studio.snapshot().await;
                                     let reply = serde_json::json!({"type":"studio_recovery", "backup":studio.backup(), "revision":revision, "config_sequence":config_sequence}).to_string();
@@ -307,6 +310,7 @@ async fn handle_connection(
                                 studio.persist_distance().await;
                             }
                             Some("studio_set") => {
+                                if !client_document_versions.contains(&value["document"]["version"].as_u64().unwrap_or(0)) {let _=write.send(Message::Text(serde_json::json!({"type":"studio_error","request_id":value["request_id"],"reason":"incompatible or read-only client"}).to_string())).await;continue;}
                                 let document = value["document"].clone();
                                 let base = value["base_revision"].as_str().unwrap_or("");
                                 match studio.set(document.clone(), base).await {

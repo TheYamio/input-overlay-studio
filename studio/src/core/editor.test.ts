@@ -17,11 +17,11 @@ describe('editor geometry and invariants', () => {
     expect(layout.w).toBe(Math.max(...layout.caps.map(k => k.x + k.w)));
     expect(layout.h).toBe(Math.max(...layout.caps.map(k => k.y + k.h)));
   });
-  it('normalizes imported profile and preset positions without discarding keys or styles', () => {
+  it('rejects invalid imported positions without changing the source', () => {
     const d = initialDocument(), m = d.profiles[0].modules[0]; m.x = 1920; m.y = -200; m.keys[0].style = { accent: '#ff0000' };
     d.presets.push({ id: 'preset', name: 'Outside', theme: 'Obsidian', modules: [structuredClone(m)] });
-    const loaded = parseDocument(JSON.stringify(d));
-    for (const p of [loaded.profiles[0], loaded.presets[0]]) expect(p.modules[0]).toMatchObject({ x: 1920 - m.w, y: 0, keys: m.keys });
+    expect(()=>parseDocument(JSON.stringify(d))).toThrow();
+    expect(d.profiles[0].modules[0]).toMatchObject({x:1920,y:-200,keys:m.keys});
   });
   it('rejects duplicate preset and preset-module identities', () => {
     const d = initialDocument(), p = { id: 'preset', name: 'Test', theme: 'Obsidian' as const, modules: [makeModule('keyboard')] };

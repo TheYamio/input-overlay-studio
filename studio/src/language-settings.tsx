@@ -1,0 +1,19 @@
+import {localePackagesSchema} from './core/localization/pack-schema';
+import {useRef,useState,useSyncExternalStore} from 'react';
+import {loadBuiltinLanguage} from './core/localization/load-language';
+import type {PreferenceSettings} from './core/settings/preferences';
+import {parseLocalePack} from './core/localization/registry';
+import {languageTemplate} from './core/localization/builtins';
+import {builtinLanguages,languageChoices} from './core/localization/runtime';
+import {useSettingsText,useLocalizationRegistry} from './settings-localization';
+export function LanguageSettings({preferences,notify}:{preferences:PreferenceSettings;notify:(message:string)=>void}){
+ const state=useSyncExternalStore(preferences.subscribe,preferences.getSnapshot),file=useRef<HTMLInputElement>(null),t=useSettingsText(),registry=useLocalizationRegistry(),[switching,setSwitching]=useState(false);
+ const write=(key:'locale'|'languagePacks',value:string|typeof state.languagePacks)=>{if(key==='locale'){if(!preferences.set('studio.preferences.locale',value))notify(t('language:storage'));}else if(!preferences.set('studio.preferences.language-packs',value))throw Error(t('language:storage'));};
+ return <section className="settings-section language-settings"><h3>{t('language:title')}</h3><label className="field"><span className="language-selector-label">{t('language:studio')} <small className="experimental-badge">{t('language:experimental')}</small></span><select aria-label={t('language:studio')} aria-describedby="language-experimental-help" value={state.locale} disabled={switching} aria-busy={switching} onChange={async e=>{const locale=e.target.value;setSwitching(true);try{await loadBuiltinLanguage(locale,registry);write('locale',locale);}catch{notify(t('language:loadError'));}finally{setSwitching(false);}}}>{!languageChoices(state.languagePacks).some(p=>p.locale===state.locale)&&<option value={state.locale}>{state.locale} · English fallback</option>}{languageChoices(state.languagePacks).map(p=><option key={p.locale} value={p.locale}>{p.name}</option>)}</select></label>
+ <p className="hint" id="language-experimental-help">{t('language:experimentalHelp')}</p>
+ <p className="hint">{t('language:help')}</p><p className="hint">{t('language:unicode')}</p>{state.locale==='sjn-teng-x-art'&&<p className="hint">{t('language:artistic')}</p>}
+ <div className="language-actions"><button className="secondary" onClick={()=>file.current?.click()}>{t('language:import')}</button><button className="text-button" onClick={()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(languageTemplate(),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='input-overlay-language.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}>{t('language:export')}</button></div>
+ <input ref={file} type="file" accept=".json,application/json" hidden onChange={async e=>{const input=e.currentTarget,f=input.files?.[0];input.value='';if(!f)return;try{if(f.size>1_000_000)throw Error();const pack=parseLocalePack(JSON.parse(await f.text()));if(builtinLanguages.some(p=>p.locale===pack.locale)||state.languagePacks.some(p=>p.locale===pack.locale))throw Error();localePackagesSchema.parse([...state.languagePacks,pack]);write('languagePacks',[...state.languagePacks,pack]);notify(t('language:saved'));}catch(error){notify(error instanceof Error&&error.message===t('language:storage')?error.message:t('language:invalid'));}}}/>
+ {state.languagePacks.map(pack=><div className="language-package" key={pack.locale}><b dir="auto">{pack.name||pack.locale}</b><span>{pack.locale}</span><button className="text-button danger" onClick={()=>{try{if(state.locale===pack.locale)write('locale','en');write('languagePacks',state.languagePacks.filter(p=>p.locale!==pack.locale));}catch{notify(t('language:storage'));}}}>{t('language:remove')}</button></div>)}
+ </section>;
+}

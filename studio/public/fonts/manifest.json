@@ -1,0 +1,170 @@
+[
+  {
+    "family": "notoemoji",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoemoji/NotoEmoji%5Bwght%5D.ttf",
+    "originalBytes": 1982596,
+    "bytes": 475536,
+    "sha256": "706aa331ee9ed5dbc368767b69eab710cb3f02f453e0d0794b9f94a1c7124f04",
+    "glyphs": 1489
+  },
+  {
+    "family": "notosans",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 2049096,
+    "bytes": 198276,
+    "sha256": "a62efff7da61ae12638bef25906809decd82fa699693b1c163e536e558b1608d",
+    "glyphs": 3094
+  },
+  {
+    "family": "notosansarabic",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansarabic/NotoSansArabic%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 844676,
+    "bytes": 66172,
+    "sha256": "537ec3e4b016b4d3a49875c570718339899d7c8b7c9983583a8e1eff28df5d42",
+    "glyphs": 1561
+  },
+  {
+    "family": "notosansarmenian",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansarmenian/NotoSansArmenian%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 221936,
+    "bytes": 22020,
+    "sha256": "68ea6638874241c42c88b2e9cfb090313f7e63b17fc2edd97b15cdf9cc81fc4e",
+    "glyphs": 430
+  },
+  {
+    "family": "notosansbengali",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansbengali/NotoSansBengali%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 463668,
+    "bytes": 57868,
+    "sha256": "b734116792ebd93c81c9718993b9e4dfb08357f3011ded5242cc86a027841dea",
+    "glyphs": 444
+  },
+  {
+    "family": "notosanscjk",
+    "source": "https://github.com/notofonts/noto-cjk",
+    "originalBytes": 16437364,
+    "bytes": 11425020,
+    "sha256": "f7116c9c4ef9f688f1a11036b1cd3e8fb44bf13d5322f65ddd93dba9aa12b572",
+    "glyphs": 44810
+  },
+  {
+    "family": "notosansdevanagari",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansdevanagari/NotoSansDevanagari%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 641944,
+    "bytes": 63304,
+    "sha256": "38362fa6c1d9c53d44e4e660f58436730b65279865a7f3c3a23a1840291e2b1a",
+    "glyphs": 551
+  },
+  {
+    "family": "notosansgeorgian",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansgeorgian/NotoSansGeorgian%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 231988,
+    "bytes": 29432,
+    "sha256": "e33a5a3fc7ae2e5a2d302493a3ba725302598a05738167be9146998cabf8a1d6",
+    "glyphs": 509
+  },
+  {
+    "family": "notosansgujarati",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansgujarati/NotoSansGujarati%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 672904,
+    "bytes": 52468,
+    "sha256": "f7873cc75022e8e8cdb8e14404c168a9df912071b517c6d0fb4feb8dc1fb7ffb",
+    "glyphs": 442
+  },
+  {
+    "family": "notosansgurmukhi",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansgurmukhi/NotoSansGurmukhi%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 268608,
+    "bytes": 27516,
+    "sha256": "d2586d9cb484256e187c23645a60db2203e434e306d3f9cf776306d47bb37c51",
+    "glyphs": 436
+  },
+  {
+    "family": "notosanshebrew",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanshebrew/NotoSansHebrew%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 112640,
+    "bytes": 21096,
+    "sha256": "623695628a7c3dbd31637d1de31f28b52c1f9d70dd6f728caf977915aae295a3",
+    "glyphs": 464
+  },
+  {
+    "family": "notosanskannada",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskannada/NotoSansKannada%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 641372,
+    "bytes": 45992,
+    "sha256": "dd637d002977063bb9de3b7ee2d02d31142d697c3dd2472d01753021d1a36e2b",
+    "glyphs": 436
+  },
+  {
+    "family": "notosanskhmer",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskhmer/NotoSansKhmer%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 359788,
+    "bytes": 31420,
+    "sha256": "bbc08ec53bc4cb724ac631439d80cdb3bd7bf513a03f8a3cf47491161cf9807d",
+    "glyphs": 483
+  },
+  {
+    "family": "notosanslao",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanslao/NotoSansLao%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 176620,
+    "bytes": 22916,
+    "sha256": "40f5b686f2812a05ed752160260fa6ecdcb377223f5cc974cce7dbd96ce6a448",
+    "glyphs": 421
+  },
+  {
+    "family": "notosansmalayalam",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmalayalam/NotoSansMalayalam%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 504204,
+    "bytes": 39172,
+    "sha256": "0556e80e410a6707d66585281daf37d51c5dda7e85ec5369e89aa212dad20a23",
+    "glyphs": 467
+  },
+  {
+    "family": "notosansmyanmar",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmyanmar/NotoSansMyanmar%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 784832,
+    "bytes": 61600,
+    "sha256": "2eff3f962df74c00a3b561f1e1ca435217c37353f35156a99cac167aa20ef32b",
+    "glyphs": 564
+  },
+  {
+    "family": "notosanssinhala",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssinhala/NotoSansSinhala%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 1181956,
+    "bytes": 51060,
+    "sha256": "92516c1b9b680d0a579507b0f7e1038dc43a001ff4c675b9304427d28a1b2773",
+    "glyphs": 453
+  },
+  {
+    "family": "notosanstamil",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanstamil/NotoSansTamil%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 340668,
+    "bytes": 31736,
+    "sha256": "7fee7700d4f26046f2a736e32bca06f8372074bc4f40b2312d95ed344d550dc3",
+    "glyphs": 428
+  },
+  {
+    "family": "notosanstelugu",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanstelugu/NotoSansTelugu%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 888808,
+    "bytes": 56232,
+    "sha256": "58e59a6364c2b9698be84c761f6f211f54970d911f95ff79a3841695079baa31",
+    "glyphs": 444
+  },
+  {
+    "family": "notosansthai",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansthai/NotoSansThai%5Bwdth%2Cwght%5D.ttf",
+    "originalBytes": 218652,
+    "bytes": 21512,
+    "sha256": "0892d0bc54cd076664c6b847759d87dc64ebd8c69d4a515a62d104d0851ebaa4",
+    "glyphs": 426
+  },
+  {
+    "family": "alcarintengwar",
+    "source": "https://raw.githubusercontent.com/Tosche/Alcarin-Tengwar/a4530d430ea01871b0b0a54d1de218d2ffde0ea5/Fonts%20Static/AlcarinTengwar-Regular.woff2",
+    "originalBytes": 39780,
+    "bytes": 39780,
+    "sha256": "2a61343541191cb30755013dffc8d75dacc8452e6b3f8b840f9b5710c09f7814",
+    "glyphs": 248
+  }
+]

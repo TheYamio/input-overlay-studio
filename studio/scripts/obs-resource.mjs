@@ -1,3 +1,5 @@
+import {parseDocument,encodeDocument} from '../src/core/config.ts';
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 import { WebSocketServer } from 'ws';
 import { writeFile } from 'node:fs/promises';
 import { processResources, resourceDelta } from './process-resources.mjs';
@@ -10,10 +12,11 @@ export async function measureOBS({ request, document, url, sourceName, capture, 
   const d = structuredClone(document), profile = d.profiles.find(p => p.id === d.activeProfileId);
   const keyboard = profile.modules.find(m => m.type === 'keyboard'), mouse = profile.modules.find(m => m.type === 'mouse');
   keyboard.image.groupId = 'obs-resources'; mouse.image = structuredClone(keyboard.image);
-  const broadcast = packet => { const raw = JSON.stringify(packet); for (const ws of sockets.clients) if (ws.authed && ws.readyState === 1) ws.send(raw); };
+  const wire=packet=>packet.document?{...packet,document:encodeDocument(packet.document)}:packet;
+  const broadcast = packet => { const raw = JSON.stringify(wire(packet)); for (const ws of sockets.clients) if (ws.authed && ws.readyState === 1) ws.send(raw); };
   sockets.on('connection', ws => ws.on('message', raw => {
-    const m = JSON.parse(String(raw)), send = packet => ws.send(JSON.stringify(packet));
-    if (m.type === 'auth') { ws.authed = m.token === 'obs-resources'; send({ type: 'auth_response', status: ws.authed ? 'success' : 'failed', protocol: 4, state_snapshot: true, studio_revisions: true, studio_visuals: true }); }
+    const m = JSON.parse(String(raw)), send = packet => ws.send(JSON.stringify(wire(packet))); if(m.document?.version===4)m.document=parseDocument(JSON.stringify(m.document));
+    if (m.type === 'auth') { ws.authed = m.token === 'obs-resources'; send({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, state_snapshot: true, studio_revisions: true, studio_visuals: true, studio_animation: true }); }
     if (!ws.authed) return;
     if (m.type === 'input_snapshot') send({ type: 'input_snapshot', sequence, keys: [], buttons: [] });
     if (m.type === 'studio_get') send({ type: 'studio_config', document: d, revision: String(revision), config_sequence: revision });

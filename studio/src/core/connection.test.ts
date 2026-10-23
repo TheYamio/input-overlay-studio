@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { InputConnection } from './connection';
 import { InputEngine } from './input';
-import { initialDocument } from './config';
+import { initialDocument,encodeDocument } from './config';
+import contract from './compatibility/contract.json';
 
 class Socket {
   static OPEN = 1;
@@ -14,21 +15,51 @@ class Socket {
   constructor() { Socket.latest = this; }
   send(text: string) { this.sent.push(JSON.parse(text)); }
   close() { this.readyState = 3; this.onclose?.(); }
-  receive(value: unknown) { this.onmessage?.({ data: JSON.stringify(value) }); }
+  receive(value: unknown) {const packet=value as {document?:ReturnType<typeof initialDocument>};if(packet.document?.version===4&&packet.document.profiles?.[0]?.modules[0]&&!('common' in packet.document.profiles[0].modules[0]))value={...packet,document:encodeDocument(packet.document)};this.onmessage?.({ data: JSON.stringify(value) }); }
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 function setup() {
   vi.useFakeTimers(); vi.stubGlobal('WebSocket', Socket);
   const connection = new InputConnection(new InputEngine()); connection.connect({ url: 'ws://127.0.0.1', token: 'test' });
-  const socket = Socket.latest; socket.onopen?.(); socket.receive({ type: 'auth_response', status: 'success', protocol: 4, studio_revisions: true });
+  const socket = Socket.latest; socket.onopen?.(); socket.receive({ type: 'auth_response', status: 'success', protocol: 5, studio_capabilities:{...structuredClone(contract),role:'capture'} });
   return { connection, socket };
 }
 describe('revision-aware connection', () => {
-  it('retains advanced artwork locally when a server does not advertise visual support', () => {
-    const { connection, socket } = setup(), error = vi.fn(), d = initialDocument(); connection.onError = error;
-    d.profiles[0].modules[0].image.flipX = true; socket.receive({ type: 'studio_config', document: d, revision: 'r1' });
-    expect(connection.publish(d)).toBe(false); expect(error).toHaveBeenCalledWith(expect.stringContaining('local draft is kept')); expect(socket.sent.some(m => m.type === 'studio_set')).toBe(false); connection.stop();
+
+  it('advertises Studio capabilities separately from the auth token',()=>{
+    const {connection,socket}=setup();expect(socket.sent[0]).toMatchObject({type:'auth',token:'test',studio_client:{role:'studio',contractVersion:1,protocolVersion:5,document:{read:[4],write:[4]}}});connection.stop();
   });
+  it('uses the shared descriptor for a modern server while keeping the same revision protocol',()=>{
+    const {connection,socket}=setup(),d=initialDocument();socket.receive({type:'auth_response',status:'success',protocol:5,studio_capabilities:{...structuredClone(contract),role:'capture'}});
+    socket.receive({type:'studio_config',document:d,revision:'r1'});d.profiles[0].modules[0].appearance.pressDelay=10;expect(connection.publish(d)).toBe(true);expect(socket.sent.at(-1)).toMatchObject({type:'studio_set',base_revision:'r1'});connection.stop();
+  });
+  it('preserves a future server document without applying it or permitting writes',()=>{
+    const {connection,socket}=setup(),unsupported=vi.fn(),document=vi.fn();connection.onUnsupported=unsupported;connection.onDocument=document;
+    const future={...initialDocument(),version:99,extension:{keep:'everything'}};socket.receive({type:'studio_config',document:future,revision:'future',config_sequence:4});
+    expect(document).not.toHaveBeenCalled();expect(JSON.parse(unsupported.mock.calls[0][0].text)).toEqual(future);expect(connection.publish(initialDocument(),'future')).toBe(false);connection.stop();
+  });
+  it('exports the exact native original text and invalidates outstanding acknowledgements',()=>{
+    const {connection,socket}=setup(),unsupported=vi.fn(),saved=vi.fn();connection.onUnsupported=unsupported;connection.onSaved=saved;const d=initialDocument();socket.receive({type:'studio_config',document:d,revision:'r1'});connection.publish(d);
+    const request=socket.sent.at(-1)!,text=' { "version": 3, "future": [1, 2] }\n';socket.receive({type:'studio_unsupported',version:3,original_json:text});socket.receive({type:'studio_saved',request_id:request.request_id,revision:'r2'});
+    expect(unsupported).toHaveBeenCalledWith(expect.objectContaining({text,version:3}));expect(saved).not.toHaveBeenCalled();expect(connection.publish(d)).toBe(false);connection.stop();
+  });
+  it('keeps future module schema declarations independent from current documents',()=>{
+    const {connection,socket}=setup(),unsupported=vi.fn(),document=vi.fn(),capabilities={...structuredClone(contract),role:'capture'};capabilities.moduleSchemas['overlay.keyboard']=2;
+    connection.onUnsupported=unsupported;connection.onDocument=document;socket.receive({type:'auth_response',status:'success',protocol:5,studio_capabilities:capabilities});socket.receive({type:'studio_config',document:initialDocument(),revision:'r1'});
+    expect(document).toHaveBeenCalledTimes(1);expect(unsupported).not.toHaveBeenCalled();connection.stop();
+  });
+  it('keeps old feature flags from bypassing an invalid new contract',()=>{
+    const {connection,socket}=setup(),error=vi.fn();connection.onError=error;socket.receive({type:'auth_response',status:'success',protocol:5,studio_revisions:true,studio_capabilities:{contractVersion:99}});
+    expect(connection.publish(initialDocument(),'r1')).toBe(false);expect(error).toHaveBeenCalledWith(expect.stringContaining('invalid capability contract'));connection.stop();
+  });
+  it('recovers compatibility cleanly after connecting to another server',()=>{
+    const {connection,socket}=setup();socket.receive({type:'studio_unsupported',version:3});connection.connect({url:'ws://other',token:'test'});const next=Socket.latest;next.onopen?.();next.receive({type:'auth_response',status:'success',protocol:5,studio_capabilities:{...structuredClone(contract),role:'capture'}});const d=initialDocument();next.receive({type:'studio_config',document:d,revision:'other'});
+    expect(connection.publish(d)).toBe(true);expect(next.sent.at(-1)?.base_revision).toBe('other');connection.stop();
+  });
+
+
+
+
   it('sends only one save at a time and acknowledges its actual document', () => {
     const { connection, socket } = setup(), first = initialDocument(), saved = vi.fn(); connection.onSaved = saved;
     socket.receive({ type: 'studio_config', document: first, revision: 'r1', config_sequence: 1 });

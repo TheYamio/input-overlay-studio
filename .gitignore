@@ -44,3 +44,6 @@ dist-ssr
 /docs/performance/
 /docs/AUDIT_*.md
 /docs/UX_UI_REDESIGN_PROPOSAL.md
+
+# Local implementation diary; keep release sources free of internal progress reports
+/docs/MODULARIZATION_PLAN.md

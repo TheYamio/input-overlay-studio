@@ -1,9 +1,10 @@
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 import { chromium, expect } from '@playwright/test';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { initialDocument } from '../src/core/config.ts';
+import { initialDocument , parseDocument} from '../src/core/config.ts';
 const artifacts = new URL('../artifacts/', import.meta.url); await mkdir(artifacts, { recursive: true });
 const vite = await createServer({ server: { host: '127.0.0.1', port: 5194, strictPort: true } }); await vite.listen();
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 4500 });
@@ -15,8 +16,8 @@ Object.assign(mouseSeed, { x: 700, y: 200, w: 300, h: 110 });
 keyboardSeed.appearance.backgroundOpacity = mouseSeed.appearance.backgroundOpacity = 0;
 const broadcast = packet => { for (const ws of wss.clients) if (ws.authed && ws.readyState === 1) ws.send(JSON.stringify(packet)); };
 wss.on('connection', ws => ws.on('message', raw => {
-  const m = JSON.parse(String(raw)), send = packet => ws.send(JSON.stringify(packet));
-  if (m.type === 'auth') { ws.authed = m.token === 'visual-features'; send({ type: 'auth_response', status: ws.authed ? 'success' : 'failed', protocol: 4, studio_revisions: true, studio_visuals: true }); return; }
+  const m = JSON.parse(String(raw)), send = packet => ws.send(JSON.stringify(packet)); if(m.document?.version===4)m.document=parseDocument(JSON.stringify(m.document));
+  if (m.type === 'auth') { ws.authed = m.token === 'visual-features'; send({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, studio_revisions: true, studio_visuals: true, studio_animation: true, studio_shapes: true, studio_preset_metadata: true }); return; }
   if (!ws.authed) return;
   if (m.type === 'studio_get') send({ type: 'studio_config', document, revision: String(revision) });
   if (m.type === 'studio_set') {
@@ -26,6 +27,7 @@ wss.on('connection', ws => ws.on('message', raw => {
 }));
 const heartbeat = setInterval(() => broadcast({ type: 'heartbeat' }), 1000);
 const browser = await chromium.launch({ headless: true }), context = await browser.newContext({ viewport: { width: 1560, height: 1050 }, acceptDownloads: true });
+await context.addInitScript(() => localStorage.setItem('studio.inspector-section', 'all'));
 await context.addInitScript(() => {
   localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4500', token: 'visual-features' }));
   const create = URL.createObjectURL.bind(URL), revoke = URL.revokeObjectURL.bind(URL); window.__activeBlobURLs = new Set();
@@ -37,7 +39,7 @@ for (const p of [page, overlay]) p.on('pageerror', e => errors.push(e.message));
 const check = async (name, fn) => { await fn(); results.push(name); console.log(`PASS ${name}`); };
 const profile = () => document.profiles.find(p => p.id === document.activeProfileId), module = type => profile().modules.find(m => m.type === type);
 const field = label => page.getByLabel(label, { exact: true }), select = name => page.locator('.layer-list').getByRole('button', { name, exact: true }).click();
-const undo = () => page.getByRole('button', { name: 'Undo (Ctrl+Z)', exact: true }).click();
+const undo = () => page.getByRole('button', { name: 'Undo', exact: true }).click();
 const dialog = () => page.getByRole('dialog', { name: 'Keycap image placement' });
 const openImage = () => page.getByRole('button', { name: 'Position & scale image', exact: true }).click();
 const sample = async (points, filename = 'shared-artwork.png') => {
@@ -139,26 +141,26 @@ try {
   });
   await check('preset thumbnails render the saved scene and exports remap group identities', async () => {
     await openImage(); await dialog().getByRole('button', { name: 'Flip horizontally', exact: true }).click(); await dialog().getByRole('button', { name: 'Apply image placement', exact: true }).click(); await expect.poll(() => module('keyboard').image.flipX).toBe(true);
-    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await field('Preset name').fill('Shared artwork'); await page.getByRole('button', { name: 'Save current layout', exact: true }).click(); await expect.poll(() => document.presets.length).toBe(1);
+    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: 'Save current setup', exact: true }).click(); await field('Preset name').fill('Shared artwork'); await page.getByRole('button', { name: 'Save preset', exact: true }).click(); await expect.poll(() => document.presets.length).toBe(1);
     const saved = page.locator('.saved-preset').first(); await saved.scrollIntoViewIfNeeded(); await expect(saved.locator('.scene-thumbnail .key-art').first()).toBeVisible(); await expect(saved.locator('.module-trail')).toBeHidden();
     const downloadPromise = page.waitForEvent('download'); await saved.getByRole('button', { name: 'Export preset', exact: true }).click(); const download = await downloadPromise, text = await readFile(await download.path(), 'utf8');
     await field('Import preset file').setInputFiles({ name: 'shared.json', mimeType: 'application/json', buffer: Buffer.from(text) }); await expect.poll(() => document.presets.length).toBe(2);
     const imported = document.presets[1].modules; expect(imported[0].image.groupId).not.toBe(module('keyboard').image.groupId); expect(imported[0].image.groupId).toBe(imported[1].image.groupId); expect(imported[0].image.flipX).toBe(true); expect(imported[0].image.assetId).not.toBe(module('keyboard').image.assetId);
   });
   await check('factory cards show real scenes and restore different complete compositions', async () => {
-    const card = name => page.locator('.preset-large').filter({ has: page.getByRole('heading', { name, exact: true }) }); await card('Essential').scrollIntoViewIfNeeded(); await expect(card('Essential').locator('.scene-thumbnail .module-keyboard')).toBeVisible();
-    const dpi = profile().dpi; await card('Essential').getByRole('button', { name: 'Reset layout', exact: true }).click(); await expect.poll(() => module('keyboard').keys.length).toBe(4); expect(module('trail').visible).toBe(false); expect(profile().dpi).toBe(dpi); const x = module('keyboard').x;
-    await card('Glass').getByRole('button', { name: 'Reset layout', exact: true }).click(); await expect.poll(() => module('mouse').mouseMode).toBe('Mouse Diagram'); expect(module('keyboard').x).not.toBe(x); expect(module('sensitivity').textLayout).toBe('Vertical');
+    await page.getByRole('button', { name: /^All / }).click(); const card = name => page.locator('.preset-large').filter({ has: page.getByRole('heading', { name, exact: true }) }); await card('Essential').scrollIntoViewIfNeeded(); await expect(card('Essential').locator('.scene-thumbnail .module-keyboard')).toBeVisible();
+    const dpi = profile().dpi; await card('Essential').getByRole('button', { name: 'Use full layout', exact: true }).click(); await expect.poll(() => module('keyboard').keys.length).toBe(4); expect(module('trail').visible).toBe(false); expect(profile().dpi).toBe(dpi); const x = module('keyboard').x;
+    await card('Glass').getByRole('button', { name: 'Use full layout', exact: true }).click(); await expect.poll(() => module('mouse').mouseMode).toBe('Mouse Diagram'); expect(module('keyboard').x).not.toBe(x); expect(module('sensitivity').textLayout).toBe('Vertical');
     await page.getByRole('button', { name: 'Studio', exact: true }).click(); await undo(); await expect.poll(() => module('keyboard').x).toBe(x);
   });
   await check('theme-only application preserves current geometry and the live layout preview', async () => {
-    const before = profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible]); await page.locator('.theme-card').filter({ hasText: 'Neon' }).click(); await expect.poll(() => profile().theme).toBe('Neon'); expect(profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible])).toEqual(before);
-    await page.locator('.theme-card').first().scrollIntoViewIfNeeded(); await expect(page.locator('.theme-card').first().locator('.scene-thumbnail .module-keyboard')).toBeVisible();
+    const before = profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible]); await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: /Colors on my layout/ }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Apply colors', exact: true }).click(); await expect.poll(() => profile().theme).toBe('Neon'); expect(profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible])).toEqual(before);
+    await page.locator('.preset-large').first().scrollIntoViewIfNeeded(); await expect(page.locator('.preset-large').first().locator('.scene-thumbnail .module-keyboard')).toBeVisible();
   });
   await check('preview scenes release their image URLs and reload retains saved groups', async () => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click(); await expect.poll(() => page.evaluate(() => window.__activeBlobURLs.size)).toBe(0);
     await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); await page.reload(); await page.getByRole('button', { name: 'Presets', exact: true }).click(); expect(document.presets[0].modules[0].image.groupId).toBeTruthy(); expect(document.presets[0].modules[0].image.flipX).toBe(true);
-    await page.locator('.saved-preset').first().getByRole('button', { name: 'Apply', exact: true }).click(); await page.getByRole('button', { name: 'Studio', exact: true }).click(); await select('Keyboard');
+    await page.getByRole('button', { name: /Full layouts/ }).click(); await page.getByRole('button', { name: /^Saved / }).click(); await page.locator('.saved-preset').first().getByRole('button', { name: 'Use full layout', exact: true }).click(); await page.getByRole('button', { name: 'Studio', exact: true }).click(); await select('Keyboard');
     await expect(field('Preview key state')).toHaveValue('Input'); await page.setViewportSize({ width: 1366, height: 768 }); await openImage(); await expect(dialog()).toBeVisible(); await dialog().getByLabel('Source guide (editor only)', { exact: true }).check();
     expect(await dialog().evaluate(el => el.getBoundingClientRect().height <= innerHeight * .95)).toBe(true); await page.screenshot({ path: fileURLToPath(new URL('visual-workspace-1366.png', artifacts)) }); await dialog().getByRole('button', { name: 'Cancel', exact: true }).click();
     await page.getByRole('button', { name: 'Presets', exact: true }).click(); await expect(page.locator('.preset-large').first().locator('.scene-thumbnail .module-keyboard')).toBeVisible(); await page.screenshot({ path: fileURLToPath(new URL('real-preset-previews.png', artifacts)) });

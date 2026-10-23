@@ -1,0 +1,765 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "languagePacks": {
+      "default": [],
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "const": 1
+          },
+          "locale": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "ltr",
+              "rtl"
+            ]
+          },
+          "namespaces": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9-]*$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9.-]*$"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            }
+          }
+        },
+        "required": [
+          "version",
+          "locale",
+          "namespaces"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "shapes": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "viewBox": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1000000
+              },
+              {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1000000
+              }
+            ],
+            "items": false,
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "paths": {
+            "minItems": 1,
+            "maxItems": 64,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "d": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000,
+                  "pattern": "^[MmLlHhVvCcSsQqTtAaZzEe0-9+.,\\s-]+$"
+                },
+                "matrix": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 6,
+                  "maxItems": 6
+                },
+                "fill": {
+                  "type": "boolean"
+                },
+                "fillRule": {
+                  "type": "string",
+                  "enum": [
+                    "nonzero",
+                    "evenodd"
+                  ]
+                },
+                "strokeWidth": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "linecap": {
+                  "type": "string",
+                  "enum": [
+                    "butt",
+                    "round",
+                    "square"
+                  ]
+                },
+                "linejoin": {
+                  "type": "string",
+                  "enum": [
+                    "miter",
+                    "round",
+                    "bevel"
+                  ]
+                },
+                "opacity": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "d",
+                "matrix",
+                "fill",
+                "fillRule",
+                "strokeWidth",
+                "linecap",
+                "linejoin",
+                "opacity"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "viewBox",
+          "paths"
+        ]
+      }
+    },
+    "version": {
+      "type": "number",
+      "const": 4
+    },
+    "assets": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "data": {
+            "type": "string",
+            "maxLength": 420000,
+            "pattern": "^data:image\\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+          }
+        },
+        "required": [
+          "name",
+          "width",
+          "height",
+          "data"
+        ]
+      }
+    },
+    "activeProfileId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "gameProfiles": {
+      "minItems": 1,
+      "maxItems": 50,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "game": {
+            "type": "string",
+            "enum": [
+              "Counter-Strike 2",
+              "Valorant",
+              "Apex Legends",
+              "Overwatch 2",
+              "KovaaK’s",
+              "Custom"
+            ]
+          },
+          "dpi": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000000
+          },
+          "sensitivity": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000000
+          },
+          "yaw": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000000
+          },
+          "scale": {
+            "type": "string",
+            "enum": [
+              "Source",
+              "Valorant",
+              "Overwatch",
+              "Custom yaw",
+              "Manual cm/360",
+              "Unknown"
+            ]
+          },
+          "manualCm": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000000
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "game",
+          "dpi",
+          "sensitivity",
+          "yaw",
+          "scale",
+          "manualCm"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "profiles": {
+      "minItems": 1,
+      "maxItems": 50,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "gameProfileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "locale": {
+            "default": "en",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$"
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "Essential",
+              "Competitive",
+              "Obsidian",
+              "Neon",
+              "Glass",
+              "Clean Recording",
+              "Classic Input"
+            ]
+          },
+          "modules": {
+            "maxItems": 32,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "pattern": "^[a-z][a-z0-9-]*(?:\\.[a-z][a-z0-9-]*)+$"
+                },
+                "schemaVersion": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "config": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                },
+                "resources": {
+                  "type": "object",
+                  "properties": {
+                    "assets": {
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      }
+                    },
+                    "shapes": {
+                      "maxItems": 32,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      }
+                    }
+                  },
+                  "required": [
+                    "assets",
+                    "shapes"
+                  ],
+                  "additionalProperties": false
+                },
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "common": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "maxLength": 100
+                    },
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1920
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1080
+                    },
+                    "w": {
+                      "type": "number",
+                      "minimum": 40,
+                      "maximum": 1920
+                    },
+                    "h": {
+                      "type": "number",
+                      "minimum": 30,
+                      "maximum": 1080
+                    },
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "z": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000
+                    },
+                    "opacity": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "x",
+                    "y",
+                    "w",
+                    "h",
+                    "visible",
+                    "locked",
+                    "z",
+                    "opacity"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "type",
+                "schemaVersion",
+                "enabled",
+                "config",
+                "resources",
+                "id",
+                "common"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "gameProfileId",
+          "caption",
+          "theme",
+          "modules"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "presets": {
+      "maxItems": 50,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "layout",
+              "style"
+            ]
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "Essential",
+              "Competitive",
+              "Obsidian",
+              "Neon",
+              "Glass",
+              "Clean Recording",
+              "Classic Input"
+            ]
+          },
+          "modules": {
+            "maxItems": 32,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "pattern": "^[a-z][a-z0-9-]*(?:\\.[a-z][a-z0-9-]*)+$"
+                },
+                "schemaVersion": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "config": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                },
+                "resources": {
+                  "type": "object",
+                  "properties": {
+                    "assets": {
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      }
+                    },
+                    "shapes": {
+                      "maxItems": 32,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      }
+                    }
+                  },
+                  "required": [
+                    "assets",
+                    "shapes"
+                  ],
+                  "additionalProperties": false
+                },
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "common": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "maxLength": 100
+                    },
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1920
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1080
+                    },
+                    "w": {
+                      "type": "number",
+                      "minimum": 40,
+                      "maximum": 1920
+                    },
+                    "h": {
+                      "type": "number",
+                      "minimum": 30,
+                      "maximum": 1080
+                    },
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "z": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000
+                    },
+                    "opacity": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "x",
+                    "y",
+                    "w",
+                    "h",
+                    "visible",
+                    "locked",
+                    "z",
+                    "opacity"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "type",
+                "schemaVersion",
+                "enabled",
+                "config",
+                "resources",
+                "id",
+                "common"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "theme",
+          "modules"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "fps": {
+          "type": "string",
+          "enum": [
+            "30",
+            "60",
+            "120",
+            "Auto"
+          ]
+        },
+        "quality": {
+          "type": "string",
+          "enum": [
+            "Low",
+            "Medium",
+            "High"
+          ]
+        },
+        "glowQuality": {
+          "type": "string",
+          "enum": [
+            "Off",
+            "Low",
+            "High"
+          ]
+        },
+        "reducedMotion": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "fps",
+        "quality",
+        "glowQuality",
+        "reducedMotion"
+      ]
+    },
+    "distance": {
+      "type": "object",
+      "properties": {
+        "persist": {
+          "type": "boolean"
+        },
+        "resetOnStart": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "persist",
+        "resetOnStart"
+      ]
+    }
+  },
+  "required": [
+    "version",
+    "activeProfileId",
+    "gameProfiles",
+    "profiles",
+    "presets",
+    "performance",
+    "distance"
+  ],
+  "additionalProperties": false
+}

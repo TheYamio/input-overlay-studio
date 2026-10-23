@@ -1,16 +1,18 @@
+import {wireJSON} from './fixtures/current-config.mjs';
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 import { chromium, expect } from '@playwright/test';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { initialDocument } from '../src/core/config.ts';
+import { initialDocument , parseDocument} from '../src/core/config.ts';
 const vite = await createServer({ server: { host: '127.0.0.1', port: 5192, strictPort: true } }); await vite.listen();
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 4498 });
 let document = initialDocument(), revision = 0;
-document.profiles[0].modules[0].id = 'quoted"[module]\\id'; document.profiles[0].modules[0].x = 1920;
+document.profiles[0].modules[0].id = 'quoted"[module]\\id'; document.profiles[0].modules[0].x = 1920-document.profiles[0].modules[0].w;
 const broadcast = packet => { for (const ws of wss.clients) if (ws.authed && ws.readyState === 1) ws.send(JSON.stringify(packet)); };
 wss.on('connection', ws => ws.on('message', raw => {
-  const m = JSON.parse(String(raw)); const send = data => ws.send(JSON.stringify(data));
-  if (m.type === 'auth') { ws.authed = m.token === 'editor-test'; send({ type: 'auth_response', status: ws.authed ? 'success' : 'failed', protocol: 4, studio_revisions: true }); return; }
+  const m = JSON.parse(String(raw)); if(m.document?.version===4)m.document=parseDocument(JSON.stringify(m.document)); const send = data => ws.send(JSON.stringify(data));
+  if (m.type === 'auth') { ws.authed = m.token === 'editor-test'; send({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, studio_revisions: true }); return; }
   if (!ws.authed) return;
   if (m.type === 'studio_get') send({ type: 'studio_config', document, revision: String(revision) });
   if (m.type === 'studio_set') {
@@ -20,12 +22,14 @@ wss.on('connection', ws => ws.on('message', raw => {
 }));
 const heartbeat = setInterval(() => broadcast({ type: 'heartbeat' }), 1000);
 const browser = await chromium.launch({ headless: true }), context = await browser.newContext({ viewport: { width: 1560, height: 1050 }, permissions: ['clipboard-read', 'clipboard-write'] });
+await context.addInitScript(() => localStorage.setItem('studio.inspector-section', 'all'));
 await context.addInitScript(() => localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4498', token: 'editor-test' })));
 const page = await context.newPage(), errors = [], results = [];
 page.on('pageerror', e => errors.push(e.message));
 const check = async (name, fn) => { await fn(); results.push(name); console.log(`PASS ${name}`); };
 const module = type => document.profiles[0].modules.find(m => m.type === type);
-const select = name => page.getByRole('button', { name: `Select ${name}`, exact: true }).click();
+// After movement, another higher layer may cover the object's canvas hit target.
+const select = name => page.locator('.layer-list').getByRole('button', { name, exact: true }).click();
 const synced = () => expect(page.locator('.statusbar')).toContainText('Synced to OBS');
 try {
   await page.goto('http://127.0.0.1:5192'); await expect(page.getByText('Capture connected')).toBeVisible();
@@ -63,7 +67,12 @@ try {
     await page.getByLabel('Caption', { exact: true }).fill('W'.repeat(100)); await page.getByLabel('Font size', { exact: true }).fill('96'); await page.getByLabel('Width', { exact: true }).fill('40'); await synced();
     const fit = () => page.locator('.preview-viewport .module-distance').evaluate(el => { const b = el.getBoundingClientRect(), c = el.querySelector('.module-text-content').getBoundingClientRect(); return { inside: c.right <= b.right + .5 && c.bottom <= b.bottom + .5, scale: el.querySelector('.module-text-content').style.transform, overflow: getComputedStyle(el).overflow }; });
     await expect.poll(async () => (await fit()).inside).toBe(true);
-    await page.getByLabel('Fit text inside module', { exact: true }).uncheck(); expect((await fit()).overflow).toBe('hidden'); expect((await fit()).scale).toBe('scale(1)');
+    const checkbox = page.getByLabel('Fit text inside module', { exact: true }); await checkbox.scrollIntoViewIfNeeded(); const beforeClick = await checkbox.boundingBox();
+    // Width still has focus: its disappearing hint must not move the checkbox
+    // between pointerdown and pointerup and swallow this real mouse click.
+    await checkbox.uncheck(); const afterClick = await checkbox.boundingBox();
+    expect(Math.abs(afterClick.y - beforeClick.y)).toBeLessThan(.5);
+    expect((await fit()).overflow).toBe('hidden'); expect((await fit()).scale).toBe('scale(1)');
   });
   await check('Sensitivity fits both dimensions and shows only controls for its selected format', async () => {
     await select('Sensitivity'); await page.getByLabel('Format', { exact: true }).selectOption('Detailed'); await page.getByText('Text & typography', { exact: true }).click();
@@ -72,7 +81,7 @@ try {
     await page.getByLabel('Format', { exact: true }).selectOption('Minimal'); await expect(page.getByLabel('Game', { exact: true })).toHaveCount(0); await expect(page.getByLabel('DPI', { exact: true })).toHaveCount(0); await expect(page.getByLabel('cm/360', { exact: true })).toHaveCount(1);
   });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  const importDocument = async doc => { await page.locator('input[type="file"][accept=".json,application/json"]').setInputFiles({ name: 'import.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(doc)) }); };
+  const importDocument = async doc => { await page.locator('input[type="file"][accept=".json,application/json"]:not(.language-settings input)').setInputFiles({ name: 'import.json', mimeType: 'application/json', buffer: Buffer.from(wireJSON(doc)) }); };
   const artwork = JSON.parse(await readFile(new URL('../../ws-server/src-tauri/schema/test-artwork.json', import.meta.url), 'utf8'));
   await check('PNG, JPEG and WebP headers and decoded dimensions agree', async () => {
     const valid = await page.evaluate(async () => {
@@ -94,10 +103,7 @@ try {
     bad.assets.bad = { ...artwork, name: 'truncated.png', data: 'data:image/png;base64,' + truncated.toString('base64') };
     await importDocument(bad); await expect(page.getByRole('alert')).toContainText('Image “truncated.png” is damaged'); expect(revision).toBe(before);
   });
-  await check('import returns out-of-frame modules to the canvas', async () => {
-    const before = revision, doc = structuredClone(document); for (const m of doc.profiles[0].modules) { m.x = 1920; m.y = 1080; }
-    await importDocument(doc); await expect.poll(() => revision).toBeGreaterThan(before); await synced(); await expect.poll(() => document.profiles[0].modules.every(m => m.x + m.w <= 1920 && m.y + m.h <= 1080)).toBe(true);
-  });
+  await check('invalid out-of-frame imports are rejected without changing the layout',async()=>{const before=revision,doc=structuredClone(document);for(const m of doc.profiles[0].modules){m.x=1920;m.y=1080;}await importDocument(doc);await expect(page.getByRole('alert')).toContainText('Import rejected');expect(revision).toBe(before);});
   await check('slow artwork decoding cannot restore an older configuration', async () => {
     await synced();
     await page.evaluate(data => {
@@ -105,9 +111,9 @@ try {
       Image.prototype.decode = function () { if (this.src !== data) return decode.call(this); return new Promise((resolve, reject) => setTimeout(() => decode.call(this).then(() => { window.__slowDecodeDone = true; resolve(); }, reject), 300)); };
       window.__restoreDecode = () => { Image.prototype.decode = decode; };
     }, artwork.data);
-    const older = structuredClone(document); older.assets.paint = artwork; older.profiles[0].name = 'Older artwork config';
+    const older = structuredClone(document); older.assets.paint = artwork; older.gameProfiles[0].name = 'Older artwork config';
     broadcast({ type: 'studio_config', document: older, revision: String(++revision) });
-    document = structuredClone(document); document.profiles[0].name = 'Newest config';
+    document = structuredClone(document); document.gameProfiles[0].name = 'Newest config';
     broadcast({ type: 'studio_config', document, revision: String(++revision) });
     await page.getByRole('button', { name: 'Profiles', exact: true }).click();
     await expect(page.getByLabel('Profile name', { exact: true })).toHaveValue('Newest config');

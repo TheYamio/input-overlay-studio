@@ -45,12 +45,25 @@ jobs:
         working-directory: studio
         run: |
           pnpm exec playwright install chromium
+          pnpm test:localization
           pnpm test:browser
           pnpm test:visual
           pnpm test:sync
           pnpm test:editor
           pnpm test:customization
           pnpm test:visual-features
+          pnpm test:workspace
+          pnpm test:shapes
+          pnpm test:shortcuts
+          pnpm test:transforms
+          pnpm test:presets
+          pnpm test:animation
+          pnpm test:settings-ui
+          pnpm test:schema-animation
+          pnpm test:schema-settings
+          pnpm test:module-runtime
+          pnpm test:extensible-modules
+          pnpm test:profiles
 
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable
@@ -67,6 +80,14 @@ jobs:
       - name: build ws-server exe
         working-directory: ws-server/src-tauri
         run: cargo build --release
+
+      - name: Native architecture acceptance
+        working-directory: studio
+        run: |
+          pnpm test:acceptance
+          pnpm test:language-native
+          pnpm test:native
+          pnpm test:extensible-native
 
       - name: upload windows artifact
         uses: actions/upload-artifact@v4

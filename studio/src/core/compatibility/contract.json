@@ -1,0 +1,31 @@
+{
+  "contractVersion": 1,
+  "protocolVersion": 5,
+  "document": {
+    "read": [
+      4
+    ],
+    "write": [
+      4
+    ]
+  },
+  "moduleSchemas": {
+    "overlay.keyboard": 1,
+    "overlay.mouse": 1,
+    "overlay.trail": 1,
+    "overlay.distance": 1,
+    "overlay.sensitivity": 1
+  },
+  "features": {
+    "config.revisions": 1,
+    "input.snapshot": 1,
+    "input.heartbeat": 1,
+    "visual.artwork": 1,
+    "visual.shapes": 1,
+    "visual.preset-metadata": 1,
+    "visual.animation": 1,
+    "config.module-envelope": 1,
+    "profiles.game-links": 1,
+    "visual.localization": 1
+  }
+}

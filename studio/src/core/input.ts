@@ -44,7 +44,6 @@ export class InputEngine {
   readonly buttons = new Uint8Array(8);
   readonly listeners = new Set<(e: InputEvent, now: number) => void>();
   distanceCm = 0;
-  legacyDistance = false;
   revision = 0;
   dpi = 800;
   lastWheel = 0;
@@ -66,7 +65,6 @@ export class InputEngine {
       case 'mouse_released': this.buttons[e.button] = 0; break;
       case 'mouse_wheel': this.buttons[6] = Number(e.rotation < 0); this.buttons[7] = Number(e.rotation > 0); this.lastWheel = now; break;
       case 'mouse_moved':
-        this.legacyDistance ||= e.distance_counts === undefined;
         if (e.distance_cm !== undefined) this.distanceCm = e.distance_cm;
         else this.distanceCm += (e.distance_counts ?? Math.hypot(e.dx, e.dy)) * 2.54 / this.dpi;
         break;

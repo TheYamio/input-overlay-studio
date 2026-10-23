@@ -1,0 +1,106 @@
+{
+  "en": {
+    "game": "GAME",
+    "sensitivity": "SENS",
+    "unknown": "Unknown scale",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "ru": {
+    "game": "ИГРА",
+    "sensitivity": "СЕНСА",
+    "unknown": "Неизвестная шкала",
+    "turn": "СМ / 360°",
+    "cm": "см",
+    "m": "м"
+  },
+  "zh-cn": {
+    "game": "游戏",
+    "sensitivity": "灵敏度",
+    "unknown": "未知比例",
+    "turn": "厘米 / 360°",
+    "cm": "厘米",
+    "m": "米"
+  },
+  "es": {
+    "game": "JUEGO",
+    "sensitivity": "SENS",
+    "unknown": "Escala desconocida",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "pt-br": {
+    "game": "JOGO",
+    "sensitivity": "SENS",
+    "unknown": "Escala desconhecida",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "de": {
+    "game": "SPIEL",
+    "sensitivity": "SENS",
+    "unknown": "Unbekannte Skala",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "fr": {
+    "game": "JEU",
+    "sensitivity": "SENS",
+    "unknown": "Échelle inconnue",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "pl": {
+    "game": "GRA",
+    "sensitivity": "CZUŁOŚĆ",
+    "unknown": "Nieznana skala",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "ja": {
+    "game": "ゲーム",
+    "sensitivity": "感度",
+    "unknown": "不明なスケール",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "ko": {
+    "game": "게임",
+    "sensitivity": "감도",
+    "unknown": "알 수 없는 배율",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "tr": {
+    "game": "OYUN",
+    "sensitivity": "HASSASİYET",
+    "unknown": "Bilinmeyen ölçek",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  },
+  "zh-tw": {
+    "game": "遊戲",
+    "sensitivity": "靈敏度",
+    "unknown": "未知比例",
+    "turn": "公分 / 360°",
+    "cm": "公分",
+    "m": "公尺"
+  },
+  "sjn-teng-x-art": {
+    "game": "GAME",
+    "sensitivity": "SENS",
+    "unknown": "Unknown scale",
+    "turn": "CM / 360°",
+    "cm": "cm",
+    "m": "m"
+  }
+}

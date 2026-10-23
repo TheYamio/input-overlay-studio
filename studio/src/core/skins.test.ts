@@ -1,19 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { documentSchema, initialDocument, parseDocument, makeModule } from './config';
+import { documentSchema, initialDocument, makeModule } from './config';
 import { capsFor, imagePlacement, pruneAssets, resolvedStyle } from './skins';
 import { defaultImageSettings } from './visual';
 import { exportPreset, importPreset } from './presets';
 
 import asset from '../../../ws-server/src-tauri/schema/test-artwork.json';
 describe('visual schema and portable artwork', () => {
-  it('upgrades v1 profiles and saved layouts without changing geometry or labels', () => {
-    const d = initialDocument(), legacy = JSON.parse(JSON.stringify(d)); legacy.version = 1; delete legacy.assets;
-    legacy.presets = [{ id: 'preset', name: 'old layout', theme: 'Obsidian', modules: structuredClone(legacy.profiles[0].modules) }];
-    for (const p of [...legacy.profiles, ...legacy.presets]) for (const m of p.modules) for (const key of ['appearance', 'image', 'buttonStyles', 'buttonGeometry', 'buttonImages', 'trailAppearance', 'wheelDuration', 'textLayout']) delete m[key];
-    const upgraded = parseDocument(JSON.stringify(legacy));
-    expect(upgraded.version).toBe(2); expect(upgraded.profiles[0].modules[0].keys).toEqual(d.profiles[0].modules[0].keys);
-    expect(upgraded.presets[0].modules[0].image.enabled).toBe(false); expect(upgraded.profiles[0].modules[0].appearance.backgroundOpacity).toBe(1);
-  });
+
   it('validates embedded raster sources, references and bounded effects', () => {
     const d = initialDocument(); d.assets.a = { ...asset }; d.profiles[0].modules[0].image.assetId = 'a'; expect(documentSchema.safeParse(d).success).toBe(true);
     d.assets.a.data = 'https://example.test/image.png'; expect(documentSchema.safeParse(d).success).toBe(false);

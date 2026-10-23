@@ -1,5 +1,7 @@
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // End-to-end renderer/editor tests use an explicitly synthetic, authenticated server.
 // This never substitutes for validating Windows Raw Input or OBS.
+import { initialDocument , parseDocument} from '../src/core/config.ts';
 import { chromium, expect } from '@playwright/test';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'vite';
@@ -27,8 +29,8 @@ const broadcast = packet => {
   const text = JSON.stringify(packet); for (const ws of wss.clients) if (ws.authed && ws.readyState === 1) ws.send(text); };
 wss.on('connection', ws => {
   ws.on('message', raw => {
-    const message = JSON.parse(raw.toString());
-    if (message.type === 'auth') { ws.authed = message.token === 'integration-test'; ws.send(JSON.stringify({ type: 'auth_response', status: ws.authed ? 'success' : 'failed', protocol: 4, studio_revisions: true, state_snapshot: true })); return; }
+    const message = JSON.parse(raw.toString()); if(message.document?.version===4)message.document=parseDocument(JSON.stringify(message.document));
+    if (message.type === 'auth') { ws.authed = message.token === 'integration-test'; ws.send(JSON.stringify({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, studio_revisions: true, state_snapshot: true })); return; }
     if (!ws.authed) return;
     if (message.type === 'input_snapshot') ws.send(JSON.stringify({ type: 'input_snapshot', sequence: ++sequence, keys: [...heldKeys].map(([rawcode, depth]) => ({ rawcode, depth })), buttons: [...heldButtons] }));
     if (message.type === 'studio_get') { ws.send(JSON.stringify({ type: 'studio_config', revision: String(revision), document })); ws.gotConfig = true; }
@@ -39,6 +41,7 @@ wss.on('connection', ws => {
 const heartbeat = setInterval(() => broadcast({ type: 'heartbeat' }), 3000);
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1560, height: 1000 }, permissions: ['clipboard-write', 'clipboard-read'] });
+await context.addInitScript(() => localStorage.setItem('studio.inspector-section', 'all'));
 await context.addInitScript(port => localStorage.setItem('studio.connection', JSON.stringify({ url: `ws://127.0.0.1:${port}`, token: 'integration-test' })), testPort);
 const page = await context.newPage();
 const errors = []; page.on('pageerror', e => errors.push(e.message));
@@ -46,7 +49,7 @@ const results = [];
 async function check(name, fn) { await fn(); results.push({ name, passed: true }); console.log(`PASS ${name}`); }
 try {
   await page.goto('http://127.0.0.1:5173');
-  await check('authenticated Studio and automatic configuration synchronization', async () => { await expect(page.getByText('Capture connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(2); });
+  await check('authenticated Studio and automatic configuration synchronization', async () => { await expect(page.getByText('Capture connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(4); });
   await check('live simultaneous keys, modifiers, mouse and wheel', async () => {
     for (const rawcode of [87, 65, 160, 162, 32]) broadcast({ event_type: 'key_pressed', rawcode });
     for (const button of [1, 2, 4, 5]) broadcast({ event_type: 'mouse_pressed', button });
@@ -67,8 +70,8 @@ try {
     const bounds = await hitbox.boundingBox(); await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2); await page.mouse.down(); await page.mouse.move(bounds.x + bounds.width / 2 + 30, bounds.y + bounds.height / 2 + 15, { steps: 8 }); await page.mouse.up();
     await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').x).not.toBe(oldX);
     const movedX = document.profiles[0].modules.find(m => m.type === 'trail').x;
-    await page.getByRole('button', { name: 'Undo (Ctrl+Z)', exact: true }).click(); await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').x).toBe(oldX);
-    await page.getByRole('button', { name: 'Redo (Ctrl+Shift+Z)', exact: true }).click(); await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').x).toBe(movedX);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click(); await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').x).toBe(oldX);
+    await page.getByRole('button', { name: 'Redo', exact: true }).click(); await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').x).toBe(movedX);
     const sizeBefore = document.profiles[0].modules.find(m => m.type === 'trail').w;
     const handle = await page.getByRole('button', { name: 'Resize Mouse Trail', exact: true }).boundingBox(); await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2); await page.mouse.down(); await page.mouse.move(handle.x + 25, handle.y + 20, { steps: 8 }); await page.mouse.up(); await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').w).toBeGreaterThan(sizeBefore);
   });
@@ -80,7 +83,7 @@ try {
     await page.getByLabel('Lock position', { exact: true }).check(); await expect(page.getByRole('button', { name: 'Align Left', exact: true })).toBeDisabled();
     await page.getByLabel('Lock position', { exact: true }).uncheck();
     await page.getByRole('button', { name: 'Reset position', exact: true }).click();
-    await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').x).toBe(790);
+    await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').x).toBe(initialDocument().profiles[0].modules.find(m => m.type === 'trail').x);
   });
   await check('incremental scene updates retain canvas, keys and trail geometry', async () => {
     const report = await page.evaluate(async () => {
@@ -115,8 +118,8 @@ try {
     await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); await page.getByRole('button', { name: 'Select Mouse Trail', exact: true }).click(); await expect(page.getByLabel('Style', { exact: true })).toHaveValue('Neon Trail');
   });
   await check('factory themes and saved preset actions', async () => {
-    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Apply theme', exact: true }).click();
-    await page.getByLabel('Preset name').fill('Test layout'); await page.getByRole('button', { name: 'Save current layout', exact: true }).click(); await expect(page.getByLabel('Rename saved preset')).toHaveValue('Test layout');
+    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: /Colors on my layout/ }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Apply colors', exact: true }).click();
+    await page.getByRole('button', { name: 'Save current setup', exact: true }).click(); await page.getByLabel('Preset name').fill('Test layout'); await page.getByRole('button', { name: 'Save preset', exact: true }).click(); await expect(page.locator('.saved-preset').getByRole('heading', { name: 'Test layout', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Duplicate preset', exact: true }).click(); await expect(page.locator('.saved-preset')).toHaveCount(2);
     await page.getByRole('button', { name: 'Delete preset', exact: true }).last().click(); await expect(page.locator('.saved-preset')).toHaveCount(1);
     await page.getByRole('button', { name: 'Studio', exact: true }).click();

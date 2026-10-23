@@ -2,9 +2,220 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "languagePacks": {
+      "default": [],
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "const": 1
+          },
+          "locale": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "ltr",
+              "rtl"
+            ]
+          },
+          "namespaces": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9-]*$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9.-]*$"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            }
+          }
+        },
+        "required": [
+          "version",
+          "locale",
+          "namespaces"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "shapes": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "viewBox": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              {
+                "type": "number",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1000000
+              },
+              {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1000000
+              }
+            ],
+            "items": false,
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "paths": {
+            "minItems": 1,
+            "maxItems": 64,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "d": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000,
+                  "pattern": "^[MmLlHhVvCcSsQqTtAaZzEe0-9+.,\\s-]+$"
+                },
+                "matrix": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 6,
+                  "maxItems": 6
+                },
+                "fill": {
+                  "type": "boolean"
+                },
+                "fillRule": {
+                  "type": "string",
+                  "enum": [
+                    "nonzero",
+                    "evenodd"
+                  ]
+                },
+                "strokeWidth": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "linecap": {
+                  "type": "string",
+                  "enum": [
+                    "butt",
+                    "round",
+                    "square"
+                  ]
+                },
+                "linejoin": {
+                  "type": "string",
+                  "enum": [
+                    "miter",
+                    "round",
+                    "bevel"
+                  ]
+                },
+                "opacity": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "d",
+                "matrix",
+                "fill",
+                "fillRule",
+                "strokeWidth",
+                "linecap",
+                "linejoin",
+                "opacity"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "viewBox",
+          "paths"
+        ]
+      }
+    },
     "version": {
       "type": "number",
-      "const": 2
+      "const": 4
     },
     "assets": {
       "default": {},
@@ -50,7 +261,7 @@
       "minLength": 1,
       "maxLength": 80
     },
-    "profiles": {
+    "gameProfiles": {
       "minItems": 1,
       "maxItems": 50,
       "type": "array",
@@ -108,6 +319,48 @@
             "type": "number",
             "exclusiveMinimum": 0,
             "maximum": 1000000000
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "game",
+          "dpi",
+          "sensitivity",
+          "yaw",
+          "scale",
+          "manualCm"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "profiles": {
+      "minItems": 1,
+      "maxItems": 50,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "gameProfileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "locale": {
+            "default": "en",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$"
           },
           "caption": {
             "type": "string",
@@ -232,6 +485,75 @@
                   },
                   "type": "object",
                   "properties": {
+                    "lighting": {
+                      "type": "string",
+                      "enum": [
+                        "Fill",
+                        "Outline",
+                        "Glow",
+                        "Fill + glow",
+                        "Gradient",
+                        "Ripple",
+                        "Analog Fill",
+                        "Off"
+                      ]
+                    },
+                    "motion": {
+                      "type": "string",
+                      "enum": [
+                        "None",
+                        "Press",
+                        "Scale",
+                        "Lift",
+                        "Bounce",
+                        "Pulse"
+                      ]
+                    },
+                    "easing": {
+                      "type": "string",
+                      "enum": [
+                        "Linear",
+                        "Ease out",
+                        "Ease in out",
+                        "Spring"
+                      ]
+                    },
+                    "pressDelay": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000
+                    },
+                    "releaseDelay": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2000
+                    },
+                    "lightingOpacity": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "secondaryColor": {
+                      "type": "string",
+                      "pattern": "^#[0-9a-fA-F]{6}$"
+                    },
+                    "gradientAngle": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "motionScale": {
+                      "type": "number",
+                      "minimum": 0.8,
+                      "maximum": 1.2
+                    },
+                    "showLabels": {
+                      "type": "boolean"
+                    },
+                    "shapeId": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
                     "backgroundOpacity": {
                       "type": "number",
                       "minimum": 0,
@@ -273,7 +595,8 @@
                         "Arial",
                         "Verdana",
                         "Consolas",
-                        "Georgia"
+                        "Georgia",
+                        "Unicode"
                       ]
                     },
                     "fontSize": {
@@ -493,6 +816,75 @@
                   "additionalProperties": {
                     "type": "object",
                     "properties": {
+                      "lighting": {
+                        "type": "string",
+                        "enum": [
+                          "Fill",
+                          "Outline",
+                          "Glow",
+                          "Fill + glow",
+                          "Gradient",
+                          "Ripple",
+                          "Analog Fill",
+                          "Off"
+                        ]
+                      },
+                      "motion": {
+                        "type": "string",
+                        "enum": [
+                          "None",
+                          "Press",
+                          "Scale",
+                          "Lift",
+                          "Bounce",
+                          "Pulse"
+                        ]
+                      },
+                      "easing": {
+                        "type": "string",
+                        "enum": [
+                          "Linear",
+                          "Ease out",
+                          "Ease in out",
+                          "Spring"
+                        ]
+                      },
+                      "pressDelay": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000
+                      },
+                      "releaseDelay": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 2000
+                      },
+                      "lightingOpacity": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "secondaryColor": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$"
+                      },
+                      "gradientAngle": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      },
+                      "motionScale": {
+                        "type": "number",
+                        "minimum": 0.8,
+                        "maximum": 1.2
+                      },
+                      "showLabels": {
+                        "type": "boolean"
+                      },
+                      "shapeId": {
+                        "type": "string",
+                        "maxLength": 80
+                      },
                       "backgroundOpacity": {
                         "type": "number",
                         "minimum": 0,
@@ -534,7 +926,8 @@
                           "Arial",
                           "Verdana",
                           "Consolas",
-                          "Georgia"
+                          "Georgia",
+                          "Unicode"
                         ]
                       },
                       "fontSize": {
@@ -765,6 +1158,10 @@
                   "minimum": 50,
                   "maximum": 500
                 },
+                "mouseBodyShapeId": {
+                  "type": "string",
+                  "maxLength": 80
+                },
                 "textLayout": {
                   "default": "Horizontal",
                   "type": "string",
@@ -816,6 +1213,75 @@
                       "style": {
                         "type": "object",
                         "properties": {
+                          "lighting": {
+                            "type": "string",
+                            "enum": [
+                              "Fill",
+                              "Outline",
+                              "Glow",
+                              "Fill + glow",
+                              "Gradient",
+                              "Ripple",
+                              "Analog Fill",
+                              "Off"
+                            ]
+                          },
+                          "motion": {
+                            "type": "string",
+                            "enum": [
+                              "None",
+                              "Press",
+                              "Scale",
+                              "Lift",
+                              "Bounce",
+                              "Pulse"
+                            ]
+                          },
+                          "easing": {
+                            "type": "string",
+                            "enum": [
+                              "Linear",
+                              "Ease out",
+                              "Ease in out",
+                              "Spring"
+                            ]
+                          },
+                          "pressDelay": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1000
+                          },
+                          "releaseDelay": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 2000
+                          },
+                          "lightingOpacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "secondaryColor": {
+                            "type": "string",
+                            "pattern": "^#[0-9a-fA-F]{6}$"
+                          },
+                          "gradientAngle": {
+                            "type": "number",
+                            "minimum": -180,
+                            "maximum": 180
+                          },
+                          "motionScale": {
+                            "type": "number",
+                            "minimum": 0.8,
+                            "maximum": 1.2
+                          },
+                          "showLabels": {
+                            "type": "boolean"
+                          },
+                          "shapeId": {
+                            "type": "string",
+                            "maxLength": 80
+                          },
                           "backgroundOpacity": {
                             "type": "number",
                             "minimum": 0,
@@ -857,7 +1323,8 @@
                               "Arial",
                               "Verdana",
                               "Consolas",
-                              "Georgia"
+                              "Georgia",
+                              "Unicode"
                             ]
                           },
                           "fontSize": {
@@ -1152,12 +1619,7 @@
         "required": [
           "id",
           "name",
-          "game",
-          "dpi",
-          "sensitivity",
-          "yaw",
-          "scale",
-          "manualCm",
+          "gameProfileId",
           "caption",
           "theme",
           "modules"
@@ -1179,6 +1641,17 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "layout",
+              "style"
+            ]
           },
           "theme": {
             "type": "string",
@@ -1299,6 +1772,75 @@
                   },
                   "type": "object",
                   "properties": {
+                    "lighting": {
+                      "type": "string",
+                      "enum": [
+                        "Fill",
+                        "Outline",
+                        "Glow",
+                        "Fill + glow",
+                        "Gradient",
+                        "Ripple",
+                        "Analog Fill",
+                        "Off"
+                      ]
+                    },
+                    "motion": {
+                      "type": "string",
+                      "enum": [
+                        "None",
+                        "Press",
+                        "Scale",
+                        "Lift",
+                        "Bounce",
+                        "Pulse"
+                      ]
+                    },
+                    "easing": {
+                      "type": "string",
+                      "enum": [
+                        "Linear",
+                        "Ease out",
+                        "Ease in out",
+                        "Spring"
+                      ]
+                    },
+                    "pressDelay": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000
+                    },
+                    "releaseDelay": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2000
+                    },
+                    "lightingOpacity": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "secondaryColor": {
+                      "type": "string",
+                      "pattern": "^#[0-9a-fA-F]{6}$"
+                    },
+                    "gradientAngle": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "motionScale": {
+                      "type": "number",
+                      "minimum": 0.8,
+                      "maximum": 1.2
+                    },
+                    "showLabels": {
+                      "type": "boolean"
+                    },
+                    "shapeId": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
                     "backgroundOpacity": {
                       "type": "number",
                       "minimum": 0,
@@ -1340,7 +1882,8 @@
                         "Arial",
                         "Verdana",
                         "Consolas",
-                        "Georgia"
+                        "Georgia",
+                        "Unicode"
                       ]
                     },
                     "fontSize": {
@@ -1560,6 +2103,75 @@
                   "additionalProperties": {
                     "type": "object",
                     "properties": {
+                      "lighting": {
+                        "type": "string",
+                        "enum": [
+                          "Fill",
+                          "Outline",
+                          "Glow",
+                          "Fill + glow",
+                          "Gradient",
+                          "Ripple",
+                          "Analog Fill",
+                          "Off"
+                        ]
+                      },
+                      "motion": {
+                        "type": "string",
+                        "enum": [
+                          "None",
+                          "Press",
+                          "Scale",
+                          "Lift",
+                          "Bounce",
+                          "Pulse"
+                        ]
+                      },
+                      "easing": {
+                        "type": "string",
+                        "enum": [
+                          "Linear",
+                          "Ease out",
+                          "Ease in out",
+                          "Spring"
+                        ]
+                      },
+                      "pressDelay": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000
+                      },
+                      "releaseDelay": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 2000
+                      },
+                      "lightingOpacity": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "secondaryColor": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$"
+                      },
+                      "gradientAngle": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      },
+                      "motionScale": {
+                        "type": "number",
+                        "minimum": 0.8,
+                        "maximum": 1.2
+                      },
+                      "showLabels": {
+                        "type": "boolean"
+                      },
+                      "shapeId": {
+                        "type": "string",
+                        "maxLength": 80
+                      },
                       "backgroundOpacity": {
                         "type": "number",
                         "minimum": 0,
@@ -1601,7 +2213,8 @@
                           "Arial",
                           "Verdana",
                           "Consolas",
-                          "Georgia"
+                          "Georgia",
+                          "Unicode"
                         ]
                       },
                       "fontSize": {
@@ -1832,6 +2445,10 @@
                   "minimum": 50,
                   "maximum": 500
                 },
+                "mouseBodyShapeId": {
+                  "type": "string",
+                  "maxLength": 80
+                },
                 "textLayout": {
                   "default": "Horizontal",
                   "type": "string",
@@ -1883,6 +2500,75 @@
                       "style": {
                         "type": "object",
                         "properties": {
+                          "lighting": {
+                            "type": "string",
+                            "enum": [
+                              "Fill",
+                              "Outline",
+                              "Glow",
+                              "Fill + glow",
+                              "Gradient",
+                              "Ripple",
+                              "Analog Fill",
+                              "Off"
+                            ]
+                          },
+                          "motion": {
+                            "type": "string",
+                            "enum": [
+                              "None",
+                              "Press",
+                              "Scale",
+                              "Lift",
+                              "Bounce",
+                              "Pulse"
+                            ]
+                          },
+                          "easing": {
+                            "type": "string",
+                            "enum": [
+                              "Linear",
+                              "Ease out",
+                              "Ease in out",
+                              "Spring"
+                            ]
+                          },
+                          "pressDelay": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1000
+                          },
+                          "releaseDelay": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 2000
+                          },
+                          "lightingOpacity": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "secondaryColor": {
+                            "type": "string",
+                            "pattern": "^#[0-9a-fA-F]{6}$"
+                          },
+                          "gradientAngle": {
+                            "type": "number",
+                            "minimum": -180,
+                            "maximum": 180
+                          },
+                          "motionScale": {
+                            "type": "number",
+                            "minimum": 0.8,
+                            "maximum": 1.2
+                          },
+                          "showLabels": {
+                            "type": "boolean"
+                          },
+                          "shapeId": {
+                            "type": "string",
+                            "maxLength": 80
+                          },
                           "backgroundOpacity": {
                             "type": "number",
                             "minimum": 0,
@@ -1924,7 +2610,8 @@
                               "Arial",
                               "Verdana",
                               "Consolas",
-                              "Georgia"
+                              "Georgia",
+                              "Unicode"
                             ]
                           },
                           "fontSize": {
@@ -2282,6 +2969,7 @@
   "required": [
     "version",
     "activeProfileId",
+    "gameProfiles",
     "profiles",
     "presets",
     "performance",

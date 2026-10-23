@@ -1,10 +1,15 @@
 import { z } from 'zod';
+import { lightingModes, motionModes, easingModes } from './animation.ts';
 import { rasterDimensions } from './raster.ts';
 
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const effects = ['Instant', 'Soft Press', 'Glow', 'Pulse', 'Analog Fill'] as const;
-export const fonts = ['Segoe UI', 'Arial', 'Verdana', 'Consolas', 'Georgia'] as const;
+export const fonts = ['Segoe UI', 'Arial', 'Verdana', 'Consolas', 'Georgia', 'Unicode'] as const;
 export const appearanceSchema = z.object({
+  lighting: z.enum(lightingModes).optional(), motion: z.enum(motionModes).optional(), easing: z.enum(easingModes).optional(),
+  pressDelay: z.number().min(0).max(1000).optional(), releaseDelay: z.number().min(0).max(2000).optional(),
+  lightingOpacity: z.number().min(0).max(1).optional(), secondaryColor: color.optional(), gradientAngle: z.number().min(-180).max(180).optional(), motionScale: z.number().min(.8).max(1.2).optional(),
+  showLabels: z.boolean().optional(), shapeId: z.string().max(80).optional(),
   backgroundOpacity: z.number().min(0).max(1), textColor: color, activeTextColor: color,
   borderColor: color, activeBorderColor: color, borderOpacity: z.number().min(0).max(1), borderWidth: z.number().min(0).max(8),
   autoFitText: z.boolean(), fontFamily: z.enum(fonts), fontSize: z.number().min(6).max(96), fontWeight: z.number().int().min(100).max(900), letterSpacing: z.number().min(-2).max(12),

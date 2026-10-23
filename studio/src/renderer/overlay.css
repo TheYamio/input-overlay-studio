@@ -2,14 +2,21 @@
 .overlay-module{position:absolute;box-sizing:border-box;user-select:none;--module-accent:#a5ef6b;--module-bg:#161b20;--module-radius:12px;font-family:var(--font-family,'Segoe UI');letter-spacing:var(--letter-spacing,1px);color:var(--text-color,#d9e0e7)}
 .cap-layout{position:absolute;transform-origin:top left}.overlay-key{box-sizing:border-box;border-radius:var(--corner);font-family:var(--font-family);font-size:var(--font-size);font-weight:var(--font-weight);letter-spacing:var(--letter-spacing);color:var(--idle-ink);transition:color var(--release-ms),transform var(--release-ms),box-shadow var(--release-ms);isolation:isolate;display:flex;align-items:center;justify-content:center}
 .overlay-key:after{content:'';position:absolute;inset:0;border:var(--border-width) solid var(--idle-border);border-radius:inherit;box-sizing:border-box;pointer-events:none;transition:border-color var(--release-ms);z-index:3}
-.key-surface{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:var(--idle-bg)}.key-active{position:absolute;inset:0;background:var(--active-bg);opacity:0;transition:opacity var(--release-ms);z-index:1}.key-label{position:relative;z-index:2;text-align:center;line-height:1.15;-webkit-text-stroke:var(--outline) #000;paint-order:stroke fill;text-shadow:var(--text-shadow);max-width:100%;white-space:nowrap;overflow:hidden;padding:2px}
+.key-surface{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:var(--idle-bg)}.key-active{position:absolute;inset:0;background:var(--active-bg);opacity:0;transition:opacity var(--release-ms);z-index:1}.key-label{position:relative;z-index:2;text-align:center;line-height:1.6;-webkit-text-stroke:var(--outline) #000;paint-order:stroke fill;text-shadow:var(--text-shadow);max-width:100%;white-space:nowrap;overflow:hidden;padding:2px}
 .overlay-key.pressed{color:var(--active-ink);transform:translateY(var(--travel));transition-duration:var(--press-ms)}.overlay-key.pressed:after{border-color:var(--active-border);transition-duration:var(--press-ms)}.overlay-key.pressed .key-active{opacity:1;transition-duration:var(--press-ms)}
 .overlay-key.tap-flash .key-active{opacity:.5;transition-duration:0ms}
-.overlay-key[data-effect="Instant"],.overlay-key[data-effect="Instant"]:after,.overlay-key[data-effect="Instant"] .key-active{transition:none}.overlay-key[data-effect="Glow"].pressed{box-shadow:0 0 var(--glow) color-mix(in srgb,var(--active-bg),transparent 45%)}
-.overlay-key[data-effect="Pulse"].pressed{animation:input-pulse 150ms ease-out}.overlay-key[data-effect="Analog Fill"].pressed .key-active{background:linear-gradient(to top,var(--active-bg) var(--depth),transparent var(--depth))}
-@keyframes input-pulse{from{box-shadow:0 0 0 10px color-mix(in srgb,var(--active-bg),transparent 55%)}to{box-shadow:0 0 0 0 transparent}}
 .key-art{position:absolute;inset:0;opacity:var(--image-opacity);filter:brightness(var(--image-brightness)) contrast(var(--image-contrast)) saturate(var(--image-saturation));transition:opacity var(--release-ms),filter var(--release-ms);overflow:hidden;z-index:0}.image-plane,.image-content,.image-tint{position:absolute;pointer-events:none}.image-tint{inset:0}.has-art.pressed .key-active{opacity:var(--press-tint)}.has-art[data-image-press="Brighten"].pressed .key-active{opacity:0}.has-art[data-image-press="Brighten"].pressed .key-art{opacity:1;filter:brightness(calc(var(--image-brightness)*1.35)) contrast(var(--image-contrast)) saturate(var(--image-saturation))}.has-art[data-image-press="Hide"].pressed .key-art{opacity:0}.has-art[data-image-press="Hide"].pressed .key-active{opacity:1}
 .reduced-motion .overlay-key,.reduced-motion .overlay-key:after,.reduced-motion .key-active,.reduced-motion .key-art{transition:none;animation:none}.reduced-motion .overlay-key.pressed{transform:none}
+.key-body{position:absolute;inset:0;display:grid;place-items:center;border-radius:inherit}
+.mouse-custom-body{position:absolute;left:0;top:0;width:220px;height:300px;background:var(--module-bg);mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;pointer-events:none}
+.mouse-custom-body:after{content:'';position:absolute;inset:0;background:var(--body-border-color);mask-image:var(--body-border);-webkit-mask-image:var(--body-border);mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat}
+.key-label[hidden]{display:none}
+.custom-shape .key-body{mask-image:var(--shape-mask);-webkit-mask-image:var(--shape-mask);mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat}
+.custom-shape,.custom-shape .key-surface{border-radius:0}
+.custom-shape:after{display:none}
+.custom-shape .key-body:after{content:'';position:absolute;inset:0;background:var(--idle-border);opacity:var(--shape-border-visible);mask-image:var(--shape-border);-webkit-mask-image:var(--shape-border);mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;pointer-events:none;z-index:3;transition:background-color var(--release-ms)}
+.custom-shape.pressed .key-body:after{background:var(--active-border);transition-duration:var(--press-ms)}
+.reduced-motion .custom-shape .key-body:after{transition:none}
 .mouse-outline{position:absolute;left:0;top:0;width:220px;height:300px;pointer-events:none;overflow:visible}.mouse-outline path{fill:var(--module-bg);stroke:var(--surface-border);stroke-width:var(--surface-border-width)}
 .trail-canvas{width:100%;height:100%;display:block;border-radius:var(--module-radius);background:var(--module-bg);border:var(--surface-border-width) solid var(--surface-border);box-sizing:border-box}.metric{display:flex;flex-direction:column;justify-content:center;gap:10px}.metric-caption{font-size:var(--font-size);color:var(--text-color);opacity:.7}.metric strong{font-size:calc(var(--font-size)*2.25);font-weight:var(--font-weight);color:var(--module-accent);font-variant-numeric:tabular-nums}.metric strong,.sensitivity-strip strong{-webkit-text-stroke:var(--outline) #000;paint-order:stroke fill;text-shadow:var(--text-shadow)}
 .sensitivity-strip{display:flex;align-items:center;gap:24px;flex-wrap:wrap;align-content:center}.sensitivity-strip>div{display:flex;align-items:baseline;gap:9px}.sensitivity-strip strong{font-size:calc(var(--font-size)*1.25);font-weight:var(--font-weight);font-variant-numeric:tabular-nums}.sensitivity-strip span{color:var(--text-color);opacity:.7;font-size:calc(var(--font-size)*.7)}.sensitivity-strip[data-text-layout="Vertical"]{flex-direction:column;align-items:flex-start;gap:10px;flex-wrap:nowrap}
@@ -24,3 +31,35 @@
 .sensitivity-strip[data-text-layout="Vertical"] .sensitivity-content{flex-direction:column;align-items:flex-start;gap:10px}
 .sensitivity-strip strong{color:var(--module-accent)}
 .sensitivity-strip>.sensitivity-content{display:flex;align-items:center;gap:24px}
+/* Movement and lighting are independent. JavaScript schedules input delays;
+   CSS owns interpolation, so an idle scene does not need a frame loop. */
+.overlay-key[data-motion]{transition:color var(--release-ms) var(--motion-easing),transform var(--release-ms) var(--motion-easing),filter var(--release-ms) ease,box-shadow var(--release-ms) ease;animation:none}
+.overlay-key[data-motion]:after,.overlay-key[data-motion] .key-body:after,.overlay-key[data-motion] .key-active,.overlay-key[data-motion] .key-art{transition-duration:var(--release-ms);transition-timing-function:var(--motion-easing)}
+.overlay-key[data-motion].pressed,.overlay-key[data-motion].pressed:after,.overlay-key[data-motion].pressed .key-body:after,.overlay-key[data-motion].pressed .key-active,.overlay-key[data-motion].pressed .key-art{transition-duration:var(--press-ms)}
+.overlay-key[data-motion].pressed{transform:none;box-shadow:none;filter:none;animation:none}
+.overlay-key[data-motion="Press"].pressed{transform:translateY(var(--travel))}
+.overlay-key[data-motion="Scale"].pressed{transform:scale(var(--motion-scale))}
+.overlay-key[data-motion="Lift"].pressed{transform:translateY(calc(var(--travel)*-1))}
+.overlay-key[data-motion="Bounce"].pressed{transform:translateY(var(--travel));animation:key-bounce var(--press-ms) var(--motion-easing)}
+.overlay-key[data-motion="Pulse"].pressed{animation:key-pop var(--press-ms) ease-out}
+@keyframes key-bounce{0%{transform:translateY(0)}55%{transform:translateY(calc(var(--travel)*1.8))}80%{transform:translateY(calc(var(--travel)*.5))}100%{transform:translateY(var(--travel))}}
+@keyframes key-pop{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}
+.overlay-key[data-lighting].pressed .key-active{opacity:var(--light-opacity)}
+.overlay-key[data-lighting="Outline"].pressed .key-active,.overlay-key[data-lighting="Glow"].pressed .key-active,.overlay-key[data-lighting="Off"].pressed .key-active{opacity:0}
+.overlay-key[data-lighting="Glow"].pressed,.overlay-key[data-lighting="Fill + glow"].pressed{filter:drop-shadow(0 0 calc(var(--light-glow)*.45) color-mix(in srgb,var(--active-bg),transparent calc((1 - var(--light-opacity))*100%)))}
+.overlay-key[data-lighting="Gradient"] .key-active{background:linear-gradient(var(--gradient-angle),var(--active-bg),var(--secondary-light))}
+.overlay-key[data-lighting="Analog Fill"] .key-active{background:linear-gradient(to top,var(--active-bg) var(--depth),transparent var(--depth))}
+.overlay-key[data-lighting="Ripple"] .key-active{background:radial-gradient(ellipse at center,transparent 0 35%,var(--active-bg) 40% 65%,transparent 70%);background-position:center;background-repeat:no-repeat}
+.overlay-key[data-lighting="Ripple"].pressed .key-active{animation:key-ripple var(--press-ms) ease-out}
+@keyframes key-ripple{from{background-size:0% 0%}to{background-size:250% 250%}}
+.overlay-key[data-lighting="Off"].pressed{color:var(--idle-ink)}
+.overlay-key[data-lighting="Off"].pressed:after{border-color:var(--idle-border)}
+.overlay-key.custom-shape[data-lighting="Off"].pressed .key-body:after{background:var(--idle-border)}
+.overlay-key[data-lighting="Outline"].pressed,.overlay-key[data-lighting="Glow"].pressed{color:var(--idle-ink)}
+.overlay-key[data-lighting="Ripple"].has-art.pressed .key-active,.overlay-key[data-lighting="Gradient"].has-art.pressed .key-active,.overlay-key[data-lighting="Fill"].has-art.pressed .key-active,.overlay-key[data-lighting="Fill + glow"].has-art.pressed .key-active,.overlay-key[data-lighting="Analog Fill"].has-art.pressed .key-active{opacity:calc(var(--light-opacity)*var(--press-tint))}
+.overlay-key[data-lighting].has-art[data-image-press="Brighten"].pressed .key-active{opacity:0}
+.overlay-key[data-lighting].has-art[data-image-press="Hide"].pressed .key-active{opacity:var(--light-opacity)}
+.reduced-motion .overlay-key[data-motion],.reduced-motion .overlay-key[data-motion].pressed,.reduced-motion .overlay-key[data-lighting].pressed .key-active{transition:none;animation:none;transform:none}
+.overlay-key[data-lighting="Off"].has-art.pressed .key-active{opacity:0}
+
+.key-label,.metric-caption,.sensitivity-content strong,.sensitivity-content span{unicode-bidi:plaintext}

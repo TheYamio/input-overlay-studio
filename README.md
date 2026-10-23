@@ -8,14 +8,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TheYamio/input-overlay-studio/releases/download/v0.4.0/Input-Overlay-Studio-0.4.0-Windows-x64.zip"><img src="docs/media/download.svg" alt="Скачать Input Overlay Studio v0.4.0 для Windows x64" width="322" height="54" /></a>
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases/download/v0.6.2/Input-Overlay-Studio-0.6.2-Windows-x64.zip"><img src="docs/media/download.svg" alt="Скачать Input Overlay Studio v0.6.2 для Windows x64" width="322" height="54" /></a>
 </p>
 
 <p align="center">
   <a href="#в-игре">Посмотреть в деле</a> ·
   <a href="#быстрый-старт">Установка</a> ·
   <a href="docs/CUSTOMIZATION.md">Кастомизация</a> ·
-  <a href="https://github.com/TheYamio/input-overlay-studio/releases/tag/v0.4.0">Что нового в v0.4</a>
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases/tag/v0.6.2">Что нового в v0.6.2</a>
 </p>
 
 ## В игре
@@ -32,7 +32,9 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 | **Точная настройка.** Положение, масштаб, поворот, отражение, смешивание и цветокоррекция картинки. Шрифты, рамки и эффекты нажатия. | **Mouse Trail.** Пять стилей следа, затухание, импульсы кликов, скорость и масштаб с учётом DPI. |
 | **Своя раскладка.** Перетаскивание и размер каждой клавиши, назначение физическим нажатием, копирование стилей, Undo/Redo. | **Игровые профили.** DPI, sensitivity, cm/360 и дистанция. CS2, Valorant, Apex, Overwatch 2, KovaaK’s и ручные настройки. |
 
-Семь заводских композиций, собственные пресеты и JSON-экспорт со встроенными изображениями. Оформление синхронизируется с OBS; окно редактора можно закрыть, оставив захват в трее.
+Семь переработанных заводских композиций, **Yamio preset**, собственные пресеты с описаниями и палитрами, JSON-экспорт со встроенными изображениями. Оформление синхронизируется с OBS; окно редактора можно закрыть, оставив захват в трее.
+
+**В 0.6.2:** интерфейс «Полночь · ирис», высокая правая панель свойств, изменение размеров на холсте, импорт SVG-форм, настраиваемые горячие клавиши и независимые эффекты движения/подсветки с задержками. В Settings доступны 12 языков с отметкой **«Экспериментально»** и частичный художественный синдарин с тенгваром. [Подробнее о языках](docs/LOCALIZATION.md).
 
 <details>
 <summary><strong>Посмотреть редактор и настройку рисунка</strong></summary>
@@ -41,7 +43,7 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 
 Перемещай модули, меняй размеры, настраивай слои и проверяй результат в Demo.
 
-![Редактор Studio: модули, холст, свойства и пресеты](docs/media/studio.webp)
+![Редактор Studio: модули, холст, свойства и пресеты](docs/media/studio-0.6.2.png)
 
 ### Общий стиль для клавиш
 
@@ -55,7 +57,7 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 
 ## Быстрый старт
 
-1. **[Скачай Windows x64 ZIP](https://github.com/TheYamio/input-overlay-studio/releases/download/v0.4.0/Input-Overlay-Studio-0.4.0-Windows-x64.zip)** и распакуй **весь архив**. Обе DLL должны оставаться рядом с `Input Overlay Studio.exe`.
+1. **[Скачай Windows x64 ZIP](https://github.com/TheYamio/input-overlay-studio/releases/download/v0.6.2/Input-Overlay-Studio-0.6.2-Windows-x64.zip)** и распакуй **весь архив**. Обе DLL должны оставаться рядом с `Input Overlay Studio.exe`.
 2. **Запусти Studio.** Нужен установленный [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section).
 3. **Настрой профиль и оформление.** Укажи DPI, игру и sensitivity; выбери тему и расположи модули.
 4. **Нажми Copy OBS URL.** В OBS добавь **Browser Source / Источник браузера**, вставь ссылку и задай **1920 × 1080**.
@@ -79,7 +81,7 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 
 Настройки и логи: `%LOCALAPPDATA%/InputOverlayStudio`. Существующий portable `config.json` рядом с exe сохраняет прежнее расположение данных. Для разработки можно задать `INPUT_OVERLAY_STUDIO_DATA_DIR`; `--tray` запускает захват без окна.
 
-OBS-страница: `/studio/overlay.html`, web-редактор: `/studio/index.html`. Корень локального HTTP-сервера открывает Studio. Для LAN нужно явно изменить bind host и адреса источника. Ссылка OBS содержит токен доступа во фрагменте — не публикуй её. Экспортируемые профили токена не содержат. Формат документа — v2, настройки v1 мигрируют с сохранением исходной копии.
+OBS-страница: `/studio/overlay.html`, web-редактор: `/studio/index.html`. Корень локального HTTP-сервера открывает Studio. Для LAN нужно явно изменить bind host и адреса источника. Ссылка OBS содержит токен доступа во фрагменте — не публикуй её. Экспортируемые профили токена не содержат. Текущий формат документа — v4; файлы v1–v3 больше не поддерживаются. Перед обновлением сохраните отдельную копию старых настроек.
 
 </details>
 

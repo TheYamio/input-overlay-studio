@@ -3,6 +3,8 @@ mod artwork;
 mod motion;
 mod studio_store;
 mod studio_validation;
+mod module_validation;
+mod compatibility;
 mod services;
 mod ws_server;
 
@@ -30,6 +32,15 @@ struct AppState {
     _evdev: Mutex<Option<services::linux::evdev_input::EvdevInputThread>>,
     analog: Mutex<Option<services::analog::AnalogThread>>,
     http: Mutex<Option<services::http_server::HttpServer>>,
+}
+
+struct InterfaceMenu { settings:MenuItem<tauri::Wry>, quit:MenuItem<tauri::Wry> }
+#[tauri::command]
+fn set_interface_labels(state:tauri::State<'_,InterfaceMenu>,settings:String,quit:String)->Result<(),String>{
+    if [&settings,&quit].iter().any(|value|value.trim().is_empty()||value.encode_utf16().count()>100||value.chars().any(char::is_control)){return Err("Invalid interface label".into());}
+    state.settings.set_text(settings).map_err(|e|e.to_string())?;
+    state.quit.set_text(quit).map_err(|e|e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -252,27 +263,20 @@ pub fn run() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let mut context = tauri::generate_context!();
-    // Explicit data directories are independent installations (tests/preview).
-    // Keep single-instance protection within each directory, while allowing
-    // the user's normal installation to continue running alongside them.
-    if std::env::var_os("INPUT_OVERLAY_STUDIO_DATA_DIR").is_some() {
-        use std::hash::{Hash, Hasher};
-        let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        let canonical = std::fs::canonicalize(&data_dir).unwrap_or_else(|_| data_dir.clone());
-        #[cfg(windows)]
-        let canonical = canonical.to_string_lossy().to_lowercase();
-        canonical.hash(&mut hasher);
-        let identifier = format!("{}.isolated-{:016x}", context.config().identifier, hasher.finish());
-        context.config_mut().identifier = identifier;
-    }
+    // The application identity stays the same across copies and data folders.
+    let context = tauri::generate_context!();
+    #[cfg(windows)]
+    let startup_lock = match services::windows::single_instance::StartupLock::acquire(&context.config().identifier) {
+        Ok(lock) => lock,
+        Err(error) => {
+            tracing::error!("cannot coordinate application startup: {error}");
+            return;
+        }
+    };
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
-                let _ = window.set_focus();
-            }
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            if !argv.iter().any(|arg| arg == "--tray") { toggle_window(app); }
         }))
         .setup(move |app| {
             let config_path = data_dir.join("config.json");
@@ -373,12 +377,15 @@ pub fn run() {
 
             build_tray(app)?;
             if !std::env::args().any(|arg| arg == "--tray") { open_main_window(app.handle())?; }
+            #[cfg(windows)]
+            drop(startup_lock);
             Ok(())
         })
         .invoke_handler({
             #[cfg(windows)]
             {
                 tauri::generate_handler![
+                    set_interface_labels,
                     get_config,
                     get_startup_warning,
                     get_device_status,
@@ -391,6 +398,7 @@ pub fn run() {
             #[cfg(target_os = "linux")]
             {
                 tauri::generate_handler![
+                    set_interface_labels,
                     get_config,
                     get_startup_warning,
                     get_device_status,
@@ -419,6 +427,7 @@ fn build_tray(app: &tauri::App) -> tauri::Result<()> {
     let settings_item = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", "Exit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&settings_item, &quit_item])?;
+    app.manage(InterfaceMenu{settings:settings_item,quit:quit_item});
 
     let Some(icon) = app.default_window_icon() else {
         tracing::warn!("no window icon available for tray");
@@ -456,6 +465,7 @@ fn build_tray(app: &tauri::App) -> tauri::Result<()> {
 fn toggle_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
+        let _ = window.unminimize();
         let _ = window.set_focus();
         return;
     }
@@ -463,11 +473,23 @@ fn toggle_window(app: &tauri::AppHandle) {
 }
 
 fn open_main_window(app: &tauri::AppHandle) -> tauri::Result<()> {
+    // Monitor work areas are physical pixels; WebviewWindow sizes are logical.
+    // Leave room for native borders and the title bar at elevated Windows DPI.
+    let (width, height) = app
+        .primary_monitor()?
+        .map_or((1480.0, 920.0), |monitor| {
+            let area = monitor.work_area();
+            let scale = monitor.scale_factor();
+            (
+                (area.size.width as f64 / scale - 48.0).clamp(320.0, 1480.0),
+                (area.size.height as f64 / scale - 80.0).clamp(320.0, 920.0),
+            )
+        });
     let mut builder =
         tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("index.html".into()))
             .title("Input Overlay Studio")
-            .inner_size(1480.0, 920.0)
-            .min_inner_size(1050.0, 680.0)
+            .inner_size(width, height)
+            .min_inner_size(width.min(800.0), height.min(500.0))
             .resizable(true)
             .decorations(true)
             .skip_taskbar(false)

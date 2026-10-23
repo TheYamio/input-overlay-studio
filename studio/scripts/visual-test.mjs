@@ -1,17 +1,18 @@
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // UI, pixel masking, portable images and migration checks. Input transport is synthetic.
 import { chromium, expect } from '@playwright/test';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'vite';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { initialDocument } from '../src/core/config.ts';
+import { initialDocument , parseDocument} from '../src/core/config.ts';
 const artifacts = new URL('../artifacts/', import.meta.url); await mkdir(artifacts, { recursive: true });
 const vite = await createServer({ server: { host: '127.0.0.1', port: 5177, strictPort: true } }); await vite.listen();
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 4495 });
 let document = null; let revision = 0; const broadcast = packet => { for (const ws of wss.clients) if (ws.authed && ws.readyState === 1) ws.send(JSON.stringify(packet)); };
 wss.on('connection', ws => ws.on('message', raw => {
-  const m = JSON.parse(raw.toString());
-  if (m.type === 'auth') { ws.authed = m.token === 'visual-test'; ws.send(JSON.stringify({ type: 'auth_response', status: ws.authed ? 'success' : 'failed', protocol: 4, studio_revisions: true, state_snapshot: true })); return; }
+  const m = JSON.parse(raw.toString()); if(m.document?.version===4)m.document=parseDocument(JSON.stringify(m.document));
+  if (m.type === 'auth') { ws.authed = m.token === 'visual-test'; ws.send(JSON.stringify({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, studio_revisions: true, state_snapshot: true })); return; }
   if (!ws.authed) return;
   if (m.type === 'input_snapshot') ws.send(JSON.stringify({ type: 'input_snapshot', sequence: 0, keys: [], buttons: [] }));
   if (m.type === 'studio_get') ws.send(JSON.stringify({ type: 'studio_config', revision: String(revision), document }));
@@ -20,9 +21,9 @@ wss.on('connection', ws => ws.on('message', raw => {
 const heartbeat = setInterval(() => broadcast({ type: 'heartbeat' }), 2000);
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1560, height: 1050 }, acceptDownloads: true });
-const legacy = initialDocument(); legacy.version = 1; delete legacy.assets;
-for (const m of legacy.profiles[0].modules) for (const key of ['appearance', 'image', 'buttonStyles', 'buttonGeometry', 'buttonImages', 'trailAppearance', 'wheelDuration', 'textLayout']) delete m[key];
-await context.addInitScript(({ legacy }) => { localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4495', token: 'visual-test' })); if (!localStorage.getItem('input-overlay-studio.v1')) localStorage.setItem('input-overlay-studio.v1', JSON.stringify(legacy)); }, { legacy });
+const seed = initialDocument();
+await context.addInitScript(() => localStorage.setItem('studio.inspector-section', 'all'));
+await context.addInitScript(({ seed }) => { localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4495', token: 'visual-test' }));  }, { seed });
 const page = await context.newPage(), errors = [], results = []; page.on('pageerror', e => errors.push(e.message));
 const check = async (name, fn) => { await fn(); results.push({ name, passed: true }); console.log(`PASS ${name}`); };
 const keyboard = () => document.profiles[0].modules.find(m => m.type === 'keyboard');
@@ -30,9 +31,9 @@ const mouse = () => document.profiles[0].modules.find(m => m.type === 'mouse');
 let overlay;
 try {
   await page.goto('http://127.0.0.1:5177');
-  await check('v1 settings migrate and synchronize as v2 with original key positions', async () => {
-    await expect(page.getByText('Capture connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(2);
-    expect(keyboard().keys).toEqual(legacy.profiles[0].modules[0].keys);
+  await check('current settings synchronize with original key positions', async () => {
+    await expect(page.getByText('Capture connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(4);
+    expect(keyboard().keys).toEqual(seed.profiles[0].modules[0].keys);
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
   });
   await check('background transparency is independent of label opacity and per-key colors inherit', async () => {
@@ -41,7 +42,8 @@ try {
     await page.getByLabel('Key Accent color', { exact: true }).fill('#ff6600');
     await expect.poll(() => keyboard().keys[0].style?.accent).toBe('#ff6600');
     const color = await page.locator('.preview-viewport [data-key="87"]').evaluate(el => ({ bg: getComputedStyle(el.querySelector('.key-surface')).backgroundColor, label: getComputedStyle(el.querySelector('.key-label')).opacity, accent: el.style.getPropertyValue('--active-bg') }));
-    expect(color).toEqual({ bg: 'rgba(22, 27, 32, 0)', label: '1', accent: '#ff6600' });
+    const rgb = keyboard().background.slice(1).match(/../g).map(value => parseInt(value, 16));
+    expect(color).toEqual({ bg: `rgba(${rgb.join(', ')}, 0)`, label: '1', accent: '#ff6600' });
     await page.getByLabel('Customize this key', { exact: true }).uncheck();
   });
   const source = await page.evaluate(() => { const c = window.document.createElement('canvas'); c.width = c.height = 256; const ctx = c.getContext('2d'), g = ctx.createLinearGradient(0, 0, 256, 0); g.addColorStop(0, '#ff0000'); g.addColorStop(1, '#0000ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256); return c.toDataURL('image/png'); });
@@ -68,12 +70,15 @@ try {
   });
   await check('art placement supports drag, scale, rotation, cancel and undo', async () => {
     const before = structuredClone(keyboard().image); await page.getByRole('button', { name: 'Position & scale image' }).click();
-    await expect(page.getByRole('dialog')).toBeVisible(); const preview = await page.locator('.image-placement').boundingBox();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    const radii = await page.getByRole('dialog').locator('.overlay-key').first().evaluate(el => [el,el.querySelector('.key-body'),el.querySelector('.key-surface')].map(node => getComputedStyle(node).borderRadius));
+    expect(radii[0]).not.toBe('0px'); expect(radii[1]).toBe(radii[0]); expect(radii[2]).toBe(radii[0]);
+    const preview = await page.locator('.image-placement').boundingBox();
     await page.mouse.move(preview.x + 100, preview.y + 100); await page.mouse.down(); await page.mouse.move(preview.x + 145, preview.y + 120, { steps: 4 }); await page.mouse.up();
     await expect(page.getByLabel('Image X', { exact: true })).not.toHaveValue('0'); expect(keyboard().image).toEqual(before);
     await page.getByLabel('Image rotation', { exact: true }).fill('25'); await page.getByLabel('Image scale', { exact: true }).fill('1.4'); await page.getByRole('button', { name: 'Apply image placement' }).click();
     await expect.poll(() => keyboard().image.rotation).toBe(25); await expect(overlay.locator('.module-keyboard .image-content').first()).toHaveCSS('transform', /matrix/);
-    await page.getByRole('button', { name: 'Undo (Ctrl+Z)', exact: true }).click(); await expect.poll(() => keyboard().image.rotation).toBe(0);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click(); await expect.poll(() => keyboard().image.rotation).toBe(0);
     await page.getByRole('button', { name: 'Position & scale image' }).click(); await page.getByLabel('Image X', { exact: true }).fill('100'); await page.getByRole('button', { name: 'Cancel', exact: true }).click(); expect(keyboard().image.x).toBe(0);
   });
   await check('per-key image exclusion and pressed artwork modes preserve labels', async () => {
@@ -84,7 +89,7 @@ try {
     broadcast({ event_type: 'input_reset' }); await page.getByLabel('Image on press', { exact: true }).selectOption('Tint');
   });
   await check('saved preset exports artwork and imports with independent asset identities', async () => {
-    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByLabel('Preset name').fill('Painted caps'); await page.getByRole('button', { name: 'Save current layout', exact: true }).click();
+    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: 'Save current setup', exact: true }).click(); await page.getByLabel('Preset name').fill('Painted caps'); await page.getByRole('button', { name: 'Save preset', exact: true }).click();
     await expect.poll(() => document.presets.length).toBe(1); const downloadPromise = page.waitForEvent('download'); await page.getByRole('button', { name: 'Export preset', exact: true }).click(); const download = await downloadPromise;
     const text = await readFile(await download.path(), 'utf8'), bundle = JSON.parse(text); expect(Object.keys(bundle.assets)).toHaveLength(1); expect(text).not.toContain('visual-test');
     await page.getByLabel('Import preset file', { exact: true }).setInputFiles({ name: 'painted.json', mimeType: 'application/json', buffer: Buffer.from(text) }); await expect.poll(() => document.presets.length).toBe(2);
@@ -120,8 +125,11 @@ try {
   });
   await check('typography and border edits reach the renderer, and short taps remain visible', async () => {
     const fields = page.locator('.style-fields').first(); await fields.locator('summary').filter({ hasText: 'Text & typography' }).click(); await page.getByLabel('Font family', { exact: true }).selectOption('Consolas'); await page.getByLabel('Font size', { exact: true }).fill('22');
-    await fields.locator('summary').filter({ hasText: 'Borders & shape' }).click(); await page.getByLabel('Border width', { exact: true }).fill('3');
-    await expect(overlay.locator('[data-key="87"]')).toHaveCSS('--border-width', '3px'); await expect(overlay.locator('[data-key="87"]')).toHaveCSS('font-family', 'Consolas');
+    await page.getByLabel('Font size', { exact: true }).press('Enter'); await expect.poll(() => keyboard().appearance.fontSize).toBe(22);
+    const borders = fields.locator('details').filter({ has: page.locator('summary').filter({ hasText: 'Borders & shape' }) });
+    if (!await borders.evaluate(el => el.open)) { await borders.locator('summary').focus(); await borders.locator('summary').press('Enter'); }
+    await expect(borders).toHaveAttribute('open', ''); await page.getByLabel('Border width', { exact: true }).fill('3');
+    await expect(overlay.locator('[data-key="87"]')).toHaveCSS('--border-width', '3px'); await expect(overlay.locator('[data-key="87"]')).toHaveCSS('font-family', /^Consolas,.*IOS Noto/);
     const flashed = await page.evaluate(async () => {
       const { Scene } = await import('/src/renderer/scene.ts'), { InputEngine } = await import('/src/core/input.ts'), { initialDocument } = await import('/src/core/config.ts');
       const root = window.document.createElement('div'); root.style.cssText = 'position:fixed;left:-10000px'; window.document.body.append(root); const d = initialDocument(), engine = new InputEngine(), scene = new Scene(root, engine); scene.update(d, d.profiles[0]);

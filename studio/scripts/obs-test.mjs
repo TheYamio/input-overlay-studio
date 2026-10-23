@@ -1,3 +1,4 @@
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Actual OBS/CEF acceptance using a separate portable installation and test-only credentials.
 // No desktop/game/microphone sources, streams or recordings are created.
 import { chromium, expect } from '@playwright/test';
@@ -6,10 +7,10 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { initialDocument, activeProfile } from '../src/core/config.ts';
+import { initialDocument, factoryModules, activeProfile, gameForProfile, encodeDocument } from '../src/core/config.ts';
 
 const root = new URL('../../', import.meta.url), portable = new URL('.tools/obs-portable/', root);
-const captureData = new URL('.tools/obs-acceptance/', root), artifacts = new URL('../artifacts/', import.meta.url);
+const captureData = new URL(`.tools/obs-acceptance/run-${Date.now()}/`, root), artifacts = new URL('../artifacts/', import.meta.url);
 const token = randomBytes(24).toString('hex'), password = randomBytes(24).toString('hex');
 const obsDirectory = fileURLToPath(new URL('bin/64bit/', portable));
 await mkdir(captureData, { recursive: true }); await mkdir(artifacts, { recursive: true });
@@ -30,9 +31,12 @@ const userIniPath = new URL('config/obs-studio/user.ini', portable), userIni = a
 const selection = 'SceneCollection=Input Overlay acceptance\nSceneCollectionFile=input-overlay-acceptance.json\n';
 await writeFile(userIniPath, /\[Basic\]\r?\n/.test(userIni) ? userIni.replace(/(\[Basic\]\r?\n)([\s\S]*?)(?=\r?\n\[|$)/, (_, heading, body) => heading + body.replace(/^SceneCollection(?:File)?=.*(?:\r?\n|$)/gm, '') + '\n' + selection) : userIni + '\n[Basic]\n' + selection);
 await writeFile(new URL('config.json', captureData), JSON.stringify({ host: '127.0.0.1', port: 4485, auth_token: token, http_enabled: true, http_port: 4486, cpu_affinity: [] }));
-const doc = initialDocument(); await writeFile(new URL('studio.json', captureData), JSON.stringify(doc));
+// Fixed geometry makes CEF pixel probes independent of the current default preset.
+const doc = initialDocument(); activeProfile(doc).modules=factoryModules('Obsidian');
+[[440,400,290,310],[440,735,290,100],[790,400,550,430],[1400,510,300,100],[440,890,980,65]].forEach(([x,y,w,h],index)=>Object.assign(activeProfile(doc).modules[index],{x,y,w,h}));
+await writeFile(new URL('studio.json', captureData), JSON.stringify(encodeDocument(doc)));
 let capture, obs, nativeSocket, obsSocket, browser;
-const startCapture = () => { capture = spawn(fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe', root)), ['--tray'], { windowsHide: true, stdio: 'ignore', env: { ...process.env, RUST_LOG: 'info', INPUT_OVERLAY_STUDIO_DATA_DIR: fileURLToPath(captureData) } }); };
+const startCapture = () => { capture = spawn(process.env.STUDIO_NATIVE_EXE || fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe', root)), ['--tray'], { windowsHide: true, stdio: 'ignore', env: { ...process.env, RUST_LOG: 'info', INPUT_OVERLAY_STUDIO_DATA_DIR: fileURLToPath(captureData) } }); };
 const stop = async child => { if (child && child.exitCode === null) { const exited = new Promise(resolve => child.once('exit', resolve)); child.kill(); await exited; } };
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const hash = text => createHash('sha256').update(text).digest('base64');
@@ -41,7 +45,7 @@ let serial = 0; const requests = new Map();
 function request(requestType, requestData = {}) {
   return new Promise((resolve, reject) => {
     const requestId = String(++serial);
-    const timeout = setTimeout(() => { requests.delete(requestId); reject(Error(`OBS ${requestType}: timeout`)); }, 15000);
+    const timeout = setTimeout(() => { requests.delete(requestId); reject(Error(`OBS ${requestType}: timeout`)); }, Number(process.env.STUDIO_OBS_REQUEST_TIMEOUT||15000));
     requests.set(requestId, { resolve, reject, timeout, type: requestType });
     obsSocket.send(JSON.stringify({ op: 6, d: { requestId, requestType, requestData } }));
   });
@@ -72,7 +76,7 @@ async function connectOBS() {
 }
 async function nativeObserver() {
   nativeSocket = new WebSocket('ws://127.0.0.1:4485');
-  await new Promise((resolve, reject) => { nativeSocket.once('error', reject); nativeSocket.once('open', () => nativeSocket.send(JSON.stringify({ type: 'auth', token }))); nativeSocket.once('message', raw => { const auth = JSON.parse(raw.toString()); if (auth.status !== 'success') reject(Error('Capture auth failed')); else resolve(); }); });
+  await new Promise((resolve, reject) => { nativeSocket.once('error', reject); nativeSocket.once('open', () => nativeSocket.send(JSON.stringify({ type: 'auth', token,studio_client:{...contract,role:'studio'} }))); nativeSocket.once('message', raw => { const auth = JSON.parse(raw.toString()); if (auth.status !== 'success') reject(Error('Capture auth failed')); else resolve(); }); });
 }
 async function saveNativeDocument(document, request_id) {
   const receive = type => new Promise((resolve, reject) => {
@@ -81,7 +85,7 @@ async function saveNativeDocument(document, request_id) {
     nativeSocket.on('message', handler);
   });
   const current = receive('studio_config'); nativeSocket.send(JSON.stringify({ type: 'studio_get' })); const { revision } = await current;
-  const saved = receive('studio_saved'); nativeSocket.send(JSON.stringify({ type: 'studio_set', document, base_revision: revision, origin: 'obs-acceptance', request_id })); await saved;
+  const saved = receive('studio_saved'); nativeSocket.send(JSON.stringify({ type: 'studio_set', document:encodeDocument(document), base_revision: revision, origin: 'obs-acceptance', request_id })); await saved;
 }
 async function logs() {
   const files = await readdir(new URL('logs/', captureData)); return readFile(new URL(`logs/${files.sort().at(-1)}`, captureData), 'utf8');
@@ -168,7 +172,7 @@ try {
     await saveNativeDocument(doc, 22);
   });
   await check('OBS applies sensitivity/profile changes without refreshing the source', async () => {
-    const before = larger.sensitivityHash; activeProfile(doc).sensitivity = 2.6;
+    const before = larger.sensitivityHash; gameForProfile(doc).sensitivity = 2.6;
     await saveNativeDocument(doc, 1);
     await expect.poll(async () => (await screenshot(2560, 1440, 'obs-updated.png')).sensitivityHash, { timeout: 10000 }).not.toBe(before);
   });

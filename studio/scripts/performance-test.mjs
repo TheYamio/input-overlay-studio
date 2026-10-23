@@ -1,7 +1,7 @@
 import { chromium, expect } from '@playwright/test';
 import { preview } from 'vite';
 import { mkdir, writeFile } from 'node:fs/promises';
-const server = await preview({ preview: { host: '127.0.0.1', port: 5174, strictPort: true } });
+const server = await preview({ build:{outDir:process.env.STUDIO_BENCH_DIST||'dist'},preview: { host: '127.0.0.1', port: 5174, strictPort: true } });
 const browser = await chromium.launch({ headless: true });
 let sampleTimer; const samples = [], pendingSamples = new Set();
 try {
@@ -25,6 +25,7 @@ try {
   // A bounded storage smoke check, not a proof against every possible memory leak.
   expect(after.usedSize - before.usedSize).toBeLessThan(8_000_000);
   await mkdir(new URL('../artifacts/', import.meta.url), { recursive: true });
-  await writeFile(new URL('../artifacts/performance-results.json', import.meta.url), JSON.stringify(report, null, 2));
+  const label=process.env.STUDIO_STRESS_LABEL||'current';if(!/^[a-z0-9-]+$/i.test(label))throw Error('Invalid stress label');
+  await writeFile(new URL(`../artifacts/performance-${label}.json`, import.meta.url), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } finally { clearInterval(sampleTimer); await Promise.allSettled(pendingSamples); await browser.close(); await new Promise(resolve => server.httpServer.close(resolve)); }

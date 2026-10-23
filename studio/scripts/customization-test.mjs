@@ -1,16 +1,17 @@
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 import { chromium, expect } from '@playwright/test';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { initialDocument } from '../src/core/config.ts';
+import { initialDocument , parseDocument} from '../src/core/config.ts';
 const vite = await createServer({ server: { host: '127.0.0.1', port: 5193, strictPort: true } }); await vite.listen();
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 4499 });
 let document = initialDocument(), revision = 0;
 const broadcast = packet => { for (const ws of wss.clients) if (ws.authed && ws.readyState === 1) ws.send(JSON.stringify(packet)); };
 wss.on('connection', ws => ws.on('message', raw => {
-  const m = JSON.parse(String(raw)), send = data => ws.send(JSON.stringify(data));
-  if (m.type === 'auth') { ws.authed = m.token === 'customization-test'; send({ type: 'auth_response', status: ws.authed ? 'success' : 'failed', protocol: 4, studio_revisions: true }); return; }
+  const m = JSON.parse(String(raw)), send = data => ws.send(JSON.stringify(data)); if(m.document?.version===4)m.document=parseDocument(JSON.stringify(m.document));
+  if (m.type === 'auth') { ws.authed = m.token === 'customization-test'; send({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, studio_revisions: true }); return; }
   if (!ws.authed) return;
   if (m.type === 'studio_get') send({ type: 'studio_config', document, revision: String(revision) });
   if (m.type === 'studio_set') {
@@ -20,6 +21,7 @@ wss.on('connection', ws => ws.on('message', raw => {
 }));
 const heartbeat = setInterval(() => broadcast({ type: 'heartbeat' }), 1000);
 const browser = await chromium.launch({ headless: true }), context = await browser.newContext({ viewport: { width: 1560, height: 1050 } });
+await context.addInitScript(() => localStorage.setItem('studio.inspector-section', 'all'));
 await context.addInitScript(() => localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4499', token: 'customization-test' })));
 const page = await context.newPage(), errors = [], results = [];
 page.on('pageerror', e => errors.push(e.message));
@@ -29,8 +31,8 @@ const key = (i = 0) => module('keyboard').keys[i];
 const history = () => page.locator('.app-shell').getAttribute('data-history').then(Number);
 const field = label => page.getByLabel(label, { exact: true });
 const select = name => page.locator('.layer-list').getByRole('button', { name, exact: true }).click();
-const undo = () => page.getByRole('button', { name: 'Undo (Ctrl+Z)', exact: true }).click();
-const redo = () => page.getByRole('button', { name: 'Redo (Ctrl+Shift+Z)', exact: true }).click();
+const undo = () => page.getByRole('button', { name: 'Undo', exact: true }).click();
+const redo = () => page.getByRole('button', { name: 'Redo', exact: true }).click();
 const cap = label => page.getByRole('button', { name: `Edit key ${label}`, exact: true });
 const drag = async (target, dx, dy, cancel = false) => { await target.scrollIntoViewIfNeeded(); const b = await target.boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2 + dx, b.y + b.height / 2 + dy, { steps: 10 }); if (cancel) await page.keyboard.press(typeof cancel === 'string' ? cancel : 'Escape'); await page.mouse.up(); };
 const assign = () => page.getByRole('button', { name: 'Assign by pressing a key', exact: true }).click();

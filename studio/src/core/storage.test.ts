@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { initialDocument, documentSchema, makeModule, parseDocument } from './config';
+import { encodeDocument, initialDocument, documentSchema, makeModule, parseDocument } from './config';
 import { loadDocument, saveDocument } from './storage';
 import { utf8Bytes } from './limits';
 
@@ -13,11 +13,11 @@ describe('durable local drafts', () => {
     expect(JSON.stringify(loadDocument().document)).not.toContain('__studioSync');
   });
   it('does not misclassify a valid original as corrupt when the backup quota fails', () => {
-    const d = initialDocument(), raw = JSON.stringify(d), written: string[] = [];
+    const d = initialDocument(), raw = JSON.stringify(encodeDocument(d)), written: string[] = [];
     vi.stubGlobal('localStorage', { getItem: () => raw, setItem: (k: string) => { written.push(k); throw Error('quota'); } });
     d.profiles[0].name = 'Changed';
     expect(() => saveDocument(d)).toThrow('quota');
-    expect(written).toEqual(['input-overlay-studio.v1.backup']);
+    expect(written).toEqual(['input-overlay-studio.document.backup']);
   });
   it('does not replace the last real backup when only acknowledging a save', () => {
     const data = new Map<string, string>();
@@ -25,7 +25,7 @@ describe('durable local drafts', () => {
     const first = initialDocument(); saveDocument(first);
     const next = structuredClone(first); next.profiles[0].name = 'Changed'; saveDocument(next, { pending: true, baseRevision: 'r1' });
     saveDocument(next, { pending: false, baseRevision: 'r2' });
-    expect(parseDocument(data.get('input-overlay-studio.v1.backup')!)).toEqual(first);
+    expect(parseDocument(data.get('input-overlay-studio.document.backup')!)).toEqual(first);
   });
   it('counts UTF-8 bytes and roundtrips a large Cyrillic configuration', () => {
     const d = initialDocument(); d.profiles[0].modules = [];
@@ -35,7 +35,7 @@ describe('durable local drafts', () => {
     d.profiles.push({ ...structuredClone(d.profiles[0]), id: 'second' });
     expect(utf8Bytes(JSON.stringify(d))).toBeGreaterThan(1_700_000);
     expect(documentSchema.safeParse(d).success).toBe(true);
-    expect(parseDocument(JSON.stringify(d))).toEqual(d);
+    expect(parseDocument(JSON.stringify(encodeDocument(d)))).toEqual(d);
     d.profiles.push({ ...structuredClone(d.profiles[0]), id: 'third' });
     expect(documentSchema.safeParse(d).success).toBe(false);
   });

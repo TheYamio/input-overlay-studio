@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { activeProfile, applyTheme, cm360, documentSchema, initialDocument, parseDecimal, parseDocument, themeNames } from './config';
+import { applyTheme, cm360, documentSchema, encodeDocument, initialDocument, parseDecimal, parseDocument, themeNames } from './config';
 import { decodeInput, InputEngine, PointRing } from './input';
 import { obsUrl } from './connection';
 
 describe('sensitivity and profile validation', () => {
   it('CS2 800 DPI / 1.3 / .022 is 39.97 cm/360', () => {
-    expect(cm360(activeProfile(initialDocument()))).toBeCloseTo(39.965034965, 6);
+    expect(cm360(initialDocument().gameProfiles[0])).toBeCloseTo(39.965034965, 6);
   });
   it.each([[0, 1, .022], [800, -1, .022], [800, 1, 0], [NaN, 1, .022], [Infinity, 1, .022]])('rejects invalid values %s %s %s', (dpi, sensitivity, yaw) => {
-    const d = initialDocument(); Object.assign(d.profiles[0], { dpi, sensitivity, yaw });
-    expect(documentSchema.safeParse(d).success).toBe(false); expect(cm360(d.profiles[0])).toBeNull();
+    const d = initialDocument(); Object.assign(d.gameProfiles[0], { dpi, sensitivity, yaw });
+    expect(documentSchema.safeParse(d).success).toBe(false); expect(cm360(d.gameProfiles[0])).toBeNull();
   });
   it('does not assume Source scale for KovaaK’s', () => {
-    const p = activeProfile(initialDocument()); p.game = 'KovaaK’s'; p.scale = 'Unknown'; expect(cm360(p)).toBeNull();
+    const p = initialDocument().gameProfiles[0]; p.game = 'KovaaK’s'; p.scale = 'Unknown'; expect(cm360(p)).toBeNull();
     p.scale = 'Valorant'; expect(cm360(p)).toBeCloseTo(914.4 / (800 * 1.3 * .07));
     p.scale = 'Manual cm/360'; p.manualCm = 42; expect(cm360(p)).toBe(42);
     p.scale = 'Custom yaw'; p.yaw = .01; expect(cm360(p)).toBeCloseTo(87.9230769);
@@ -26,11 +26,11 @@ describe('sensitivity and profile validation', () => {
     d.activeProfileId = d.profiles[0].id; d.profiles[0].modules.push(d.profiles[0].modules[0]); expect(documentSchema.safeParse(d).success).toBe(false);
   });
   it('roundtrips all factory themes through the same schema', () => {
-    for (const theme of themeNames) { const d = initialDocument(); d.profiles[0].theme = theme; d.profiles[0].modules = applyTheme(d.profiles[0].modules, theme); expect(parseDocument(JSON.stringify(d))).toEqual(d); }
+    for (const theme of themeNames) { const d = initialDocument(); d.profiles[0].theme = theme; d.profiles[0].modules = applyTheme(d.profiles[0].modules, theme); expect(parseDocument(JSON.stringify(encodeDocument(d)))).toEqual(d); }
   });
   it('strips credentials and rejects unsupported versions and oversized imports', () => {
     const d = initialDocument(); const text = JSON.stringify({ ...d, token: 'secret' });
-    expect(JSON.stringify(parseDocument(text))).not.toContain('secret');
+    expect(()=>parseDocument(text)).toThrow();
     expect(() => parseDocument(JSON.stringify({ ...d, version: 99 }))).toThrow();
     expect(() => parseDocument(' '.repeat(2_000_001))).toThrow();
   });
@@ -54,7 +54,6 @@ describe('input reliability and distance', () => {
     const e = new InputEngine(); e.ingest({ event_type: 'mouse_moved', dx: 2, dy: 3, distance_counts: 5, distance_cm: 100 }); expect(e.distanceCm).toBe(100);
   });
   it.each([null, [], { event_type: 'key_pressed', rawcode: 999 }, { event_type: 'analog_depth', rawcode: 87, depth: NaN }, { event_type: 'mouse_moved', dx: 0, dy: Infinity }, { event_type: 'mouse_pressed', button: 1.5 }, { event_type: 'mouse_moved', dx: 0, dy: 0, distance_counts: -1 }])('ignores malformed packets %j', value => expect(decodeInput(value)).toBeNull());
-  it('labels distance from a legacy server as approximate', () => { const e = new InputEngine(); e.ingest({ event_type: 'mouse_moved', dx: 3, dy: 4 }); expect(e.legacyDistance).toBe(true); });
   it.each([1000, 2000, 4000, 8000])('processes a synthetic minute at %i Hz with bounded storage', hz => {
     const e = new InputEngine(), ring = new PointRing(512);
     for (let i = 0; i < hz * 60; i++) { const dx = i % 2 ? 3 : -3, dy = i % 2 ? 4 : -4; e.ingest({ event_type: 'mouse_moved', dx, dy, distance_counts: 5 }, i * 1000 / hz); if (i % Math.ceil(hz / 60) === 0) ring.push(dx, dy, i, 5); }

@@ -1,84 +1,33 @@
+import { decodeDocument, projectDocument, encodeDocument, persistedDocumentSchema, validateModuleExtensions } from './module-format.ts';
+export { encodeDocument, persistedDocumentSchema };
 import { z } from 'zod';
-import { consistentArtworkGroups } from './artwork-groups.ts';
-import { normalizeBounds } from './editing.ts';
-import { MAX_DOCUMENT_BYTES, MAX_IMPORT_BYTES, utf8Bytes } from './limits.ts';
-import { appearanceSchema, assetSchema, defaultAppearance, defaultImageSettings, defaultTrailAppearance, elementStyleSchema, imageSettingsSchema, mouseGeometrySchema, trailAppearanceSchema } from './visual.ts';
+import { applyPresetColors } from './preset-colors.ts';
+import { checkDocumentVersion, documentFormats } from './document-version.ts';
+import { MigrationError } from './migrations/engine.ts';
+import { MAX_IMPORT_BYTES, utf8Bytes } from './limits.ts';
+import { defaultAppearance, defaultImageSettings, defaultTrailAppearance } from './visual.ts';
 
-const positive = z.number().finite().positive().max(1e9);
-const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
-const label = z.string().max(100);
-const id = z.string().min(1).max(80);
-export const games = ['Counter-Strike 2', 'Valorant', 'Apex Legends', 'Overwatch 2', "KovaaK’s", 'Custom'] as const;
-export const yaws: Record<string, number> = { 'Counter-Strike 2': .022, Valorant: .07, 'Apex Legends': .022, 'Overwatch 2': .0066, Source: .022, Overwatch: .0066 };
-export const keySchema = z.object({ id, code: z.number().int().min(1).max(255), label, x: z.number().min(0).max(1000), y: z.number().min(0).max(1000), w: positive.max(1000), h: positive.max(1000), style: elementStyleSchema.optional(), imageEnabled: z.boolean().optional() });
-export type Key = z.infer<typeof keySchema>;
-export const moduleSchema = z.object({
-  id, type: z.enum(['keyboard', 'mouse', 'trail', 'distance', 'sensitivity']), name: label,
-  x: z.number().finite().min(0).max(1920), y: z.number().finite().min(0).max(1080),
-  w: z.number().min(40).max(1920), h: z.number().min(30).max(1080),
-  visible: z.boolean(), locked: z.boolean(), z: z.number().int().min(0).max(1000),
-  accent: color, background: color, opacity: z.number().min(0).max(1), radius: z.number().min(0).max(100),
-  effect: z.enum(['Instant', 'Soft Press', 'Glow', 'Pulse', 'Analog Fill']),
-  appearance: appearanceSchema.default(defaultAppearance), image: imageSettingsSchema.default(defaultImageSettings),
-  buttonStyles: z.record(z.string().regex(/^[1-7]$/), elementStyleSchema).default({}),
-  buttonGeometry: z.record(z.string().regex(/^[1-7]$/), mouseGeometrySchema).default({}),
-  buttonImages: z.record(z.string().regex(/^[1-7]$/), z.boolean()).default({}),
-  trailAppearance: trailAppearanceSchema.default(defaultTrailAppearance),
-  wheelDuration: z.number().min(50).max(500).default(110),
-  textLayout: z.enum(['Horizontal', 'Vertical']).default('Horizontal'),
-  keys: z.array(keySchema).max(100), layout: z.enum(['WASD', 'WASD + modifiers', 'FPS Extended', 'Custom']), gap: z.number().min(0).max(30),
-  mouseMode: z.enum(['Compact Buttons', 'Mouse Diagram']), buttons: z.array(z.number().int().min(1).max(7)).max(7), buttonLabels: z.array(label).length(7),
-  trailStyle: z.enum(['Clean Line', 'Fade Trail', 'Neon Trail', 'Speed Gradient', 'Segmented Trail']),
-  position: z.enum(['Fixed Field', 'Follow / Recenter']), scaleMode: z.enum(['Manual Scale', 'DPI Normalized Scale']),
-  scale: z.number().min(.01).max(10), duration: z.number().min(100).max(10000), thickness: z.number().min(.5).max(15), glow: z.number().min(0).max(30),
-  grid: z.boolean(), center: z.boolean(), marker: z.enum(['Dot', 'Crosshair', 'None']), clickEffects: z.enum(['Off', 'Marker', 'Ripple']),
-  originX: z.number().min(0).max(1), originY: z.number().min(0).max(1),
-  unit: z.enum(['Auto', 'cm', 'm']), decimals: z.number().int().min(0).max(3), caption: label,
-  sensitivityStyle: z.enum(['Minimal', 'Standard', 'Detailed']), showGame: z.boolean(), showDpi: z.boolean(), showSens: z.boolean(), showEdpi: z.boolean(), showCm: z.boolean(),
-});
-export type OverlayModule = z.infer<typeof moduleSchema>;
-export const themeNames = ['Essential', 'Competitive', 'Obsidian', 'Neon', 'Glass', 'Clean Recording', 'Classic Input'] as const;
-export const profileSchema = z.object({
-  id, name: label.min(1), game: z.enum(games), dpi: positive, sensitivity: positive, yaw: positive,
-  scale: z.enum(['Source', 'Valorant', 'Overwatch', 'Custom yaw', 'Manual cm/360', 'Unknown']), manualCm: positive,
-  caption: label, theme: z.enum(themeNames), modules: z.array(moduleSchema).max(32),
-}).superRefine((p, ctx) => {
-  if (new Set(p.modules.map(m => m.id)).size !== p.modules.length) ctx.addIssue({ code: 'custom', message: 'Duplicate module IDs' });
-  if (!consistentArtworkGroups(p.modules)) ctx.addIssue({ code: 'custom', message: 'Artwork group members must share the same image settings' });
-});
-export type Profile = z.infer<typeof profileSchema>;
-export const presetSchema = z.object({ id, name: label.min(1), theme: z.enum(themeNames), modules: z.array(moduleSchema).max(32) }).superRefine((p, ctx) => {
-  if (new Set(p.modules.map(m => m.id)).size !== p.modules.length) ctx.addIssue({ code: 'custom', message: 'Duplicate module IDs' });
-  if (!consistentArtworkGroups(p.modules)) ctx.addIssue({ code: 'custom', message: 'Artwork group members must share the same image settings' });
-});
-export const currentDocumentSchema = z.object({
-  version: z.literal(2), assets: z.record(id, assetSchema).default({}), activeProfileId: id, profiles: z.array(profileSchema).min(1).max(50), presets: z.array(presetSchema).max(50),
-  performance: z.object({ fps: z.enum(['Auto', '30', '60', '120']), quality: z.enum(['Low', 'Medium', 'High']), glowQuality: z.enum(['Off', 'Low', 'High']), reducedMotion: z.boolean() }),
-  distance: z.object({ persist: z.boolean(), resetOnStart: z.boolean() }),
-}).superRefine((d, ctx) => {
-  if (!d.profiles.some(p => p.id === d.activeProfileId)) ctx.addIssue({ code: 'custom', message: 'Active profile does not exist' });
-  if (new Set(d.profiles.map(p => p.id)).size !== d.profiles.length) ctx.addIssue({ code: 'custom', message: 'Duplicate profile IDs' });
-  if (new Set(d.presets.map(p => p.id)).size !== d.presets.length) ctx.addIssue({ code: 'custom', message: 'Duplicate preset IDs' });
-  if (Object.keys(d.assets).length > 8) ctx.addIssue({ code: 'custom', message: 'At most 8 images per configuration' });
-  for (const p of [...d.profiles, ...d.presets]) for (const m of p.modules) {
-    if (m.image.assetId && !d.assets[m.image.assetId]) ctx.addIssue({ code: 'custom', message: 'Missing keycap image' });
-    if (new Set(m.keys.map(k => k.id)).size !== m.keys.length) ctx.addIssue({ code: 'custom', message: 'Duplicate key IDs' });
-  }
-  if (utf8Bytes(JSON.stringify(d)) > MAX_DOCUMENT_BYTES) ctx.addIssue({ code: 'custom', message: 'Configuration exceeds 1.8 MB. Remove unused images.' });
-});
-// v1 is upgraded in memory; the original storage remains available as a backup.
-export const documentSchema = z.preprocess(input => {
-  const value = normalizeBounds(input);
-  if (value && typeof value === 'object' && 'version' in value && value.version === 1) {
-    const migrate = (p: unknown) => {
-      if (!p || typeof p !== 'object' || !('modules' in p) || !Array.isArray(p.modules)) return p;
-      return { ...p, modules: p.modules.map((m: unknown) => { if (!m || typeof m !== 'object' || !('type' in m)) return m; return { ...m, appearance: 'appearance' in m ? m.appearance : { ...defaultAppearance(), ...(m.type === 'distance' || m.type === 'sensitivity' ? { backgroundOpacity: 0, borderWidth: 0 } : {}) } }; }) };
-    };
-    const legacy = value as Record<string, unknown>;
-    return { ...legacy, version: 2, assets: {}, profiles: Array.isArray(legacy.profiles) ? legacy.profiles.map(migrate) : legacy.profiles, presets: Array.isArray(legacy.presets) ? legacy.presets.map(migrate) : legacy.presets };
-  }
-  return value;
-}, currentDocumentSchema);
+import { games, yaws, keySchema, moduleSchema, themeNames, gameProfileSchema, profileSchema, presetSchema, currentDocumentSchema } from './config-schema.ts';
+export { games, yaws, keySchema, moduleSchema, themeNames, gameProfileSchema, profileSchema, presetSchema, currentDocumentSchema };
+export type { Key, OverlayModule, Profile, OverlayProfile, GameProfile } from './config-schema.ts';
+import type { Key, OverlayModule, Profile, OverlayProfile, GameProfile } from './config-schema.ts';
+// Only the current generation is accepted. Flat editing views are private to
+// Studio; file and transport entry points use strict module envelopes.
+export const documentSchema = z.preprocess((input, ctx) => {
+  try {
+    checkDocumentVersion(input);
+    const source=input as {profiles?:{modules?:unknown[]}[];presets?:{modules?:unknown[]}[]};
+    const first=[...(source.profiles??[]),...(source.presets??[])].flatMap(p=>p.modules??[])[0] as {common?:unknown}|undefined;
+    if(first && 'common' in first)return projectDocument(input,id=>makeModule('distance',0,id));
+    return input;
+  } catch(error){ctx.addIssue({code:'custom',message:error instanceof Error?error.message:'Invalid configuration.'});return z.NEVER;}
+}, currentDocumentSchema).superRefine((document,ctx)=>{try{validateModuleExtensions([...document.profiles,...document.presets].flatMap(profile=>profile.modules));}catch(error){ctx.addIssue({code:'custom',message:error instanceof Error?error.message:'Invalid module configuration.'});}});
+export function planDocumentMigration(input:unknown){
+ const source=input&&typeof input==='object'?{...input as Record<string,unknown>}:input;if(source&&typeof source==='object')delete (source as Record<string,unknown>).__studioSync;
+ const plan=documentFormats.prepare(source,value=>persistedDocumentSchema.parse(value));
+ return {...plan,value:decodeDocument(plan.value,id=>makeModule('distance',0,id))};
+}
+export { MigrationError };
 export type StudioDocument = z.infer<typeof documentSchema>;
 export const uid = () => crypto.randomUUID();
 export function layoutKeys(layout: OverlayModule['layout']): Key[] {
@@ -88,9 +37,9 @@ export function layoutKeys(layout: OverlayModule['layout']): Key[] {
   if (layout === 'FPS Extended') keys.push(k(81, 'Q', 0, 0), k(69, 'E', 124, 0), k(82, 'R', 186, 0), k(70, 'F', 186, 62), k(161, 'R SHIFT', 92, 124, 148));
   return keys;
 }
-export function makeModule(type: OverlayModule['type'], index = 0): OverlayModule {
+export function makeModule(type: OverlayModule['type'], index = 0, instanceId:string=uid()): OverlayModule {
   return {
-    id: uid(), type, name: { keyboard: 'Keyboard', mouse: 'Mouse Buttons', trail: 'Mouse Trail', distance: 'Distance', sensitivity: 'Sensitivity' }[type],
+    id: instanceId, type, name: { keyboard: 'Keyboard', mouse: 'Mouse Buttons', trail: 'Mouse Trail', distance: 'Distance', sensitivity: 'Sensitivity' }[type],
     x: 120 + index * 24, y: Math.min(type === 'trail' ? 740 : type === 'keyboard' ? 780 : 970, 160 + index * 24), w: type === 'trail' ? 470 : type === 'sensitivity' ? 650 : 300, h: type === 'trail' ? 340 : type === 'keyboard' ? 300 : 110,
     appearance: { ...defaultAppearance(), ...(type === 'distance' || type === 'sensitivity' ? { backgroundOpacity: 0, borderWidth: 0 } : {}) }, image: defaultImageSettings(), buttonStyles: {}, buttonGeometry: {}, buttonImages: {}, trailAppearance: defaultTrailAppearance(), wheelDuration: 110, textLayout: 'Horizontal',
     visible: true, locked: false, z: index, accent: '#a5ef6b', background: '#161b20', opacity: 1, radius: 12, effect: 'Soft Press',
@@ -112,7 +61,7 @@ export function factoryModules(theme: Profile['theme'] = 'Obsidian'): OverlayMod
     place(1, 285, 850, 250, 95); modules[2].visible = false; modules[3].visible = false; place(4, 80, 1010, 500, 50);
   } else if (theme === 'Competitive') {
     place(0, 80, 680, 330, 330); modules[0].keys = layoutKeys('FPS Extended'); modules[0].layout = 'FPS Extended';
-    place(1, 440, 800, 300, 110); place(2, 800, 760, 330, 250); place(3, 1180, 920, 240, 70); place(4, 440, 930, 480, 65);
+    place(1, 440, 800, 300, 110); place(2, 800, 760, 330, 250); place(3, 1180, 920, 240, 70); place(4, 440, 930, 330, 65);
   } else if (theme === 'Neon') {
     place(0, 150, 640, 380, 320); place(1, 570, 700, 220, 270); modules[1].mouseMode = 'Mouse Diagram';
     place(2, 900, 600, 720, 420); place(3, 1640, 820, 240, 90); place(4, 150, 990, 650, 60);
@@ -126,24 +75,43 @@ export function factoryModules(theme: Profile['theme'] = 'Obsidian'): OverlayMod
     place(0, 70, 340, 300, 405); place(1, 70, 780, 300, 110); place(2, 440, 560, 400, 330); place(3, 70, 920, 300, 60); place(4, 70, 1000, 850, 50);
     modules.forEach(m => m.appearance.fontFamily = 'Consolas');
   }
-  return applyTheme(modules, theme);
+  const [accent, surface, ink] = themePalettes[theme];
+  modules.forEach(m => {
+    m.accent = accent; m.background = surface;
+    Object.assign(m.appearance, { textColor: ink, activeTextColor: theme === 'Essential' ? '#ffffff' : '#10151c', borderColor: ink, activeBorderColor: accent, borderOpacity: theme === 'Clean Recording' ? .55 : .18, borderWidth: 1.2, fontWeight: 650, backgroundOpacity: m.type === 'distance' || m.type === 'sensitivity' ? 0 : theme === 'Glass' ? .35 : 1 });
+    m.radius = theme === 'Classic Input' ? 2 : theme === 'Glass' ? 30 : theme === 'Essential' ? 18 : theme === 'Competitive' ? 6 : 12;
+    m.effect = theme === 'Neon' ? 'Glow' : theme === 'Clean Recording' || theme === 'Essential' ? 'Instant' : 'Soft Press';
+    m.trailStyle = theme === 'Neon' ? 'Neon Trail' : theme === 'Classic Input' ? 'Segmented Trail' : theme === 'Competitive' ? 'Clean Line' : 'Fade Trail';
+    Object.assign(m.trailAppearance, { markerColor: accent, leftClickColor: accent, rightClickColor: theme === 'Neon' ? '#65e8ed' : ink, slowColor: ink, fastColor: accent });
+  });
+  const keyboard = modules[0];
+  const secondary = theme === 'Neon' ? '#65e8ed' : theme === 'Competitive' ? '#c4f46d' : theme === 'Obsidian' ? '#b4a7dd' : theme === 'Glass' ? '#bddfff' : theme === 'Classic Input' ? '#efb574' : theme === 'Essential' ? '#d8d5f2' : '#262d38';
+  keyboard.keys = keyboard.keys.map(k => ({ ...k, style: [160, 161, 162, 32].includes(k.code) ? { background: secondary, textColor: theme === 'Clean Recording' ? '#ffffff' : '#1b2030', activeTextColor: '#10151c', radius: k.code === 32 ? 26 : keyboard.radius } : theme === 'Neon' && [87,65,83,68].includes(k.code) ? { borderColor: '#65e8ed', borderOpacity: .65 } : undefined }));
+  keyboard.keys.forEach(k => { if (!k.style) delete k.style; });
+  if (theme === 'Obsidian') { place(0, 180, 570, 300, 360); place(1, 520, 645, 270, 100); place(2, 840, 570, 660, 370); place(3, 1540, 800, 230, 75); place(4, 180, 970, 1000, 65); }
+  if (theme === 'Essential') modules[1].buttons = [1,2,3];
+  if (theme === 'Clean Recording') { modules[0].appearance.backgroundOpacity = .35; modules[1].buttons = [1,2,3,6,7]; modules[4].showGame = false; }
+  if (theme === 'Glass') modules[0].appearance.borderOpacity = .55;
+  modules[4].showEdpi = false;
+  return modules;
 }
-export const themeColors: Record<Profile['theme'], string> = { Essential: '#e4e7eb', Competitive: '#a5ef6b', Obsidian: '#a5ef6b', Neon: '#be93ff', Glass: '#8acbff', 'Clean Recording': '#ffffff', 'Classic Input': '#efb574' };
+export const themePalettes: Record<Profile['theme'], [string,string,string]> = {
+  Essential: ['#8171d9','#f2f0f8','#29273b'], Competitive: ['#b6ef63','#161d23','#e4ebdf'],
+  Obsidian: ['#b4a7dd','#262833','#e4e4ed'], Neon: ['#c299ff','#221b38','#f1e9ff'],
+  Glass: ['#95d7ff','#344e68','#edf7ff'], 'Clean Recording': ['#ffffff','#11161d','#f5f7fa'], 'Classic Input': ['#efb574','#26221c','#eee5d4'],
+};
+export const themeColors = Object.fromEntries(Object.entries(themePalettes).map(([name, colors]) => [name, colors[0]])) as Record<Profile['theme'], string>;
 export function applyTheme(modules: OverlayModule[], theme: Profile['theme']): OverlayModule[] {
-  return modules.map(m => ({ ...m, accent: themeColors[theme], radius: theme === 'Classic Input' ? 0 : theme === 'Competitive' ? 5 : 12,
-    background: theme === 'Glass' ? '#24384a' : theme === 'Clean Recording' ? '#080a0d' : '#161b20', opacity: 1,
-    appearance: { ...m.appearance, backgroundOpacity: m.type === 'distance' || m.type === 'sensitivity' ? 0 : theme === 'Glass' ? .38 : 1, activeBorderColor: themeColors[theme] },
-    trailAppearance: { ...m.trailAppearance, markerColor: themeColors[theme], leftClickColor: themeColors[theme] },
-    effect: theme === 'Neon' ? 'Glow' : theme === 'Essential' || theme === 'Clean Recording' ? 'Instant' : 'Soft Press',
-    trailStyle: theme === 'Neon' ? 'Neon Trail' : theme === 'Competitive' || theme === 'Clean Recording' ? 'Clean Line' : theme === 'Classic Input' ? 'Segmented Trail' : 'Fade Trail',
-    thickness: theme === 'Clean Recording' ? 4 : 2,
-  }));
+  return applyPresetColors(modules, factoryModules(theme));
 }
 export function initialDocument(): StudioDocument {
-  const p: Profile = { id: uid(), name: 'CS2 · Main', game: 'Counter-Strike 2', dpi: 800, sensitivity: 1.3, yaw: .022, scale: 'Source', manualCm: 40, caption: '', theme: 'Obsidian', modules: factoryModules() };
-  return { version: 2, assets: {}, activeProfileId: p.id, profiles: [p], presets: [], performance: { fps: '60', quality: 'High', glowQuality: 'Low', reducedMotion: false }, distance: { persist: false, resetOnStart: true } };
+  const game:GameProfile={id:uid(),name:'Counter-Strike 2',game:'Counter-Strike 2',dpi:800,sensitivity:1.3,yaw:.022,scale:'Source',manualCm:40};
+  const p:OverlayProfile={id:uid(),name:'CS2 · Main',gameProfileId:game.id,locale:'en',caption:'',theme:'Obsidian',modules:factoryModules()};
+  return { version:4,languagePacks:[],shapes:{},assets:{},activeProfileId:p.id,gameProfiles:[game],profiles:[p],presets:[],performance:{fps:'60',quality:'High',glowQuality:'Low',reducedMotion:false},distance:{persist:false,resetOnStart:true} };
 }
-export function activeProfile(d: StudioDocument): Profile { return d.profiles.find(p => p.id === d.activeProfileId)!; }
+export function activeProfile(d:StudioDocument):OverlayProfile{return d.profiles.find(p=>p.id===d.activeProfileId)!;}
+export function gameForProfile(d:StudioDocument,p:OverlayProfile=activeProfile(d)):GameProfile{return d.gameProfiles.find(g=>g.id===p.gameProfileId)!;}
+export function resolvedProfile(d:StudioDocument,p:OverlayProfile=activeProfile(d)):Profile{const {id:_id,name:_name,...game}=gameForProfile(d,p);return {...game,...p};}
 export function cm360(p: Pick<Profile, 'game' | 'scale' | 'dpi' | 'sensitivity' | 'yaw' | 'manualCm'>): number | null {
   if (![p.dpi, p.sensitivity, p.yaw, p.manualCm].every(v => Number.isFinite(v) && v > 0)) return null;
   if (p.game === 'KovaaK’s' && p.scale === 'Unknown') return null;
@@ -158,5 +126,5 @@ export function parseDecimal(value: string): number | null {
 }
 export function parseDocument(text: string): StudioDocument {
   if (utf8Bytes(text) > MAX_IMPORT_BYTES) throw new Error('File exceeds 2 MB.');
-  return documentSchema.parse(JSON.parse(text));
+  return planDocumentMigration(JSON.parse(text)).value;
 }

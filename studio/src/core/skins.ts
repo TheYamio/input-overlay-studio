@@ -1,3 +1,5 @@
+import {truncateText} from './unicode.ts';
+import { moduleReferences } from './module-envelope.ts';
 import type { OverlayModule, StudioDocument } from './config';
 import type { ElementStyle, ImageAsset, ImageSettings } from './visual';
 import { rasterDimensions } from './raster.ts';
@@ -18,7 +20,7 @@ export function capsFor(m: OverlayModule): { caps: Cap[]; w: number; h: number }
   return { caps: allCaps.filter(k => m.buttons.includes(k.code)), w: Math.max(diagram ? 220 : 300, ...allCaps.map(k => k.x + k.w)), h: Math.max(diagram ? 300 : 110, ...allCaps.map(k => k.y + k.h)) };
 }
 export function resolvedStyle(m: OverlayModule, override?: ElementStyle) {
-  return { ...m.appearance, accent: m.accent, background: m.background, radius: m.radius, effect: m.effect, ...override };
+  return { showLabels: true, shapeId: '', ...m.appearance, accent: m.accent, background: m.background, radius: m.radius, effect: m.effect, ...override };
 }
 export function rgba(hex: string, alpha: number) { return `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${alpha})`; }
 export function imagePlacement(image: ImageSettings, asset: Pick<ImageAsset, 'width' | 'height'>, w: number, h: number) {
@@ -27,7 +29,7 @@ export function imagePlacement(image: ImageSettings, asset: Pick<ImageAsset, 'wi
   return { width, height, x: (w - width) / 2 + image.x, y: (h - height) / 2 + image.y };
 }
 export function pruneAssets(d: StudioDocument) {
-  const used = new Set([...d.profiles, ...d.presets].flatMap(p => p.modules.map(m => m.image.assetId)));
+  const used = new Set([...d.profiles, ...d.presets].flatMap(p => p.modules.flatMap(m => moduleReferences(m).assets)));
   d.assets = Object.fromEntries(Object.entries(d.assets).filter(([id]) => used.has(id)));
 }
 export async function readImageAsset(file: File): Promise<ImageAsset> {
@@ -49,9 +51,9 @@ export async function readImageAsset(file: File): Promise<ImageAsset> {
       const reduced = document.createElement('canvas'); reduced.width = Math.max(1, Math.round(canvas.width / 2)); reduced.height = Math.max(1, Math.round(canvas.height / 2));
       reduced.getContext('2d')!.drawImage(canvas, 0, 0, reduced.width, reduced.height); data = reduced.toDataURL('image/webp', .7);
       if (data.length > 400_000) throw Error('Image is too detailed. Choose a smaller image.');
-      return { name: file.name.slice(0, 100), data, width: reduced.width, height: reduced.height };
+      return { name: truncateText(file.name,100), data, width: reduced.width, height: reduced.height };
     }
-    return { name: file.name.slice(0, 100), data, width: canvas.width, height: canvas.height };
+    return { name: truncateText(file.name,100), data, width: canvas.width, height: canvas.height };
   } finally { URL.revokeObjectURL(url); }
 }
 

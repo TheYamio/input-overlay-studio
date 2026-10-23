@@ -1,22 +1,24 @@
+import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Production Chromium benchmark. CPU means renderer-main-thread TaskDuration / wall time,
 // not whole-machine CPU or GPU utilization. The WS source emulates native coalescing at 125 Hz.
 import { chromium, expect } from '@playwright/test';
 import { preview } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { initialDocument, activeProfile, documentSchema } from '../src/core/config.ts';
+import { initialDocument, activeProfile, documentSchema, encodeDocument , parseDocument} from '../src/core/config.ts';
 
 const label = process.env.STUDIO_BENCH_LABEL || 'current';
 if (!/^[a-z0-9-]+$/i.test(label)) throw Error('Invalid benchmark label');
 const seconds = Number(process.env.STUDIO_BENCH_SECONDS || 15);
 if (!Number.isFinite(seconds) || seconds < 3 || seconds > 300) throw Error('Duration must be 3–300 seconds');
-const server = await preview({ preview: { host: '127.0.0.1', port: 5196, strictPort: true } });
+const server = await preview({ build: { outDir: process.env.STUDIO_BENCH_DIST || 'dist' }, preview: { host: '127.0.0.1', port: 5196, strictPort: true } });
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 4490 });
 let document = initialDocument(), sequence = 0, revision = 0, movement = false, movementCount = 0;
-const broadcast = packet => { const raw = JSON.stringify(packet); for (const ws of wss.clients) if (ws.authed && ws.readyState === 1) ws.send(raw); };
+const wirePacket=packet=>process.env.STUDIO_BENCH_ENVELOPES==='1'&&packet.document?.version===4&&packet.document.profiles.some(p=>p.modules.some(m=>!m.common))?{...packet,document:encodeDocument(packet.document)}:packet;
+const broadcast = packet => { const raw = JSON.stringify(wirePacket(packet)); for (const ws of wss.clients) if (ws.authed && ws.readyState === 1) ws.send(raw); };
 wss.on('connection', ws => ws.on('message', raw => {
-  const m = JSON.parse(String(raw)), send = packet => ws.send(JSON.stringify(packet));
-  if (m.type === 'auth') { ws.authed = m.token === 'resource-test'; send({ type: 'auth_response', status: ws.authed ? 'success' : 'failed', protocol: 4, state_snapshot: true, studio_revisions: true, studio_visuals: true }); return; }
+  const m = JSON.parse(String(raw)), send = packet => ws.send(JSON.stringify(wirePacket(packet))); if(m.document?.version===4)m.document=parseDocument(JSON.stringify(m.document));
+  if (m.type === 'auth') { ws.authed = m.token === 'resource-test'; send({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, state_snapshot: true, studio_revisions: true, studio_visuals: true, studio_animation: true }); return; }
   if (!ws.authed) return;
   if (m.type === 'input_snapshot') send({ type: 'input_snapshot', sequence, keys: [], buttons: [] });
   if (m.type === 'studio_get') send({ type: 'studio_config', document, revision: String(revision), config_sequence: revision });
@@ -44,6 +46,7 @@ const artifacts = new URL('../artifacts/', import.meta.url); await mkdir(artifac
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
 await context.addInitScript(() => {
+  localStorage.setItem('studio.inspector-section', 'all');
   localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4490', token: 'resource-test' }));
   const nativeRAF = window.requestAnimationFrame.bind(window);
   window.__resource = { enabled: false, frames: 0, intervals: [], last: 0, longTasks: [] };
@@ -98,21 +101,28 @@ try {
       revision++; await open(); await delay(1000);
       const timings = [], cdp = await context.newCDPSession(page); await cdp.send('Performance.enable');
       const before = await metrics(cdp);
+      if (process.env.STUDIO_BENCH_PROFILE === '1') { await cdp.send('Profiler.enable'); await cdp.send('Profiler.start'); }
+      const trace=[];
+      if(process.env.STUDIO_BENCH_TRACE==='1'){cdp.on('Tracing.dataCollected',event=>trace.push(...event.value));await cdp.send('Tracing.start',{categories:'devtools.timeline',transferMode:'ReportEvents'});}
       for (let i = 0; i < 12; i++) {
         const m = activeProfile(document).modules[0], x = m.x === 0 ? 1 : 0;
+        m.x=x;revision++;const updatePacket=wirePacket({type:'studio_config',document,revision:String(revision),config_sequence:revision});
         await page.evaluate(({ id, x }) => {
           window.__updateTiming = null; const start = performance.now(), el = window.document.querySelector(`[data-module-id="${id}"]`);
           const observer = new MutationObserver(() => { if (el.style.left === `${x}px`) { observer.disconnect(); requestAnimationFrame(() => window.__updateTiming = performance.now() - start); } }); observer.observe(el, { attributes: true, attributeFilter: ['style'] });
         }, { id: m.id, x });
-        m.x = x; revision++; broadcast({ type: 'studio_config', document, revision: String(revision), config_sequence: revision });
+        broadcast(updatePacket);
         await expect.poll(() => page.evaluate(() => window.__updateTiming), { timeout: 15000, intervals: [20] }).not.toBeNull();
         timings.push(await page.evaluate(() => window.__updateTiming)); await delay(100);
       }
-      const after = await metrics(cdp); await cdp.detach(); timings.sort((a, b) => a - b);
+      const after = await metrics(cdp);
+      if (process.env.STUDIO_BENCH_PROFILE === '1') { const {profile}=await cdp.send('Profiler.stop'); await writeFile(new URL(`updates-${label}-${count||7}.cpuprofile`,artifacts),JSON.stringify(profile)); }
+      if(process.env.STUDIO_BENCH_TRACE==='1'){const done=new Promise(resolve=>cdp.once('Tracing.tracingComplete',resolve));await cdp.send('Tracing.end');await done;await writeFile(new URL(`updates-${label}-${count||7}.trace.json`,artifacts),JSON.stringify({traceEvents:trace}));}
+      await cdp.detach(); timings.sort((a, b) => a - b);
       const result = { modules: count ? 32 : 5, keysPerKeyboard: count || activeProfile(document).modules[0].keys.length, updates: timings.length, medianMs: timings[6], maxMs: timings.at(-1), mainThreadMsPerUpdate: (after.TaskDuration - before.TaskDuration) * 1000 / timings.length };
       updates.push(result); console.log(JSON.stringify(result));
     }
-    await writeFile(new URL(`updates-${label}.json`, artifacts), JSON.stringify({ label, production: true, chromium: browser.version(), updates, errors }, null, 2)); expect(errors).toEqual([]);
+    await writeFile(new URL(`updates-${label}.json`, artifacts), JSON.stringify({ label, production: true, chromium: browser.version(), instrumentation:{cpuProfile:process.env.STUDIO_BENCH_PROFILE==='1',trace:process.env.STUDIO_BENCH_TRACE==='1',cssExperiment:process.env.STUDIO_BENCH_CSS||null},updates, errors }, null, 2)); expect(errors).toEqual([]);
   } else {
   await open(); await sample('overlay-idle', false, Math.min(seconds, 10)); await sample('overlay-active', true);
   document = grouped(); revision++; await open(); await sample('overlay-shared-artwork', true);

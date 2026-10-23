@@ -13,7 +13,7 @@ const resize = () => {
 };
 resize(); window.addEventListener('resize', resize);
 const params = new URLSearchParams(location.hash.slice(1));
-const connection = new InputConnection(engine);
+const connection = new InputConnection(engine, 'runtime');
 let stopDemo: (() => void) | undefined;
 connection.onDocument = document => {
   if (!document) return;

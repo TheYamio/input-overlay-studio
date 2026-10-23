@@ -1,0 +1,27 @@
+import {describe,it,expect} from 'vitest';
+import {createStudioLocalization,languageTemplate,studioLocalization} from './builtins';
+import {parseLocalePack} from './registry';
+import {localePackagesSchema} from './pack-schema';
+import {overlayText} from './runtime';
+import {trText} from './messages';
+import {graphemes,truncateText,validUnicode,textSpacing,fontStack,numberLocale} from '../unicode';
+import {initialDocument,encodeDocument,parseDocument,documentSchema} from '../config';
+import {copyName} from '../editing';
+import {boundedModuleJSON} from '../module-envelope';
+import {exportOverlay} from '../profiles';
+const labels=['Привет','日本語','简体中文','繁體中文','한국어','العربية','עברית','हिन्दी','বাংলা','ไทย','Tiếng Việt','Türkçe','Ελληνικά','ქართული','Հայերեն','தமிழ்','తెలుగు','ગુજરાતી','ਪੰਜਾਬੀ','ಕನ್ನಡ','മലയാളം','සිංහල','ខ្មែរ','ລາວ','မြန်မာ','e\u0301','👩🏽‍💻','🇯🇵','👨‍👩‍👧‍👦'];
+describe('Stage 10 language and text contracts',()=>{
+ it('roundtrips authored multilingual strings without normalizing or translating them',()=>{for(const label of labels){const d=initialDocument();d.profiles[0].caption=label;d.profiles[0].modules[0].keys[0].label=label;d.gameProfiles[0].name=label;expect(parseDocument(JSON.stringify(encodeDocument(d)))).toEqual(d);}});
+ it('keeps combining marks, flags, skin tones and ZWJ families whole at limits',()=>{for(const text of labels.slice(-4)){expect(graphemes(text)).toEqual([text]);expect(truncateText(text,text.length-1)).toBe('');expect(copyName('a'.repeat(94)+text)).toBe('a'.repeat(94)+' copy');}});
+ it('rejects malformed surrogates and unsafe controls before persistence',()=>{for(const text of ['\ud800','\udc00','A\ud800B','bad\u0000','bad\u0085']){expect(validUnicode(text)).toBe(false);const d=initialDocument();d.profiles[0].caption=text;expect(documentSchema.safeParse(d).success).toBe(false);expect(boundedModuleJSON({text})).toBe(false);}});
+ it('preserves valid tabs, newlines and Unicode script shaping',()=>{expect(validUnicode('a\tb\nc\r')).toBe(true);expect(textSpacing('العربية',8)).toBe(0);expect(textSpacing('हिन्दी',8)).toBe(0);expect(textSpacing('Latin',2)).toBe(2);});
+ it('provides safe offline font stacks without accepting CSS strings',()=>{expect(fontStack('Unicode')).toContain('IOS CJK');expect(fontStack('Georgia')).toMatch(/^"Georgia"/);expect(fontStack('evil;url(https://x)')).not.toContain('evil');expect(numberLocale('qya-x-art')).toBe('en');});
+ it('translates schema labels and options through the same registry',()=>{const r=createStudioLocalization();r.setLocale('ru');expect(r.text('settings:overlay.appearance.font-size.label')).toBe('Размер шрифта');expect(r.text('controls:number.integer')).toBe('целые числа');expect(r.text('language:studio')).toBe('Язык Studio');});
+ it('uses parent and English fallback with literal interpolation',()=>{const r=createStudioLocalization();r.setLocale('ru-RU');expect(r.text('language:studio')).toBe('Язык Studio');expect(r.text('language:help',undefined,{p0:'<script>'})).toContain('Язык');r.setLocale('qya-x-art');expect(r.text('language:studio')).toBe('Studio language');});
+ it('exports every English namespace as an editable declarative template',()=>{const pack=languageTemplate();expect(parseLocalePack(pack).locale).toBe('xx');expect(Object.keys(pack.namespaces)).toEqual(expect.arrayContaining(['ui','language','settings','modules','animation','controls','overlay']));});
+ it('keeps runtime language independent of Studio and authored captions',()=>{studioLocalization.setLocale('ru');expect(overlayText([],'en','sensitivity','SENS')).toBe('SENS');studioLocalization.setLocale('en');expect(overlayText([],'ru','sensitivity','SENS')).toBe('СЕНСА');});
+ it('accepts declarative RTL packages and renders literal markup as text',()=>{const pack=parseLocalePack({version:1,locale:'ar',name:'العربية',direction:'rtl',namespaces:{overlay:{sensitivity:'الحساسية',unknown:'<script>literal</script>'}}});expect(overlayText([pack],'ar','sensitivity','SENS')).toBe('الحساسية');expect(overlayText([pack],'ar','unknown','')).toBe('<script>literal</script>');});
+ it('rejects code-like fields, unsafe keys, malformed entries and duplicate locales',()=>{for(const pack of [{version:1,locale:'fr',namespaces:{ui:{a:'\ud800'}}},{version:1,locale:'fr',script:'run()',namespaces:{}},{version:1,locale:'fr',direction:'bad',namespaces:{}},{version:1,locale:'fr',namespaces:{['a'.repeat(65)]:{hello:'Hi'}}},JSON.parse('{"version":1,"locale":"fr","namespaces":{"ui":{"__proto__":"bad"}}}')])expect(()=>parseLocalePack(pack)).toThrow();const p={version:1 as const,locale:'fr',namespaces:{}};expect(localePackagesSchema.safeParse([p,p]).success).toBe(false);});
+ it('exports overlay translation resources for standalone imports',()=>{const d=initialDocument();d.profiles[0].locale='ja';d.languagePacks=[{version:1,locale:'ja',namespaces:{overlay:{sensitivity:'感度'}}}];const p=parseDocument(exportOverlay(d,d.activeProfileId));expect(p.languagePacks).toEqual(d.languagePacks);expect(p.profiles[0].locale).toBe('ja');});
+ it('localizes formatted errors while leaving unknown user text intact',()=>{studioLocalization.setLocale('ru');expect(trText('Invalid value for DPI')).toBe('Некорректное значение DPI');expect(trText('my own title ✨')).toBe('my own title ✨');studioLocalization.setLocale('en');});
+});
