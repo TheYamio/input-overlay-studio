@@ -424,7 +424,10 @@ input[type=range] { min-height: 28px; height: 28px; }
 
 /* Language changes preserve control identity, numeric drafts and canvas coordinates. */
 .language-actions,.language-package{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.language-package{padding:10px 0;border-bottom:1px solid var(--border,#39415f)}
+.language-settings .language-actions{margin-top:18px;margin-bottom:8px}
 .language-package b{flex:1}.language-settings .field{max-width:420px}.language-settings .hint{line-height:1.6}
+.language-package>div{flex:1;min-width:0;overflow-wrap:anywhere}.language-package b,.language-package small{display:block}.language-package small{margin-top:5px;color:var(--text-secondary);line-height:1.5}.language-package>button{flex-shrink:0;min-width:40px;min-height:40px}.language-actions>button{white-space:normal;text-align:left}.language-settings select{max-width:100%;text-overflow:ellipsis}
+.language-dialog{width:min(500px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;background:var(--background);color:var(--text-primary);border:1px solid var(--border);border-radius:14px;padding:24px;box-shadow:0 24px 100px #0008}.language-dialog::backdrop{background:#080c20b8;backdrop-filter:blur(5px)}.language-dialog h3{font-size:20px;line-height:1.4}.language-dialog p{margin:16px 0;line-height:1.6;overflow-wrap:anywhere}.language-dialog footer{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
 input:not([type=number]):not([type=range]):not([type=color]),textarea,.layer-row>button>span,.profile-card-heading>b,.profile-list button>div,.module-label{unicode-bidi:plaintext}
 html[dir=rtl] .preview-stage,html[dir=rtl] .canvas-scrollport,.overlay-scene{direction:ltr}
 

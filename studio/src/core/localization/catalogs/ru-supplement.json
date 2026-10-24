@@ -1450,7 +1450,8 @@
       "capture.server.analog-keyboard.option.64-72-75-6e-6b-64-65-65-72": "drunkdeer",
       "capture.server.analog-keyboard.option.6b-65-79-63-68-72-6f-6e": "keychron",
       "capture.server.analog-keyboard.option.6d-61-64-6c-69-6f-6e-73": "madlions",
-      "capture.server.analog-keyboard.option.62-79-74-65-63-68": "bytech"
+      "capture.server.analog-keyboard.option.62-79-74-65-63-68": "bytech",
+      "studio.preferences.language-package.label": "Выбранный языковой пакет"
     },
     "modules": {
       "core.capture.label": "Захват",

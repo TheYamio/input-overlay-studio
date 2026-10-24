@@ -83,10 +83,11 @@ fn valid_model(d:&Value)->bool {
     apply_defaults(&mut candidate, &SCHEMA);
     if let Some(packs)=candidate["languagePacks"].as_array(){
         if serde_json::to_vec(packs).map_or(true,|v|v.len()>1_000_000){return false;}
-        let mut locales=HashSet::new();
+        let mut identities=HashSet::new();
         for pack in packs {
-            if !locales.insert(pack["locale"].as_str().unwrap().to_lowercase()){return false;}
-            if pack["name"].as_str().is_some_and(|name|name.trim().is_empty()){return false;}
+            let identity=pack["id"].as_str().map(|id|id.to_lowercase()).unwrap_or_else(||format!("legacy:{}",pack["locale"].as_str().unwrap().to_lowercase()));
+            if !identities.insert(identity)||pack["origin"]=="builtin"||(pack.get("id").is_some()&&pack["origin"]!="custom"){return false;}
+            if ["name","author","translationVersion"].iter().any(|key|pack[*key].as_str().is_some_and(|text|text.trim().is_empty())){return false;}
             let namespaces=pack["namespaces"].as_object().unwrap();if namespaces.len()>64{return false;}
             let (mut count,mut size)=(0,0);
             for (namespace,entries) in namespaces {
@@ -96,6 +97,11 @@ fn valid_model(d:&Value)->bool {
                     let text=value.as_str().unwrap();if text.trim().is_empty()||!valid_text(text){return false;}
                     count+=1;size+=key.encode_utf16().count()+text.encode_utf16().count();if count>10000||size>500000{return false;}
                 }
+            }
+        }
+        for profile in candidate["profiles"].as_array().unwrap(){
+            if let Some(id)=profile["localePackageId"].as_str(){
+                if !packs.iter().any(|pack|pack["id"]==id&&pack["locale"].as_str().unwrap().eq_ignore_ascii_case(profile["locale"].as_str().unwrap())){return false;}
             }
         }
     }
@@ -159,6 +165,19 @@ mod tests {
         let mut bad=d.clone();let duplicate=bad["languagePacks"][0].clone();bad["languagePacks"].as_array_mut().unwrap().push(duplicate);assert!(!valid_document(&bad));
         let mut bad=d.clone();bad["languagePacks"][0]["namespaces"]["overlay"]["sensitivity"]=json!(" ");assert!(!valid_document(&bad));
         assert!(valid_document(&d));
+    }
+    #[test]
+    fn independent_localizations_validate_ids_origins_and_selected_references() {
+        let mut d:Value=serde_json::from_str(include_str!("../schema/default-current.json")).unwrap();
+        let first="12345678-1234-4234-8234-123456789abc";
+        let second="12345678-1234-4234-8234-123456789abd";
+        let pack=|id:&str|json!({"version":1,"id":id,"origin":"custom","locale":"ru","name":"Русский","author":"Author","translationVersion":"1.0","namespaces":{"overlay":{"sensitivity":"Custom"}}});
+        d["languagePacks"]=json!([pack(first),pack(second)]);d["profiles"][0]["locale"]=json!("ru");d["profiles"][0]["localePackageId"]=json!(second);assert!(valid_document(&d));
+        let mut bad=d.clone();bad["languagePacks"][1]["id"]=json!(first);assert!(!valid_document(&bad));
+        let mut bad=d.clone();bad["languagePacks"][0]["origin"]=json!("builtin");assert!(!valid_document(&bad));
+        let mut bad=d.clone();bad["profiles"][0]["locale"]=json!("en");assert!(!valid_document(&bad));
+        let mut bad=d.clone();bad["profiles"][0]["localePackageId"]=json!("12345678-1234-4234-8234-123456789abe");assert!(!valid_document(&bad));
+        let mut bad=d.clone();bad["languagePacks"][0]["author"]=json!(" ");assert!(!valid_document(&bad));
     }
     #[test]
     fn vector_shapes_validate_geometry_references_and_optional_old_documents() {

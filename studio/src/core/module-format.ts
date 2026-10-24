@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MAX_DOCUMENT_BYTES,utf8Bytes } from './limits.ts';
+import {isolateDocumentLanguages} from './localization/document.ts';
 import { moduleViewSchema, currentDocumentSchema, profileSchema, presetSchema, type OverlayModule } from './config-schema.ts';
 import { moduleExtensionSchema, ModuleConfigurationRegistry, type ModuleExtension, moduleReferences, commonFields } from './module-envelope.ts';
 
@@ -67,7 +68,7 @@ export function moduleAvailable(module:OverlayModule){if(module.extension)return
 export function moduleConfiguration(module:OverlayModule):ModuleExtension['config']|undefined{return module.extension?.config;}
 
 export function encodeDocument(value:z.infer<typeof currentDocumentSchema>,registry=moduleConfigurations):PersistedDocument {
- const document=currentDocumentSchema.parse(value);const container=<T extends {modules:OverlayModule[]}>(profile:T)=>({...profile,modules:profile.modules.map(module=>encodeModule(module,registry))});
+ const document=isolateDocumentLanguages(currentDocumentSchema.parse(value));const container=<T extends {modules:OverlayModule[]}>(profile:T)=>({...profile,modules:profile.modules.map(module=>encodeModule(module,registry))});
  const wire=persistedDocumentSchema.parse({...document,version:4,profiles:document.profiles.map(container),presets:document.presets.map(container)});if(utf8Bytes(JSON.stringify(wire))>MAX_DOCUMENT_BYTES)throw Error('Configuration exceeds 1.8 MB. Remove unused images.');return wire;
 }
 export function projectDocument(value:unknown,fallback:(id:string)=>OverlayModule,registry=moduleConfigurations){
@@ -75,7 +76,7 @@ export function projectDocument(value:unknown,fallback:(id:string)=>OverlayModul
  const source=value&&typeof value==='object'?{...value as Record<string,unknown>}:value;
  if(source&&typeof source==='object')delete (source as Record<string,unknown>).__studioSync;
  if(utf8Bytes(JSON.stringify(source))>MAX_DOCUMENT_BYTES)throw Error('Configuration exceeds 1.8 MB. Remove unused images.');
- const document=persistedDocumentSchema.parse(source);const container=<T extends {modules:PersistedModule[]}>(profile:T)=>({...profile,modules:profile.modules.map(module=>projectModule(module,fallback,registry))});
+ const document=isolateDocumentLanguages(persistedDocumentSchema.parse(source));const container=<T extends {modules:PersistedModule[]}>(profile:T)=>({...profile,modules:profile.modules.map(module=>projectModule(module,fallback,registry))});
  return {...document,version:4 as const,profiles:document.profiles.map(container),presets:document.presets.map(container)};
 }
 export function decodeDocument(value:unknown,fallback:(id:string)=>OverlayModule,registry=moduleConfigurations){

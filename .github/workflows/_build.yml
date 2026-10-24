@@ -46,6 +46,8 @@ jobs:
         run: |
           pnpm exec playwright install chromium
           pnpm test:localization
+          pnpm test:custom-localization
+          pnpm test:localization-layout
           pnpm test:browser
           pnpm test:visual
           pnpm test:sync

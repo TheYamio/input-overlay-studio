@@ -4,7 +4,7 @@ import { defaultShortcuts, shortcutStorageKey } from '../shortcuts';
 import { createBrowserSettings, nativeConnection } from './browser';
 import { SettingsEvents, type SettingsChange } from './events';
 import { NativeSettings, type NativeBridge, type NativeConfig } from './native';
-import { PreferenceSettings } from './preferences';
+import { PreferenceSettings,languageStorageKey } from './preferences';
 import type { SettingsTransport } from './service';
 
 afterEach(()=>vi.unstubAllGlobals());
@@ -15,7 +15,7 @@ function preferenceFixture() {
 }
 describe('existing local preference storage adapters',()=>{
   it('persists Studio locale separately without changing connection or profile settings',()=>{
-    const f=preferenceFixture(),preferences=f.create();expect(preferences.getSnapshot().locale).toBe('en');preferences.write('locale','ru');expect(f.data.get('studio.locale')).toBe('ru');expect(f.create().getSnapshot().locale).toBe('ru');expect(f.data.has('input-overlay-studio.document')).toBe(false);preferences.reset('locale');expect(f.data.get('studio.locale')).toBe('en');
+    const f=preferenceFixture(),preferences=f.create();expect(preferences.getSnapshot().locale).toBe('en');preferences.write('locale','ru');expect(JSON.parse(f.data.get(languageStorageKey)!).locale).toBe('ru');expect(f.create().getSnapshot().locale).toBe('ru');expect(f.data.has('input-overlay-studio.document')).toBe(false);preferences.reset('locale');expect(JSON.parse(f.data.get(languageStorageKey)!).locale).toBe('en');
   });
   it('rejects invalid locale IDs before writing and falls back from corrupt preferences',()=>{
     const f=preferenceFixture();f.data.set('studio.locale','../ru');const preferences=f.create();expect(preferences.getSnapshot().locale).toBe('en');expect(()=>preferences.write('locale','../ru')).toThrow('Invalid locale');expect(f.storage.setItem).not.toHaveBeenCalled();
@@ -34,9 +34,9 @@ describe('existing local preference storage adapters',()=>{
     expect(f.data.get('studio.inspector-width')).toBe('360');expect(JSON.parse(f.data.get('studio.connection')!)).toEqual({url:'ws://test',token:'secret'});
     expect(changes.map(e=>e.version)).toEqual([1,2,3]);expect(JSON.stringify(changes)).not.toContain('secret');expect(changes[1].store).toBe('preferences');
   });
-  it('keeps a valid session preference on disk failure and retries unchanged values',()=>{
+  it('keeps the previous preference on disk failure and allows retry',()=>{
     const f=preferenceFixture(),preferences=f.create();f.storage.setItem.mockImplementationOnce(()=>{throw Error('quota');});
-    expect(preferences.write('inspectorWidth',400)).toBe(false);expect(preferences.getSnapshot().inspectorWidth).toBe(400);expect(preferences.write('inspectorWidth',400)).toBe(true);expect(f.data.get('studio.inspector-width')).toBe('400');
+    expect(preferences.write('inspectorWidth',400)).toBe(false);expect(preferences.getSnapshot().inspectorWidth).toBe(360);expect(preferences.write('inspectorWidth',400)).toBe(true);expect(f.data.get('studio.inspector-width')).toBe('400');
   });
   it('accepts reordered command maps, rejects conflicting maps and preserves the shortcut key',()=>{
     const f=preferenceFixture(),preferences=f.create(), bindings=Object.fromEntries(Object.entries(defaultShortcuts()).reverse()) as ReturnType<typeof defaultShortcuts>;

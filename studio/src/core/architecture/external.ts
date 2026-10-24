@@ -1,4 +1,5 @@
 import {localePackagesSchema} from '../localization/pack-schema';
+import {packageIdPattern} from '../localization/registry';
 import { z } from 'zod';
 import { defaultShortcuts } from '../shortcuts';
 import type { Control, DefinitionId, SettingDefinition } from './contracts';
@@ -35,6 +36,7 @@ export const externalDefinitions: readonly SettingDefinition[] = [
  ...([
   ['languagePacks','language-packs','Language packages',localePackagesSchema,'custom',[]],
   ['locale','locale','Studio language',z.string().max(64).regex(/^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$/),'text','en'],
+  ['localePackageId','language-package','Selected language package',z.string().regex(packageIdPattern).nullable(),'custom',null],
   ['inspectorWidth','inspector-width','Properties width',z.number().min(320).max(560),'number',360],
   ['inspectorSection','inspector-section','Properties section',z.string().max(160).regex(/^(?:appearance|layout|keys|artwork|preview|specific|all|[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)$/),'custom','appearance'],
   ['shortcuts','shortcuts','Keyboard shortcuts',z.record(z.string(),z.array(z.string())),'custom',defaultShortcuts()],

@@ -27,6 +27,8 @@ cargo build --locked --release --manifest-path ws-server/src-tauri/Cargo.toml
 | `test:module-runtime`, `test:extensible-modules` | Lifecycle, изоляцию ошибок, отключение и возврат доверенной регистрации |
 | `test:profiles`, `test:sync` | Явные связи игры/оверлея, расчёты, revision/CAS, конфликт и восстановление |
 | `test:localization` | Пакеты, Unicode/IME, RTL, реальные web fonts и независимый язык OBS |
+| `test:custom-localization` | Независимые UUID, одинаковые названия и языки, экспорт, подтверждение удаления, отказ хранилища и восстановление выбора |
+| `test:localization-layout` | Все страницы на 12 стандартных языках, прокрутка настроек с имитацией native bridge, все панели модулей и три диалога на немецком и азиатских языках, доступность кнопок на коротком окне, перевод конфликтов и сохранение фокуса |
 
 Прежний UI/renderer удалён; названия вспомогательных standalone-компонентов не являются переключателями старого приложения. Тестовые fixtures и контрольные модули исключены из production entry graph.
 

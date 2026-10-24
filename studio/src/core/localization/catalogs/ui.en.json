@@ -142,7 +142,7 @@
   "s-492e3a3952f6": "Mouse button hidden. Undo restores it.",
   "s-5f62e5bba397": "Selection deleted. Undo restores it.",
   "s-130d77a7dcd0": "The command could not be completed.",
-  "s-1cedd11b37c0": "Shortcuts work for this session, but local preferences could not be saved.",
+  "s-1cedd11b37c0": "Could not save shortcuts. Your previous bindings are unchanged.",
   "s-0c8209e72ec8": "Save profile",
   "s-835ff4bcf601": "Copy OBS URL",
   "s-5493ff8e9397": "WORKSPACE",
@@ -1132,5 +1132,7 @@
   "s-b4b33d244164": "overlay",
   "s-f922e0d1e144": "Unicode",
   "key-assigned": "Assigned {{p0}} · VK {{p1}}",
-  "shortcut-conflict": "Already assigned to {{p0}}. Reassigning removes it from those commands."
+  "shortcut-conflict": "Already assigned to {{p0}}. Reassigning removes it from those commands.",
+  "capture-running": "running",
+  "capture-stopped": "stopped"
 }

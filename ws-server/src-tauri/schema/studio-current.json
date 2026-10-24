@@ -18,6 +18,27 @@
             "maxLength": 64,
             "pattern": "^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$"
           },
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "builtin",
+              "custom"
+            ]
+          },
+          "author": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "translationVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
           "name": {
             "type": "string",
             "minLength": 1,
@@ -355,6 +376,10 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 80
+          },
+          "localePackageId": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
           },
           "locale": {
             "default": "en",

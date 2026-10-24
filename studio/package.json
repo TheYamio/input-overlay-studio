@@ -1,7 +1,7 @@
 {
   "name": "input-overlay-studio",
   "private": true,
-  "version": "0.6.2",
+  "version": "0.6.3",
   "type": "module",
   "license": "GPL-3.0-only",
   "scripts": {
@@ -31,6 +31,8 @@
     "test:extensible-modules": "node scripts/extensible-modules-test.mjs",
     "test:profiles": "node scripts/profiles-test.mjs",
     "test:localization": "node scripts/localization-test.mjs",
+    "test:custom-localization": "node scripts/custom-localization-test.mjs",
+    "test:localization-layout": "node scripts/localization-layout-test.mjs",
     "test:language-native": "node scripts/language-native-test.mjs",
     "test:acceptance": "node scripts/architecture-acceptance-test.mjs",
     "test:paired": "node scripts/paired-runtime-test.mjs",

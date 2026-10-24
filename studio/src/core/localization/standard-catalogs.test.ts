@@ -36,6 +36,10 @@ describe('Experimental built-in translations',()=>{
    expect(Object.keys(pack.namespaces.ui).length).toBeGreaterThan(900);
   }
  });
+ it('covers every English namespace and key in every standard locale',()=>{
+  const r=createStudioLocalization(standardPacks),english=r.exportPack('en');
+  for(const {locale} of standardPacks){const actual=r.exportPack(locale);for(const [ns,entries] of Object.entries(english.namespaces))for(const key of Object.keys(entries))expect(Object.hasOwn(actual.namespaces[ns]??{},key),`${locale}:${ns}:${key}`).toBe(true);}
+ });
  it('translates generated settings, language warning and navigation consistently',()=>{
   const r=createStudioLocalization(standardPacks);
   for(const [locale,label,badge] of [['zh-cn','字号','实验性'],['es','Tamaño de fuente','Experimental'],['pt-br','Tamanho da fonte','Experimental'],['de','Schriftgröße','Experimentell'],['fr','Taille de police','Expérimental'],['tr','Yazı boyutu','Deneysel'],['pl','Rozmiar czcionki','Eksperymentalne'],['ja','フォントサイズ','試験的'],['ko','글꼴 크기','실험적'],['zh-tw','字號','實驗性']]){

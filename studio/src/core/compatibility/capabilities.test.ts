@@ -11,4 +11,5 @@ describe('current capability contract',()=>{
  it('protects runtime writes and future document generations',()=>{expect(writeIssue(negotiate(modern()),initialDocument(),'runtime')).toContain('read-only');for(const version of [1,2,3,5])expect(readIssue(negotiate(modern()),{version})).not.toBe('');});
  it('rejects contradictory protocol declarations',()=>{expect(negotiate({...modern(),protocol:6}).issue).not.toBe('');});
  it('requires explicit game links and envelope support',()=>{const packet=modern();delete (packet.studio_capabilities.features as Record<string,unknown>)['profiles.game-links'];expect(writeIssue(negotiate(packet),initialDocument(),'studio')).toContain('profiles.game-links');});
+ it('blocks older locale-only localization contracts before a document can be overwritten',()=>{const packet=modern();packet.studio_capabilities.features['visual.localization']=1;expect(writeIssue(negotiate(packet),initialDocument(),'studio')).toContain('visual.localization');expect(readIssue(negotiate(packet),encodeDocument(initialDocument()))).not.toBe('');});
 });

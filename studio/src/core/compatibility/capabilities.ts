@@ -31,13 +31,13 @@ export function readIssue(negotiation:Negotiation,source:unknown):string {
   if(!negotiation.remote)return '';
   if(!object(source))return '';
   if(!contract.document.read.includes(source.version as number)||!negotiation.remote.document.write.includes(source.version as number))return 'This configuration version is not supported by Studio and Capture together. The original is preserved.';
-  if(negotiation.features['config.module-envelope']!==1||negotiation.features['profiles.game-links']!==1||negotiation.features['visual.localization']!==1)return 'Capture cannot preserve the current profile format.';
+  if(negotiation.features['config.module-envelope']!==1||negotiation.features['profiles.game-links']!==1||negotiation.features['visual.localization']!==contract.features['visual.localization'])return 'Capture cannot preserve the current profile format.';
   return '';
 }
 export function writeIssue(negotiation:Negotiation,_document:StudioDocument,role:ClientRole):string {
   if(role==='runtime')return 'The OBS runtime is read-only.';
   if(negotiation.issue)return negotiation.issue;
   if(!negotiation.remote?.document.read.includes(4))return 'Capture cannot save this configuration version. Your local draft is kept.';
-  for(const feature of ['config.revisions','config.module-envelope','profiles.game-links','visual.localization'])if(negotiation.features[feature]!==1)return `Capture requires ${feature} to save safely. Your local draft is kept.`;
+  for(const feature of ['config.revisions','config.module-envelope','profiles.game-links','visual.localization'] as const)if(negotiation.features[feature]!==contract.features[feature])return `Capture requires ${feature} to save safely. Your local draft is kept.`;
   return '';
 }

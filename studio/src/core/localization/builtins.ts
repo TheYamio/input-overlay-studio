@@ -39,6 +39,7 @@ export function createStudioLocalization(standardPacks:readonly LocalePack[] = [
     for(const option of (constraints.enum??[]) as string[])if(option.trim())namespaces.settings[`${setting.id}.option.${Array.from(option,char=>char.codePointAt(0)!.toString(16)).join('-')}`]=option;
   }
   registry.register({version:1,locale:'en',namespaces});
+  registry.register({version:1,locale:'en',namespaces:{language:{custom:'Custom translation',exportSelected:'Export selected translation',deleteTitle:'Delete custom translation?',deleteMessage:'Delete “{{name}}”? Built-in translations and other packages will be kept.',cancel:'Cancel',delete:'Delete',removeNamed:'Remove {{name}}',fallback:'English fallback',invalid:'Could not import this translation. Check the JSON schema version, metadata, size and placeholders.',storage:'Could not save language preferences. Your previous selection and packages are unchanged.'}}},{override:true});
   for(const pack of standardPacks)registry.register({...pack,namespaces:Object.fromEntries(Object.entries(pack.namespaces).filter(([namespace])=>namespace!=='overlay'))});
   const translated=Object.fromEntries(Object.entries(namespaces).filter(([namespace])=>!['ui','language'].includes(namespace)).map(([namespace,entries])=>[namespace,Object.fromEntries(Object.entries(entries).filter(([,value])=>ruByEnglish.has(value)).map(([key,value])=>[key,ruByEnglish.get(value)!]))]));
   registry.register({version:1,locale:'ru',namespaces:{...translated,ui:russian,language:{...languageRu,loadError:'Не удалось загрузить язык. Сохранён предыдущий выбор.',experimental:'Экспериментально',experimentalHelp:'Перевод может содержать неточности. Для отсутствующих переводов используется английский.'},errors:errorsRu,controls:{...translated.controls,
@@ -48,8 +49,9 @@ export function createStudioLocalization(standardPacks:readonly LocalePack[] = [
     unavailable:'Настройка недоступна в текущем окружении.',dependency:'Измените связанную настройку для включения этого поля.',readonly:'Конфигурация только для чтения. Экспортируйте оригинал для совместимой версии.',component:'Специализированный редактор недоступен.',rejected:'Не удалось применить изменение. Предыдущее значение сохранено.',
   }}},{override:true});
   registry.register(sindarin);
+  registry.register({version:1,locale:'ru',namespaces:{language:{custom:'Пользовательский перевод',exportSelected:'Экспорт выбранного перевода',deleteTitle:'Удалить пользовательский перевод?',deleteMessage:'Удалить «{{name}}»? Встроенные переводы и остальные пакеты сохранятся.',cancel:'Отмена',delete:'Удалить',removeNamed:'Удалить {{name}}',fallback:'Резервный английский',invalid:'Не удалось импортировать перевод. Проверьте версию схемы JSON, метаданные, размер и параметры подстановки.',storage:'Не удалось сохранить настройки языка. Прежний выбор и пакеты сохранены.'}}},{override:true});
   for(const pack of overlayPacks)registry.register(pack);
   return registry;
 }
 export const studioLocalization=createStudioLocalization();
-export function languageTemplate(){return {...studioLocalization.exportPack('en'),locale:'xx',name:'My language',direction:'ltr'};}
+export function languageTemplate():LocalePack{return {...studioLocalization.exportPack('en'),locale:'xx',name:'My language',direction:'ltr',translationVersion:'1.0'};}

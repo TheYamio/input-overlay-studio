@@ -1,5 +1,6 @@
 import { moduleExtensionSchema,persistedSize } from './module-envelope.ts';
 import {localePackagesSchema} from './localization/pack-schema.ts';
+import {packageIdPattern} from './localization/registry.ts';
 import {validUnicode} from './unicode.ts';
 import { z } from 'zod';
 import { shapeSchema } from './shapes.ts';
@@ -49,6 +50,7 @@ export const gameProfileSchema = z.strictObject({
 export type GameProfile = z.infer<typeof gameProfileSchema>;
 export const profileSchema = z.strictObject({
   id, name: label.min(1), gameProfileId: id,
+  localePackageId:z.string().regex(packageIdPattern).optional(),
   locale:z.string().max(64).regex(/^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$/).default('en'), caption: label, theme: z.enum(themeNames), modules: z.array(moduleSchema).max(32),
 }).superRefine((p, ctx) => {
   if (new Set(p.modules.map(m => m.id)).size !== p.modules.length) ctx.addIssue({ code: 'custom', message: 'Duplicate module IDs' });
@@ -70,6 +72,7 @@ export const currentDocumentSchema = z.strictObject({
   const unicode=(value:unknown):boolean=>typeof value==='string'?validUnicode(value):Array.isArray(value)?value.every(unicode):!!value&&typeof value==='object'?Object.entries(value).every(([key,child])=>validUnicode(key)&&unicode(child)):true;
   if(!unicode(d))ctx.addIssue({code:'custom',message:'Invalid Unicode text'});
   if (new Set(d.gameProfiles.map(p=>p.id)).size!==d.gameProfiles.length) ctx.addIssue({code:'custom',message:'Duplicate game profile IDs'});
+  for(const p of d.profiles)if(p.localePackageId&&!d.languagePacks.some(pack=>pack.id===p.localePackageId&&pack.locale.toLowerCase()===p.locale.toLowerCase()))ctx.addIssue({code:'custom',message:'Selected overlay language package does not exist'});
   if (d.profiles.some(p=>!d.gameProfiles.some(g=>g.id===p.gameProfileId))) ctx.addIssue({code:'custom',message:'Linked game profile does not exist'});
   if (!d.profiles.some(p => p.id === d.activeProfileId)) ctx.addIssue({ code: 'custom', message: 'Active profile does not exist' });
   if (new Set(d.profiles.map(p => p.id)).size !== d.profiles.length) ctx.addIssue({ code: 'custom', message: 'Duplicate profile IDs' });

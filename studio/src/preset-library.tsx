@@ -21,10 +21,12 @@ function DetailsDialog({ details, close, save }: { details: Details; close: () =
   }, []);
   return <dialog ref={dialog} className="preset-dialog" onCancel={close} onClick={e => { if (e.target === dialog.current) close(); }}><form onSubmit={e => { e.preventDefault(); if (value.name.trim()) save(value); }}>
     <header><h2>{details.id ? tr('ui:s-6aaf5dc9232d',"Edit preset details") : tr('ui:s-6aebc3d96fa2',"Save your setup")}</h2><button type="button" aria-label={tr('ui:s-c3128cd87891',"Close preset details")} onClick={close}><X size={20}/></button></header>
+    <div className="preset-dialog-body">
     <label>{tr('ui:s-dcd1d5223f73',"Name")}<UnicodeInput aria-label={tr('ui:s-e534a6662ac8',"Preset name")} value={value.name} maxLength={100} required onChange={e => setValue({ ...value, name: e.target.value })}/></label>
     <label>{tr('ui:s-526e0087cc3f',"Description")}<UnicodeTextarea aria-label={tr('ui:s-6a109c102189',"Preset description")} value={value.description} maxLength={500} rows={4} placeholder={tr('ui:s-e7335cf558c4',"What makes this preset yours?")} onChange={e => setValue({ ...value, description: e.target.value })}/><small>{value.description.length}/500</small></label>
     <label>{tr('ui:s-60af8a30e5e6',"Save as")}<select aria-label={tr('ui:s-fd20edad2ec6',"Preset type")} value={value.kind} onChange={e => setValue({ ...value, kind: e.target.value as Details['kind'] })}><option value="layout">{tr('ui:s-8814cee5ed66',"Full layout — buttons, shapes, artwork & colors")}</option><option value="style">{tr('ui:s-238f44d988d7',"Colors only — reusable on any layout")}</option></select></label>
     <p>{value.kind === 'layout' ? tr('ui:s-fada43a0ddef',"Captures the entire composition. Game and sensitivity settings stay in your profile.") : tr('ui:s-29ad37383f86',"Captures a palette. Applying it keeps your buttons, layout, artwork and animations.")}</p>
+    </div>
     <footer><button type="button" className="secondary" onClick={close}>{tr('ui:s-19766ed6ccb2',"Cancel")}</button><button className="primary" disabled={!value.name.trim()}>{details.id ? tr('ui:s-bb76faabfd0b',"Save details") : tr('ui:s-362a1376e641',"Save preset")}</button></footer>
   </form></dialog>;
 }
