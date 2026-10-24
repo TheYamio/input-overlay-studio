@@ -31,7 +31,7 @@ const catalog=createCatalog([...builtinCatalog.modules.all(),definition],[...bui
 const removeConfig=moduleConfigurations.register({type,schemaVersion:1,schema});
 const runtime=new VisualRuntimeRegistry(catalog);for(const entry of createVisualRuntimeRegistry().all())runtime.register(entry.definition.id,entry.factory);
 let created=0,disposed=0,frames=0;
-runtime.register(type,{create:({element})=>{created++;element.style.color='#fff';element.style.fontFamily=fontStack('Unicode');element.dir='auto';return {update:state=>{element.textContent=overlayText(state.document.languagePacks,state.profile.locale,'acceptance.counter.title','Counter')+': '+state.module.extension!.config.caption;element.dataset.gain=String(state.module.extension!.config.gain);},dispose:()=>{disposed++;element.replaceChildren();}};}});
+runtime.register(type,{create:({element})=>{created++;element.style.color='#fff';element.style.fontFamily=fontStack('Unicode');element.dir='auto';return {update:state=>{element.textContent=overlayText(state.document.languagePacks,state.profile.locale,'acceptance.counter.title','Counter',state.profile.localePackageId)+': '+state.module.extension!.config.caption;element.dataset.gain=String(state.module.extension!.config.gain);},dispose:()=>{disposed++;element.replaceChildren();}};}});
 const engine=new InputEngine(),connection=new InputConnection(engine,'studio');
 const service=new SettingsService({load:loadDocument,save:saveDocument,backup:restoreBackup},connection,'acceptance',new SettingsEvents(),catalog);
 const preferences=new PreferenceSettings(localStorage,new SettingsEvents()),localization=createStudioLocalization();
@@ -39,8 +39,7 @@ const params=new URLSearchParams(location.hash.slice(1)),endpoint=params.get('ws
 let togglePanel=()=>{};
 function View(){
  const snapshot=useSyncExternalStore(service.subscribe,service.getSnapshot),prefs=useSyncExternalStore(preferences.subscribe,preferences.getSnapshot),root=useRef<HTMLDivElement>(null),[panel,setPanel]=useState(true),[message,setMessage]=useState('');togglePanel=()=>setPanel(value=>!value);
- useEffect(()=>{const off=prefs.languagePacks.map(pack=>localization.register(pack));return()=>off.forEach(dispose=>dispose());},[prefs.languagePacks]);
- useEffect(()=>localization.setLocale(prefs.locale),[prefs.locale]);
+ useEffect(()=>{localization.setCustomPacks(prefs.languagePacks);localization.selectPackage(prefs.localePackageId,prefs.locale);},[prefs.languagePacks,prefs.locale,prefs.localePackageId]);
  const scene=useRef<Scene|null>(null);
  useEffect(()=>{scene.current=new Scene(root.current!,engine,{registry:runtime});scene.current.onFrame=()=>frames++;return()=>scene.current?.dispose();},[]);
  useEffect(()=>{scene.current?.update(snapshot.document,snapshot.document.profiles[0]);},[snapshot.document]);
@@ -53,7 +52,7 @@ Object.assign(window,{architectureAcceptance:{
  add:()=>service.transaction(document=>document.profiles[0].modules.push(decodeModule({id:'acceptance-instance',type,schemaVersion:1,enabled:true,common:{name:'Counter',x:20,y:20,w:340,h:80,z:20,opacity:1,visible:true,locked:false},config:{caption:'日本語 العربية 👩🏽‍💻',gain:2},resources:{assets:[],shapes:[]}},id=>makeModule('distance',0,id)))),
  document:()=>encodeDocument(service.document),undo:()=>service.undo(),redo:()=>service.redo(),
  enabled:(enabled:boolean)=>service.transaction(document=>{document.profiles[0].modules.find(module=>module.id===counter().id)!.extension!.enabled=enabled;}),
- overlayLocale:()=>service.transaction(document=>{document.profiles[0].locale=preferences.getSnapshot().locale;document.languagePacks=preferences.getSnapshot().languagePacks.map(pack=>({...pack,namespaces:{overlay:pack.namespaces.overlay??{}}}));}),
+ overlayLocale:()=>service.transaction(document=>{document.profiles[0].locale=preferences.getSnapshot().locale;document.profiles[0].localePackageId=preferences.getSnapshot().localePackageId??undefined;document.languagePacks=preferences.getSnapshot().languagePacks.map(pack=>({...pack,namespaces:{overlay:pack.namespaces.overlay??{}}}));}),
  panel:()=>togglePanel(),flush:()=>service.flush(),state:()=>({created,disposed,frames,listeners:engine.listeners.size}),
  restore:()=>service.restoreBackup(),
  reset:()=>service.replace(initialDocument(),{allowOverwrite:true}),
