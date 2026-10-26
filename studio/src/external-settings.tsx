@@ -1,3 +1,4 @@
+import {trText} from './core/localization/messages.ts';
 import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import type { DefinitionId } from './core/architecture/contracts';
 import { builtinCatalog } from './core/architecture/builtins';
@@ -19,7 +20,7 @@ export function ExternalField({id,label}:{id:DefinitionId;label:string}){
   read:(_settings,definition)=>draft.read(definition.id),
   write:(_settings,definition,_address,value)=>draft.set(definition.id,value),
   reset:(_settings,definition)=>draft.reset(definition.id),
-  unavailable:definition=>definition.platforms&&!definition.platforms.includes(draft.platform)?`Available on ${definition.platforms.join(', ')}. The saved value is preserved.`:undefined,
+  unavailable:definition=>definition.platforms&&!definition.platforms.includes(draft.platform)?trText(`Available on ${definition.platforms.join(', ')}. The saved value is preserved.`):undefined,
  }),[draft]);
  const definition=builtinCatalog.settings.get(id)!;
  return <SettingsField id={id} settings={settings} address={{scope:definition.binding.scope as 'capture'|'global'}} adapter={adapter} specialized={nativeComponents} caption={{key:`settings:${id}.caption`,fallback:label}}/>;

@@ -1,6 +1,6 @@
 import {wireJSON} from './fixtures/current-config.mjs';
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
@@ -30,9 +30,9 @@ const check = async (name, fn) => { await fn(); results.push(name); console.log(
 const module = type => document.profiles[0].modules.find(m => m.type === type);
 // After movement, another higher layer may cover the object's canvas hit target.
 const select = name => page.locator('.layer-list').getByRole('button', { name, exact: true }).click();
-const synced = () => expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+const synced = () => expect(page.locator('.statusbar')).toContainText('Saved to capture server');
 try {
-  await page.goto('http://127.0.0.1:5192'); await expect(page.getByText('Capture connected')).toBeVisible();
+  await page.goto('http://127.0.0.1:5192'); await expect(page.getByText('Capture server connected')).toBeVisible();
   await check('quoted module IDs drag and resize without selector errors', async () => {
     await select('Keyboard'); await expect(page.getByLabel('X', { exact: true })).toHaveValue(String(1920 - module('keyboard').w));
     const hitbox = page.getByRole('button', { name: 'Select Keyboard', exact: true }), box = await hitbox.boundingBox();
@@ -129,7 +129,7 @@ try {
   await check('native disabled HTTP and bind errors block copying with specific instructions', async () => {
     const nativeContext = await browser.newContext({ viewport: { width: 1560, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
     await nativeContext.addInitScript(() => { window.__httpFixture = null; window.__TAURI__ = { core: { invoke: async command => { if (['enum_keyboards', 'enum_mice', 'check_linux_perms'].includes(command)) throw Error('unsupported platform'); return command === 'get_config' ? { host: '127.0.0.1', port: 4498, auth_token: 'editor-test', http_enabled: false, http_port: 4456, capture_enabled: true, analog_keyboard: '', key_whitelist: [], raw_mouse_min_delta: 0, send_mouse_move: true, cpu_affinity: [], linux_evdev_keyboard_device: '', linux_raw_mouse_device: '' } : command === 'get_http_status' ? window.__httpFixture : command === 'get_device_status' ? { keyboard_count: 1, mouse_count: 1, capture_running: true } : null; } } }; });
-    const native = await nativeContext.newPage(); native.on('pageerror', e => errors.push(e.message)); await native.goto('http://127.0.0.1:5192'); await expect(native.getByText('Capture connected')).toBeVisible();
+    const native = await nativeContext.newPage(); native.on('pageerror', e => errors.push(e.message)); await native.goto('http://127.0.0.1:5192'); await expect(native.getByText('Capture server connected')).toBeVisible();
     await native.getByRole('button', { name: 'Copy OBS URL', exact: true }).first().click(); await expect(native.getByRole('alert')).toContainText('HTTP server is disabled');
     await native.evaluate(() => { window.__httpFixture = { running: false, bind_error: 'inuse', host: '127.0.0.1', port: 4456, overlay_available: true }; });
     await native.getByRole('button', { name: 'Copy OBS URL', exact: true }).first().click(); await expect(native.getByRole('alert')).toContainText('already in use'); await expect(native.getByLabel('OBS URL', { exact: true })).toHaveValue(''); await nativeContext.close();

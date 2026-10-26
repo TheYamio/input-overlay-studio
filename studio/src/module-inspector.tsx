@@ -1,7 +1,7 @@
 import {UnicodeInput} from './unicode-input';
 import {tr,trText} from './core/localization/messages.ts';
 import { moduleKind } from './core/module-envelope';
-import { moduleAvailable,encodeModule,decodeModule } from './core/module-format';
+import { moduleAvailable,moduleSchemaVersion,encodeModule,decodeModule } from './core/module-format';
 import { makeModule } from './core/config';
 import React,{useEffect,useRef,useState} from 'react';
 import { Copy,RotateCcw,Square,Trash2 } from 'lucide-react';
@@ -20,9 +20,9 @@ export function ModuleProperties(props:ModuleEditorProps) {
   const {settings,preferences,module:m,document:doc,change,remove,duplicate,editingKeys}=props;
   const address = {scope:'module' as const,profileId:activeProfile(doc).id,moduleId:m.id};
   const field = (id: import('./core/architecture/contracts').DefinitionId, fallback: React.ReactNode) => registration?.lineColor && id==='overlay.surface.accent' || !registration?.preview && id==='overlay.surface.radius' ? fallback : <SettingsField settings={settings} id={id} address={address} adapter={documentAdapter}/>;
-  const registry=useModuleUIRegistry(),candidate=registry.resolve(moduleKind(m)),registration=candidate?.definition.schemaVersion===(m.extension?.schemaVersion??1)?candidate:undefined;
+  const registry=useModuleUIRegistry(),candidate=registry.resolve(moduleKind(m)),registration=candidate?.definition.schemaVersion===(m.extension?moduleSchemaVersion(m,registry.configurations):candidate?.definition.schemaVersion)?candidate:undefined;
   const Icon=registration?.icon??Square;
-  const panels=moduleAvailable(m)?registration?.sections??[]:[];
+  const panels=moduleAvailable(m,registry.configurations)?registration?.sections??[]:[];
   const groups=[['appearance','Appearance'],['layout','Position'],...panels.map(panel=>[panel.id,panel.label]),['all','All properties']];
   const [section, setSection] = useState(() => {
     const saved = preferences.getSnapshot().inspectorSection; if (groups.some(([id]) => id === saved)) return saved;

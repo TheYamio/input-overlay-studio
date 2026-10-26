@@ -58,3 +58,7 @@ dist-ssr
 /docs/releases/v0.6.3.md
 /docs/releases/
 /.codex/
+
+# Private planning and support implementation notes
+/docs/ROADMAP.md
+/docs/SUPPORT.md

@@ -15,6 +15,8 @@ export const games = ['Counter-Strike 2', 'Valorant', 'Apex Legends', 'Overwatch
 export const yaws: Record<string, number> = { 'Counter-Strike 2': .022, Valorant: .07, 'Apex Legends': .022, 'Overwatch 2': .0066, Source: .022, Overwatch: .0066 };
 export const keySchema = z.object({ id, code: z.number().int().min(1).max(255), label, x: z.number().min(0).max(1000), y: z.number().min(0).max(1000), w: positive.max(1000), h: positive.max(1000), style: elementStyleSchema.optional(), imageEnabled: z.boolean().optional() });
 export type Key = z.infer<typeof keySchema>;
+// Private editor projection and frozen v1 migration source. Canonical builtin
+// configuration schemas are independently owned by core/modules/*.ts.
 export const moduleViewSchema = z.object({
   id, type: z.enum(['keyboard', 'mouse', 'trail', 'distance', 'sensitivity']), name: label,
   x: z.number().finite().min(0).max(1920), y: z.number().finite().min(0).max(1080),

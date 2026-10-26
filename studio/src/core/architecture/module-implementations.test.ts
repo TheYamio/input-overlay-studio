@@ -13,7 +13,7 @@ const factory={create:vi.fn(()=>({update:()=>{},dispose:()=>{}}))},icon=()=>null
 function extended(){const original=builtinCatalog.modules.get('overlay.distance')!;return createCatalog([...builtinCatalog.modules.all(),{...original,id:'probe.visual',builtinType:'probe',renderer:'probe.runtime',inspector:'probe.inspector',configuration:z.object({...moduleSchema.shape,type:z.literal('probe')})}],builtinCatalog.settings.all());}
 describe('compiled visual implementations',()=>{
  it('registers all five runtimes without constructing them',()=>{
-  const registry=createVisualRuntimeRegistry();expect(registry.all().map(entry=>entry.definition.id)).toEqual(['overlay.distance','overlay.sensitivity','overlay.trail','overlay.mouse','overlay.keyboard']);for(const type of ['keyboard','mouse','trail','distance','sensitivity'])expect(registry.resolve(type)?.factory).toBeDefined();
+  const registry=createVisualRuntimeRegistry();expect(registry.all().map(entry=>entry.definition.id)).toEqual(['overlay.keyboard','overlay.mouse','overlay.trail','overlay.distance','overlay.sensitivity']);for(const type of ['keyboard','mouse','trail','distance','sensitivity'])expect(registry.resolve(type)?.factory).toBeDefined();
  });
  it('rejects missing/service/duplicate registrations without modifying existing ones',()=>{
   const registry=new VisualRuntimeRegistry(builtinCatalog);expect(()=>registry.register('missing.visual',factory)).toThrow('Invalid');expect(()=>registry.register('core.capture',factory)).toThrow('Invalid');registry.register('overlay.distance',factory);expect(()=>registry.register('overlay.distance',factory)).toThrow('already registered');expect(registry.all()).toHaveLength(1);

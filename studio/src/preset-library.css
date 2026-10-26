@@ -35,3 +35,33 @@
 @media(max-width:540px) { .preset-library { padding:16px; }.preset-mode button { padding:10px; }.preset-mode strong { font-size:13px; }.library-toolbar { flex-direction:column; align-items:stretch; }.library-toolbar input { max-width:none; }.preset-dialog { padding:18px; } }
 .preset-dialog{padding:0;overflow:hidden}.preset-dialog form{max-height:calc(100dvh - 42px);gap:0;min-height:0}.preset-dialog header,.preset-dialog footer{flex-shrink:0;padding:20px 24px}.preset-dialog header{align-items:flex-start}.preset-dialog header h2{overflow-wrap:anywhere}.preset-dialog header button{flex-shrink:0}.preset-dialog-body{overflow:auto;min-height:0;padding:0 24px;display:flex;flex-direction:column;gap:20px;scrollbar-gutter:stable}.preset-dialog-body>*{flex-shrink:0}.preset-dialog footer{flex-wrap:wrap;border-top:1px solid var(--border);margin-top:16px;background:var(--panel-surface,#1c2238)}.preset-dialog footer button{white-space:normal}
 @media(max-width:540px){.preset-dialog header,.preset-dialog footer{padding:16px 18px}.preset-dialog-body{padding:0 18px}}
+
+/* Keep the mode explanation and all actions visible; trim the decorative hero
+   before reducing space available to the actual layouts. */
+@media(max-height:800px){
+ .preset-library.presets-page{padding:16px 20px}
+ .preset-library .library-heading{flex-direction:row;align-items:center;gap:12px;margin-bottom:12px}
+ .preset-library .library-heading>div:first-child{flex:1;min-width:0}
+ .preset-library .library-heading .eyebrow,.preset-library .library-heading p{display:none}
+ .preset-library .library-heading h2{font-size:22px;line-height:1.3;margin:0}
+ .preset-library .library-actions{justify-content:flex-end;gap:8px;flex-shrink:0}
+ .preset-library .library-actions button{font-size:13px;min-height:36px;padding:8px 12px}
+ .preset-library .preset-mode{gap:4px;padding:4px;max-width:100%}
+ .preset-library .preset-mode button{padding:8px 12px}
+ .preset-library .preset-mode strong{font-size:14px;line-height:1.4}
+ .preset-library .preset-mode button>span{display:none}
+ .preset-library .preset-explanation{margin:8px 0 12px;min-height:0;font-size:12px;line-height:1.5}
+ .preset-library .library-toolbar{gap:12px;margin-bottom:12px}
+ .preset-library .library-toolbar button{min-height:34px;padding:6px 10px}
+ .preset-library .library-card .preset-art{height:170px}
+}
+@media(max-height:800px) and (max-width:960px){
+ .preset-library .library-heading{align-items:flex-start;flex-wrap:wrap}
+ .preset-library .library-actions{flex-shrink:1;flex-wrap:wrap}
+ .preset-library .library-heading h2{font-size:20px}
+}
+@media(max-height:800px) and (max-width:540px){
+ .preset-library.presets-page{padding:14px}
+ .preset-library .library-heading{flex-direction:column}
+ .preset-library .library-actions{justify-content:flex-start}
+}

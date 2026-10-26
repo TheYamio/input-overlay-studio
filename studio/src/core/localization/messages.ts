@@ -1,3 +1,4 @@
+import {externalDefinitions} from '../architecture/external';
 import {SettingsError} from '../settings/events';
 import english from './catalogs/ui.en.json';
 import { studioLocalization } from './builtins';
@@ -13,5 +14,10 @@ export function trText(englishText:string) {
 
 export function trError(error:unknown,fallback='The command could not be completed.'){
  const message=error instanceof Error?error.message:fallback;
- return error instanceof SettingsError?studioLocalization.text(`errors:settings.${error.code}`,trText(message),error.params):trText(message);
+ if(error instanceof SettingsError){
+  const definition=error.code==='native-invalid-field'?externalDefinitions.find(d=>d.binding.store==='native'&&d.binding.path[0]===error.params.field):undefined;
+  const params=definition?{...error.params,field:studioLocalization.text(definition.label.key,definition.label.fallback)}:error.params;
+  return studioLocalization.text(`errors:settings.${error.code}`,trText(message),params);
+ }
+ return trText(message);
 }

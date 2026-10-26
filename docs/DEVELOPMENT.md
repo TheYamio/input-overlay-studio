@@ -20,4 +20,4 @@ cargo build --locked --release --manifest-path ws-server/src-tauri/Cargo.toml
 
 Проверки интерфейса запускаются командами `pnpm --dir studio test:browser`, `test:editor` и `test:sync`. Остальные сценарии перечислены в `studio/package.json`; результаты создаются локально в `studio/artifacts` и не публикуются.
 
-Упаковка Windows-сборки: `pwsh -File scripts/build-studio.ps1` (или `-SkipBuild` для готовой проверенной сборки). Исходники должны быть зафиксированы; версия EXE должна совпадать с версией проекта. В GitHub Release публикуется ZIP программы и ссылка на соответствующий тег исходников. Отдельные Source ZIP и SHA256SUMS, создаваемые упаковщиком, загружать не требуется.
+Упаковка Windows-сборки: `pwsh -File scripts/build-studio.ps1` (или `-SkipBuild` для готовой проверенной сборки). Исходники должны быть зафиксированы; версия EXE должна совпадать с версией проекта. В GitHub Release публикуется ZIP программы и ссылка на соответствующий тег исходников. Отдельные Source ZIP и SHA256SUMS не создаются; исходники доступны по тегу релиза.

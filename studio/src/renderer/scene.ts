@@ -1,5 +1,5 @@
 import { moduleKind } from '../core/module-envelope';
-import { moduleAvailable,moduleConfigurations } from '../core/module-format';
+import { moduleConfigurations } from '../core/module-format';
 import { resolvedProfile, type OverlayProfile, type OverlayModule, type Profile, type StudioDocument } from '../core/config';
 import { InputEngine,type InputEvent } from '../core/input';
 import { inputPreview,type PreviewState } from '../core/preview';
@@ -28,7 +28,7 @@ export class Scene {
   this.registry=options.registry??visualRuntimeRegistry;
   root.dir='ltr';root.classList.add('overlay-scene');engine.listeners.add(this.listener);window.addEventListener('resize',this.resizeOutput);window.document.fonts?.addEventListener('loadingdone',this.resizeOutput);
   const refresh=()=>{if(this.document&&this.profile)this.update(this.document,this.profile,this.artworkModules);};
-  const offRuntime=this.registry.subscribe(refresh),offConfiguration=moduleConfigurations.subscribe(refresh);this.unsubscribe=()=>{offRuntime();offConfiguration();};
+  const offRuntime=this.registry.subscribe(refresh),offConfiguration=moduleConfigurations.subscribe(refresh),offEnvironment=this.registry.configurations&&this.registry.configurations!==moduleConfigurations?this.registry.configurations.subscribe(refresh):()=>{};this.unsubscribe=()=>{offRuntime();offConfiguration();offEnvironment();};
  }
  private stop(entry:Entry){
   const instance=entry.instance;entry.instance=undefined;
@@ -54,7 +54,7 @@ export class Scene {
   for(const [id,entry] of this.entries)if(!ids.has(id)){this.stop(entry);entry.element.remove();this.entries.delete(id);}
   this.wheelDuration=50;let index=0;
   for(const module of [...profile.modules].sort((a,b)=>a.z-b.z)){
-   const candidate=moduleAvailable(module)?this.registry.resolve(moduleKind(module)):undefined,registration=candidate?.definition.schemaVersion===(module.extension?.schemaVersion??1)?candidate:undefined,factory=registration?.factory;
+   const candidate=this.registry.canRender(module)?this.registry.resolve(moduleKind(module)):undefined,registration=candidate?.definition.schemaVersion===this.registry.schemaVersion(module)?candidate:undefined,factory=registration?.factory;
    let entry=this.entries.get(module.id);
    if(!entry){entry={element:window.document.createElement('div'),module,failed:false};this.entries.set(module.id,entry);}
    if(entry.factory!==factory||entry.module.type!==module.type||entry.failed){this.stop(entry);entry.element.style.cssText='';entry.failed=false;}
@@ -65,7 +65,7 @@ export class Scene {
    const at=this.root.children[index++];if(at!==entry.element)this.root.insertBefore(entry.element,at??null);
    const wheelPolicy=registration?.factory.wheelDuration;
    if(wheelPolicy)this.invoke(entry,'policy',()=>{const duration=wheelPolicy(module);if(!Number.isFinite(duration)||duration<0)throw Error('Invalid wheel duration');this.wheelDuration=Math.max(this.wheelDuration,duration);});
-   if(!module.visible||!factory||!moduleAvailable(module)){this.stop(entry);entry.element.style.display='none';continue;}
+   if(!module.visible||!factory||!this.registry.canRender(module)){this.stop(entry);entry.element.style.display='none';continue;}
    const current=entry;
    if(!entry.instance&&!entry.failed){
     const resources=new ModuleResources(this.resources,error=>{entry!.failed=true;this.report(entry!,'resource',error);this.stop(entry!);entry!.element.style.display='none';});entry.resources=resources;

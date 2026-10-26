@@ -1,6 +1,6 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // UI, pixel masking, portable images and migration checks. Input transport is synthetic.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'vite';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -32,7 +32,7 @@ let overlay;
 try {
   await page.goto('http://127.0.0.1:5177');
   await check('current settings synchronize with original key positions', async () => {
-    await expect(page.getByText('Capture connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(4);
+    await expect(page.getByText('Capture server connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(4);
     expect(keyboard().keys).toEqual(seed.profiles[0].modules[0].keys);
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
   });
@@ -105,13 +105,13 @@ try {
     await page.getByLabel('Show button 1', { exact: true }).check();
   });
   await check('reload retains images and live OBS reconnect restores the painted layout', async () => {
-    const id = keyboard().image.assetId; await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); expect(keyboard().image.assetId).toBe(id);
-    for (const ws of wss.clients) ws.close(); await expect(page.getByText('Capture connected')).toBeVisible({ timeout: 8000 }); await expect(overlay.locator('.module-keyboard .key-art')).toHaveCount(7);
+    const id = keyboard().image.assetId; await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); expect(keyboard().image.assetId).toBe(id);
+    for (const ws of wss.clients) ws.close(); await expect(page.getByText('Capture server connected')).toBeVisible({ timeout: 8000 }); await expect(overlay.locator('.module-keyboard .key-art')).toHaveCount(7);
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
   });
   await check('non-raster artwork is rejected without replacing the current image', async () => {
     const id = keyboard().image.assetId; await page.getByLabel('Upload keycap image', { exact: true }).setInputFiles({ name: 'bad.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>') });
-    await expect(page.getByRole('alert')).toContainText('PNG, JPEG or WebP'); expect(keyboard().image.assetId).toBe(id);
+    await expect(page.getByRole('alert').filter({hasText:'PNG, JPEG or WebP'})).toContainText('PNG, JPEG or WebP'); expect(keyboard().image.assetId).toBe(id);
   });
   await check('raster optimization preserves source alpha', async () => {
     const alpha = await page.evaluate(async () => {
@@ -140,7 +140,7 @@ try {
   });
   await check('immediate reload keeps the last unsent local style edit', async () => {
     await page.getByLabel('Border width', { exact: true }).fill('2'); await page.reload();
-    await expect(page.getByText('Capture connected')).toBeVisible(); await expect.poll(() => keyboard().appearance.borderWidth).toBe(2);
+    await expect(page.getByText('Capture server connected')).toBeVisible(); await expect.poll(() => keyboard().appearance.borderWidth).toBe(2);
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
   });
   await check('visual editor has no browser runtime errors', async () => { expect(errors).toEqual([]); });

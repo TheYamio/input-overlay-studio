@@ -1,10 +1,13 @@
+import type {ConnectionStatus} from '../connection-status';
 import { moduleKind } from '../module-envelope';
 import { commonFields } from '../module-format';
-import { documentSchema, type StudioDocument } from '../config';
+import { type StudioDocument } from '../config';
+import {checkDocumentSnapshot,documentSnapshot} from '../document-snapshot';
 import { pruneAssets } from '../skins';
 import type { ConnectionOptions, ConnectionState } from '../connection';
 import type { SyncMetadata } from '../storage';
 import { builtinCatalog } from '../architecture/builtins';
+import {moduleConfigurations} from '../module-format';
 import type { Catalog, DefinitionId, Scope, SettingsAddress } from '../architecture/contracts';
 import { immutable, SettingsError, SettingsEvents, type SettingsChange } from './events';
 import type { PreservedConfiguration } from '../compatibility/preserved';
@@ -12,10 +15,12 @@ import type { PreservedConfiguration } from '../compatibility/preserved';
 export interface DocumentStorage {
   load(): {document:StudioDocument;warning:string;sync?:SyncMetadata;unsupported?:PreservedConfiguration};
   save(document:StudioDocument,metadata:SyncMetadata): void;
+  saveDraft?(document:StudioDocument,metadata:SyncMetadata):void;
   backup(): StudioDocument;
 }
 export interface SettingsTransport {
   onStatus: (status:ConnectionState)=>void;
+  onConnectionStatus?: (status:ConnectionStatus|null)=>void;
   onError: (message:string)=>void;
   onDocument: (document:StudioDocument|null,revision?:string)=>void;
   onConflict: (document:StudioDocument|null,revision?:string)=>void;
@@ -38,6 +43,7 @@ export interface SettingsSnapshot {
   readonly warning: string;
   readonly saveStatus: string;
   readonly connectionState: ConnectionState;
+  readonly connectionStatus:ConnectionStatus|null;
   readonly unsupported: PreservedConfiguration|null;
 }
 export interface TransactionOptions {
@@ -47,6 +53,7 @@ export interface TransactionOptions {
 }
 const documentScopes: readonly Scope[]=['global','game-profile','overlay-profile','module'];
 const invalidChange='This change exceeds configuration limits or contains invalid settings. Remove an unused image or export a separate preset.';
+export const LOCAL_CHECKPOINT_MS=250;
 type Remote = {document:StudioDocument|null;revision?:string};
 
 export class SettingsService {
@@ -64,6 +71,7 @@ export class SettingsService {
   private warning='';
   private saveStatus='Saved locally';
   private connectionState: ConnectionState='Offline';
+  private connectionStatus:ConnectionStatus|null=null;
   private protected=false;
   private unsupported:PreservedConfiguration|null=null;
   private inspectionWarning='';
@@ -75,9 +83,11 @@ export class SettingsService {
   private remote:Remote|null=null;
   private serverBackup:StudioDocument|null=null;
   private timer?:ReturnType<typeof setTimeout>;
+  private localTimer?:ReturnType<typeof setTimeout>;
+  private localDirty=false;
   private epoch=0;
-  constructor(private readonly storage:DocumentStorage, private readonly transport:SettingsTransport, endpoint:string, readonly events=new SettingsEvents(), private readonly catalog:Catalog=builtinCatalog) {
-    const loaded=storage.load(); this.doc=immutable(documentSchema.parse(loaded.document)); this.json=JSON.stringify(this.doc);
+  constructor(private readonly storage:DocumentStorage, private readonly transport:SettingsTransport, endpoint:string, readonly events=new SettingsEvents(), readonly catalog:Catalog=builtinCatalog,private readonly configurations=moduleConfigurations) {
+    const loaded=storage.load(); this.doc=immutable(documentSnapshot(loaded.document,this.configurations)); this.json=JSON.stringify(this.doc);
     this.warning=loaded.warning; this.protected=!!loaded.warning;
     this.unsupported=loaded.unsupported ? immutable({...loaded.unsupported}) : null;
     if(this.unsupported)this.saveStatus='Read-only · original preserved';
@@ -95,14 +105,15 @@ export class SettingsService {
     if (this.inTransaction || this.batchDraft) throw new SettingsError('nested-transaction','Use one draft for the entire logical operation.');
   }
   private publishView() {
-    const next:SettingsSnapshot={document:this.doc,version:this.version,canUndo:!this.unsupported&&!!this.history.length,canRedo:!this.unsupported&&!!this.future.length,protected:this.protected||!!this.unsupported,pending:this.pending,conflict:!!this.remote,hasRemoteDocument:!!this.remote?.document,warning:this.warning,saveStatus:this.saveStatus,connectionState:this.connectionState,unsupported:this.unsupported};
+    const next:SettingsSnapshot={document:this.doc,version:this.version,canUndo:!this.unsupported&&!!this.history.length,canRedo:!this.unsupported&&!!this.future.length,protected:this.protected||!!this.unsupported,pending:this.pending,conflict:!!this.remote,hasRemoteDocument:!!this.remote?.document,warning:this.warning,saveStatus:this.saveStatus,connectionState:this.connectionState,connectionStatus:this.connectionStatus,unsupported:this.unsupported};
     if (this.view && Object.entries(next).every(([key,value])=>Object.is(this.view[key as keyof SettingsSnapshot],value))) return;
     this.view=Object.freeze(next); this.events.notify(this.listeners);
   }
   setWarning(message:string) { this.assertWritable(); this.warning=message; this.publishView(); }
-  protect(message:string, expected=this.doc) { this.assertWritable(); if (this.doc===expected) {this.protected=true;this.warning=message;clearTimeout(this.timer);this.publishView();} }
+  protect(message:string, expected=this.doc) { this.assertWritable(); if (this.doc===expected) {this.commitLocal();this.protected=true;this.warning=message;clearTimeout(this.timer);this.publishView();} }
   inspectUnsupported(source:PreservedConfiguration) {
     this.assertWritable();if(this.unsupported)return false;
+    this.commitLocal();
     if(source.source==='import')this.inspectionWarning=this.warning;
     clearTimeout(this.timer);this.unsupported=immutable({...source});this.warning=source.reason;this.saveStatus='Read-only · original preserved';this.publishView();return true;
   }
@@ -110,8 +121,8 @@ export class SettingsService {
     this.assertWritable();if(this.unsupported?.source!=='import')return false;
     this.unsupported=null;this.warning=this.inspectionWarning;this.inspectionWarning='';this.initialized=false;this.saveStatus=this.pending?'Saved locally':'Not synchronized';this.publishView();return true;
   }
-  beginGesture(token:unknown,restart=false) { this.assertWritable(); if (restart || this.gesture?.token!==token) this.gesture={token,recorded:false,operationId:this.events.operation()}; }
-  endGesture() { this.assertWritable(); this.gesture=null; }
+  beginGesture(token:unknown,restart=false) { this.assertWritable(); if (restart || this.gesture?.token!==token) {this.endGesture();this.gesture={token,recorded:false,operationId:this.events.operation()};} }
+  endGesture() { this.assertWritable(); this.gesture=null;this.checkpoint(); }
   endGestureFor(token:unknown) { if (this.gesture?.token===token) this.endGesture(); }
   private pushHistory() { this.history.push(this.doc); if (this.history.length>60) this.history.shift(); this.future=[]; }
   private notifyChange(operationId:string,source:string,scopes:readonly Scope[]=documentScopes) { this.events.emit({operationId,source,scopes,store:'document'}); }
@@ -131,15 +142,16 @@ export class SettingsService {
     finally {this.inTransaction=false;}
     if (returned && typeof (returned as {then?:unknown}).then==='function') throw new SettingsError('async-transaction','Decode asynchronous data before starting a settings transaction.');
     pruneAssets(draft);
-    const parsed=documentSchema.safeParse(draft);
+    const parsed=checkDocumentSnapshot(draft,this.configurations);
     if (!parsed.success) {this.warning=invalidChange;this.publishView();return false;}
-    if (JSON.stringify(draft)===this.json) {
+    const json=JSON.stringify(parsed.data);
+    if (json===this.json) {
       if (options.allowOverwrite) {this.protected=false;this.warning='';this.persist();this.publishView();}
       return true;
     }
     const operationId=this.gesture?.operationId ?? this.events.operation();
     if (!this.gesture?.recorded) {this.pushHistory();if (this.gesture) this.gesture.recorded=true;}
-    this.doc=immutable(parsed.data);this.json=JSON.stringify(this.doc);this.version++;
+    this.doc=immutable(parsed.data);this.json=json;this.version++;
     if (options.allowOverwrite) {this.protected=false;this.warning='';}
     this.persist();this.publishView();this.notifyChange(operationId,options.source||'editor',options.scopes);
     return true;
@@ -166,29 +178,45 @@ export class SettingsService {
   // or use it against a different server that happens to have the same revision.
   private currentRevision() {return this.baseEndpoint===this.endpoint ? this.baseRevision : undefined;}
   private acceptRevision(revision?:string) {this.baseRevision=revision;this.baseEndpoint=this.endpoint;}
-  private local(dirty:boolean) { this.storage.save(this.doc,{pending:dirty,baseRevision:this.currentRevision(),endpoint:this.endpoint}); }
+  private local(dirty:boolean) {
+    this.storage.save(this.doc,{pending:dirty,baseRevision:this.currentRevision(),endpoint:this.endpoint});
+    this.localDirty=false;clearTimeout(this.localTimer);this.localTimer=undefined;
+  }
+  private commitLocal() {
+    clearTimeout(this.localTimer);this.localTimer=undefined;
+    if(!this.localDirty)return true;
+    if(this.protected||this.unsupported)return false;
+    try {this.local(this.pending);this.saveStatus=this.remote?'Conflict · local draft kept':'Saved locally';return true;}
+    catch {this.saveStatus='Local save failed';this.warning='Storage is full or unavailable. Export your configuration to keep a copy.';return false;}
+  }
+  // Explicit durable boundary, also used by visibility/page lifecycle hooks.
+  checkpoint=()=>{if(this.disposed)return false;this.assertWritable();const saved=this.commitLocal();this.publishView();return saved;};
   private persist() {
     if (this.protected || this.unsupported) return false;
-    this.pending=true;let saved=true;
-    try {this.local(true);this.saveStatus=this.remote ? 'Conflict · local draft kept' : 'Saved locally';}
-    catch {saved=false;this.saveStatus='Local save failed';this.warning='Storage is full or unavailable. Export your configuration to keep a copy.';}
+    this.pending=true;this.localDirty=true;let saved=true;
+    if(this.gesture&&this.storage.saveDraft){
+      try{this.storage.saveDraft(this.doc,{pending:true,baseRevision:this.currentRevision(),endpoint:this.endpoint});this.saveStatus=this.remote?'Conflict · local draft kept':'Saved locally';}
+      catch{saved=false;this.saveStatus='Local save failed';this.warning='Storage is full or unavailable. Export your configuration to keep a copy.';}
+      this.localTimer??=setTimeout(this.checkpoint,LOCAL_CHECKPOINT_MS);
+    }else saved=this.commitLocal();
     clearTimeout(this.timer);this.timer=setTimeout(this.flush,350);return saved;
   }
-  save() {this.assertWritable();if(!this.writableDocument())return false;this.protected=false;this.warning='';const saved=this.persist();this.publishView();return saved;}
+  save() {this.assertWritable();if(!this.writableDocument())return false;this.gesture=null;this.protected=false;this.warning='';const saved=this.persist();this.publishView();return saved;}
   flush = () => {
     if(this.disposed)return;this.assertWritable();
+    this.commitLocal();
     if (this.protected || this.unsupported || !this.initialized || !this.pending || this.remote) return;
     if (this.transport.publish(this.doc,this.currentRevision())) {this.saveStatus='Saving…';this.publishView();}
   };
   private showConflict(document:StudioDocument|null,revision?:string) {
     if(this.unsupported)return;
-    const parsed=document===null ? null : documentSchema.safeParse(document);
+    const parsed=document===null ? null : checkDocumentSnapshot(document,this.configurations);
     if(parsed && !parsed.success) {this.warning='The server contains an unsupported configuration. Export your settings before replacing it.';this.publishView();return;}
     clearTimeout(this.timer);this.initialized=true;this.remote={document:parsed?.success ? immutable(parsed.data) : null,revision};this.saveStatus='Conflict · local draft kept';this.publishView();
   }
   private receiveDocument(value:StudioDocument|null,revision?:string) {
     if(this.unsupported)return;
-    const parsed=value===null ? null : documentSchema.safeParse(value);
+    const parsed=value===null ? null : checkDocumentSnapshot(value,this.configurations);
     if (parsed && !parsed.success) {this.warning='The server contains an unsupported configuration. Export your settings before replacing it.';this.publishView();return;}
     const document=parsed?.success ? immutable(parsed.data) : null;
     this.initialized=true;const same=document!==null && JSON.stringify(document)===this.json;
@@ -203,23 +231,24 @@ export class SettingsService {
       if (!same) {this.pushHistory();this.gesture=null;this.doc=document;this.json=JSON.stringify(document);this.version++;}
       this.pending=false;this.remote=null;
       if (!this.protected) {try {this.local(false);} catch {this.warning='Local storage is unavailable. Server settings remain available.';}}
-      this.saveStatus='Synced to OBS';
+      this.saveStatus='Saved to capture server';
 
       this.publishView();if (!same) this.notifyChange(this.events.operation(),'remote');
     } else if (!this.protected) {this.persist();this.publishView();}
   }
   connect(options:ConnectionOptions) {
-    this.assertWritable();const epoch=++this.epoch;clearTimeout(this.timer);this.initialized=false;
+    this.assertWritable();this.commitLocal();const epoch=++this.epoch;clearTimeout(this.timer);this.initialized=false;this.connectionStatus=null;this.connectionState='Connecting';
     if(this.unsupported?.source==='server') {if(this.warning===this.unsupported.reason)this.warning='';this.unsupported=null;}
     if (this.endpoint!==options.url) {this.endpoint=options.url;this.remote=null;}
     const active=()=>!this.disposed && epoch===this.epoch;
-    this.transport.onStatus=status=>{if (!active()) return;this.connectionState=status;if(status!=='Connected')this.initialized=false;this.publishView();};
+    this.transport.onStatus=status=>{if (!active()) return;this.connectionState=status;if(status!=='Connected'){this.initialized=false;this.connectionStatus=null;}this.publishView();};
+    this.transport.onConnectionStatus=status=>{if(!active()||this.connectionState!=='Connected')return;if(JSON.stringify(status)===JSON.stringify(this.connectionStatus))return;this.connectionStatus=status;this.publishView();};
     this.transport.onError=message=>{if (!active()) return;this.saveStatus='Save failed · draft kept';this.warning=message;this.publishView();};
     this.transport.onConflict=(document,revision)=>{if(active())this.showConflict(document,revision);};
     this.transport.onUnsupported=source=>{if(active())this.inspectUnsupported(source);};
     this.transport.onRecovery=(backup,revision)=>{
-      if (!active()||this.unsupported) return;this.acceptRevision(revision);this.protected=true;this.initialized=true;
-      const parsed=documentSchema.safeParse(backup);this.serverBackup=parsed.success ? immutable(parsed.data) : null;
+      if (!active()||this.unsupported) return;this.commitLocal();this.acceptRevision(revision);this.protected=true;this.initialized=true;
+      const parsed=checkDocumentSnapshot(backup,this.configurations);this.serverBackup=parsed.success ? immutable(parsed.data) : null;
       this.warning='The server configuration is damaged. The original file is preserved. Restore a backup or explicitly save your current defaults.';this.publishView();
     };
     this.transport.onSaved=(json,revision)=>{
@@ -227,17 +256,18 @@ export class SettingsService {
       if (!this.remote) this.pending=!same;
       if(!this.protected) {try {this.local(this.pending);} catch {this.warning='Server saved the profile, but local storage is unavailable. Export a copy.';}}
       if (this.remote) {this.publishView();return;}
-      this.saveStatus=same ? 'Synced to OBS' : 'Saved locally';this.publishView();if (!same) this.flush();
+      this.saveStatus=same ? 'Saved to capture server' : 'Saved locally';this.publishView();if (!same) this.flush();
     };
     this.transport.onDocument=(document,revision)=>{if(active())this.receiveDocument(document,revision);};
-    this.transport.connect(options);
+    this.publishView();this.transport.connect(options);
     return ()=>{if (epoch===this.epoch) this.disconnect();};
   }
   private disconnect() {
-    this.epoch++;this.initialized=false;clearTimeout(this.timer);this.transport.stop();
+    this.commitLocal();
+    this.epoch++;this.initialized=false;this.connectionStatus=null;clearTimeout(this.timer);this.transport.stop();
     this.transport.onStatus=()=>{};this.transport.onError=()=>{};this.transport.onDocument=()=>{};
     this.transport.onConflict=()=>{};this.transport.onRecovery=()=>{};this.transport.onSaved=()=>{};
-    this.transport.onUnsupported=()=>{};
+    this.transport.onUnsupported=()=>{};this.transport.onConnectionStatus=()=>{};
   }
   pause() {this.assertWritable();this.disconnect();this.connectionState='Paused';this.publishView();}
   resolveConflict(choice:'local'|'server') {
@@ -245,7 +275,7 @@ export class SettingsService {
     this.acceptRevision(latest.revision);this.remote=null;this.gesture=null;
     if (choice==='local') {this.persist();this.publishView();return true;}
     this.pushHistory();this.doc=latest.document!;this.json=JSON.stringify(this.doc);this.version++;this.pending=false;
-    try {this.local(false);this.saveStatus='Synced to OBS';} catch {this.saveStatus='Local save failed';this.warning='Could not save locally. Export a copy.';}
+    try {this.local(false);this.saveStatus='Saved to capture server';} catch {this.saveStatus='Local save failed';this.warning='Could not save locally. Export a copy.';}
     this.publishView();this.notifyChange(this.events.operation(),'conflict-server');return true;
   }
   restoreBackup() {

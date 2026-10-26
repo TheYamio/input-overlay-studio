@@ -1,4 +1,9 @@
 mod input_state;
+mod command_policy;
+mod net_limits;
+mod studio_activity;
+mod runtime_status;
+mod external_links;
 mod artwork;
 mod motion;
 mod studio_store;
@@ -14,7 +19,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager,
+    Manager, Emitter,
 };
 use tokio::sync::{watch, RwLock};
 
@@ -24,7 +29,9 @@ use ws_server::{InputEvent, ServerStatus, WsState};
 struct AppState {
     config: Arc<RwLock<Config>>,
     config_path: PathBuf,
-    startup_warning: Option<String>,
+    startup_warning: Option<services::config::ConfigError>,
+    config_writer:tokio::sync::Mutex<()>,
+    activity: Arc<studio_activity::StudioActivity>,
     ws_state: Arc<WsState>,
     #[cfg(windows)]
     _raw_input: Mutex<Option<services::windows::raw_input::RawInputThread>>,
@@ -44,7 +51,12 @@ fn set_interface_labels(state:tauri::State<'_,InterfaceMenu>,settings:String,qui
 }
 
 #[tauri::command]
-fn get_startup_warning(state: tauri::State<'_, AppState>) -> Option<String> { state.startup_warning.clone() }
+async fn get_support_context(state:tauri::State<'_, AppState>)->Result<studio_activity::ActivityContext,String>{
+ let activity=Arc::clone(&state.activity);tauri::async_runtime::spawn_blocking(move||activity.context()).await.map_err(|_|"Activity unavailable".into())
+}
+
+#[tauri::command]
+fn get_startup_warning(state: tauri::State<'_, AppState>) -> Option<services::config::ConfigError> { state.startup_warning.clone() }
 
 #[derive(serde::Serialize)]
 struct DeviceStatus { keyboard_count: usize, mouse_count: usize, capture_running: bool }
@@ -53,15 +65,16 @@ fn get_device_status(state: tauri::State<'_, AppState>) -> Result<DeviceStatus, 
     #[cfg(windows)]
     unsafe {
         use windows::Win32::UI::Input::{GetRawInputDeviceList, RAWINPUTDEVICELIST, RIM_TYPEKEYBOARD, RIM_TYPEMOUSE};
+        let capture_enabled=state.config.try_read().map(|config|config.capture_enabled).unwrap_or(false);
         let size = std::mem::size_of::<RAWINPUTDEVICELIST>() as u32;
         let mut count = 0;
         if GetRawInputDeviceList(None, &mut count, size) == u32::MAX || count > 1024 { return Err("device enumeration failed".into()); }
         let mut devices = vec![RAWINPUTDEVICELIST::default(); count as usize];
-        if count == 0 { return Ok(DeviceStatus { keyboard_count: 0, mouse_count: 0, capture_running: state._raw_input.lock().unwrap().as_ref().is_some_and(|r| r.is_alive()) }); }
+        if count == 0 { return Ok(DeviceStatus { keyboard_count: 0, mouse_count: 0, capture_running: capture_enabled && state._raw_input.lock().unwrap().as_ref().is_some_and(|r| r.is_alive()) }); }
         let read = GetRawInputDeviceList(Some(devices.as_mut_ptr()), &mut count, size);
         if read == u32::MAX { return Err("devices changed during enumeration".into()); }
         devices.truncate(read as usize);
-        Ok(DeviceStatus { keyboard_count: devices.iter().filter(|d| d.dwType == RIM_TYPEKEYBOARD).count(), mouse_count: devices.iter().filter(|d| d.dwType == RIM_TYPEMOUSE).count(), capture_running: state._raw_input.lock().unwrap().as_ref().is_some_and(|r| r.is_alive()) })
+        Ok(DeviceStatus { keyboard_count: devices.iter().filter(|d| d.dwType == RIM_TYPEKEYBOARD).count(), mouse_count: devices.iter().filter(|d| d.dwType == RIM_TYPEMOUSE).count(), capture_running: capture_enabled && state._raw_input.lock().unwrap().as_ref().is_some_and(|r| r.is_alive()) })
     }
     #[cfg(not(windows))]
     { let _ = state; Err("device enumeration is currently Windows-only".into()) }
@@ -79,7 +92,10 @@ async fn get_config(state: tauri::State<'_, AppState>) -> Result<Config, String>
 }
 
 #[tauri::command]
-async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Result<(), String> {
+async fn save_config(new_cfg: serde_json::Value, state: tauri::State<'_, AppState>) -> Result<(), services::config::ConfigError> {
+    let new_cfg=Config::parse(new_cfg)?;
+    // Serialize the complete apply, including service restarts, across callers.
+    let _writer=state.config_writer.lock().await;
     let (need_rebind, need_analog_restart, need_http_restart, need_evdev_restart) = {
         let old = state.config.read().await;
         (
@@ -95,7 +111,10 @@ async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Resu
         )
     };
 
-    services::config::save(&state.config_path, &new_cfg).map_err(|e| e.to_string())?;
+    let path=state.config_path.clone();let snapshot=new_cfg.clone();
+    tokio::task::spawn_blocking(move||services::config::save(&path,&snapshot)).await
+        .map_err(|_|services::config::ConfigError::new("native-storage"))?
+        .map_err(|_|services::config::ConfigError::new("native-storage"))?;
 
     let new_analog_kb = new_cfg.analog_keyboard.clone();
     let capture_enabled = new_cfg.capture_enabled;
@@ -116,16 +135,14 @@ async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Resu
         let _ = state.ws_state.rebind_tx.send(());
     }
 
+    let need_analog_restart=need_analog_restart||capture_enabled&&!new_analog_kb.is_empty()&&!state.analog.lock().unwrap().as_ref().is_some_and(|reader|reader.is_alive());
     if need_analog_restart {
-        let new_thread = if capture_enabled && !new_analog_kb.is_empty() {
-            Some(services::analog::AnalogThread::start(
-                state.ws_state.input_tx.clone(),
-                &new_analog_kb,
-            ))
-        } else {
-            None
-        };
-        *state.analog.lock().unwrap() = new_thread;
+        let old={state.analog.lock().unwrap().take()};let tx=state.ws_state.input_tx.clone();
+        let next=tokio::task::spawn_blocking(move||{
+            drop(old);
+            if capture_enabled&&!new_analog_kb.is_empty(){Some(services::analog::AnalogThread::start(tx,&new_analog_kb))}else{None}
+        }).await.unwrap_or_else(|_|{tracing::error!("capture reader worker could not restart");None});
+        *state.analog.lock().unwrap()=next;
     }
 
     if need_http_restart {
@@ -141,19 +158,17 @@ async fn save_config(new_cfg: Config, state: tauri::State<'_, AppState>) -> Resu
 
     #[cfg(target_os = "linux")]
     if need_evdev_restart {
-        let new_thread = services::linux::evdev_input::EvdevInputThread::start(
-            state.ws_state.input_tx.clone(),
-            &new_kbd_dev,
-            &new_mouse_dev,
-            new_min_delta,
-        );
-        *state._evdev.lock().unwrap() = Some(new_thread);
+        let old={state._evdev.lock().unwrap().take()};let tx=state.ws_state.input_tx.clone();
+        let next=tokio::task::spawn_blocking(move||{drop(old);if capture_enabled{Some(services::linux::evdev_input::EvdevInputThread::start(tx,&new_kbd_dev,&new_mouse_dev,new_min_delta))}else{None}}).await.unwrap_or_else(|_|{tracing::error!("capture reader worker could not restart");None});
+        *state._evdev.lock().unwrap()=next;
     }
     #[cfg(windows)]
+    let need_evdev_restart=need_evdev_restart||capture_enabled&&!state._raw_input.lock().unwrap().as_ref().is_some_and(|reader|reader.is_alive());
+    #[cfg(windows)]
     if need_evdev_restart {
-        let mut raw = state._raw_input.lock().unwrap();
-        raw.take(); // Drop unregisters and joins before creating another Raw Input window.
-        if capture_enabled { *raw = Some(services::windows::raw_input::RawInputThread::start(state.ws_state.input_tx.clone(), min_delta)); }
+        let old={state._raw_input.lock().unwrap().take()};let tx=state.ws_state.input_tx.clone();
+        let next=tokio::task::spawn_blocking(move||{drop(old);if capture_enabled{Some(services::windows::raw_input::RawInputThread::start(tx,min_delta))}else{None}}).await.unwrap_or_else(|_|{tracing::error!("capture reader worker could not restart");None});
+        *state._raw_input.lock().unwrap()=next;
     }
     #[cfg(not(windows))]
     let _ = min_delta;
@@ -280,21 +295,8 @@ pub fn run() {
         }))
         .setup(move |app| {
             let config_path = data_dir.join("config.json");
-            let startup_warning = if config_path.exists() && std::fs::read_to_string(&config_path).ok()
-                .and_then(|text| serde_json::from_str::<Config>(&text).ok()).is_none() {
-                Some("Server settings were damaged. The original is retained as config.invalid.json; restore config.backup.json or review defaults in Settings.".to_string())
-            } else { None };
-            let mut cfg = services::config::load(&config_path);
-            if cfg.auth_token.is_empty() {
-                use rand::Rng;
-                cfg.auth_token = rand::thread_rng()
-                    .sample_iter(rand::distributions::Alphanumeric)
-                    .take(32)
-                    .map(char::from)
-                    .collect();
-                let _ = services::config::save(&config_path, &cfg);
-                tracing::info!("generated authentication token");
-            }
+            let loaded=services::config::load(&config_path);
+            let cfg=loaded.config;let startup_warning=loaded.warning;
 
             apply_cpu_affinity(&cfg.cpu_affinity.clone());
 
@@ -309,6 +311,7 @@ pub fn run() {
                 cfg.linux_raw_mouse_device.clone(),
                 cfg.raw_mouse_min_delta,
             );
+            let activity=Arc::new(studio_activity::StudioActivity::new(data_dir.join("studio-activity.json")));
             let config = Arc::new(RwLock::new(cfg));
             let status = Arc::new(Mutex::new(ServerStatus::default()));
             let (rebind_tx, rebind_rx) = watch::channel(());
@@ -322,11 +325,16 @@ pub fn run() {
             {
                 let cfg = Arc::clone(&config);
                 let st = Arc::clone(&status);
-                let ah = app.handle().clone();
+                let report_app=app.handle().clone();let capture_app=app.handle().clone();
+                let hooks=ws_server::ServerHooks{changed:Arc::new(move|status|{report_app.emit("status-update",status).ok();}),capture_running:Arc::new(move||{
+                    #[cfg(windows)]{capture_app.try_state::<AppState>().map(|state|state._raw_input.lock().unwrap().as_ref().is_some_and(|reader|reader.is_alive()))}
+                    #[cfg(not(windows))]{let _=&capture_app;None}
+                })};
                 let capture_tx = input_tx.clone();
+                let activity=Arc::clone(&activity);
                 let studio = Arc::new(studio_store::StudioStore::new(data_dir.join("studio.json")));
                 tauri::async_runtime::spawn(async move {
-                    ws_server::run(cfg, input_rx, st, rebind_rx, ah, studio, capture_tx).await;
+                    ws_server::run(cfg, input_rx, st, rebind_rx, hooks, studio, capture_tx, activity).await;
                 });
             }
 
@@ -343,12 +351,12 @@ pub fn run() {
             } else { None };
 
             #[cfg(target_os = "linux")]
-            let evdev_handle = Some(services::linux::evdev_input::EvdevInputThread::start(
+            let evdev_handle = if capture_enabled{Some(services::linux::evdev_input::EvdevInputThread::start(
                 input_tx.clone(),
                 &evdev_kbd,
                 &evdev_mouse,
                 evdev_min_delta,
-            ));
+            ))}else{None};
 
             let analog_handle = if capture_enabled && !analog_kb.is_empty() {
                 Some(services::analog::AnalogThread::start(input_tx, &analog_kb))
@@ -366,6 +374,8 @@ pub fn run() {
                 config,
                 config_path,
                 startup_warning,
+                config_writer:tokio::sync::Mutex::new(()),
+                activity,
                 ws_state,
                 #[cfg(windows)]
                 _raw_input: Mutex::new(raw_input_handle),
@@ -386,6 +396,8 @@ pub fn run() {
             {
                 tauri::generate_handler![
                     set_interface_labels,
+                    get_support_context,
+                    external_links::open_external_link,
                     get_config,
                     get_startup_warning,
                     get_device_status,
@@ -399,6 +411,8 @@ pub fn run() {
             {
                 tauri::generate_handler![
                     set_interface_labels,
+                    get_support_context,
+                    external_links::open_external_link,
                     get_config,
                     get_startup_warning,
                     get_device_status,

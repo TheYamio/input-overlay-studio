@@ -13,7 +13,7 @@ static PATTERNS: LazyLock<std::collections::HashMap<String, regex::Regex>> = Laz
         if let Some(p) = s.get("pattern").and_then(Value::as_str) { out.entry(p.into()).or_insert_with(|| regex::Regex::new(p).expect("schema regex")); }
         match s { Value::Object(o) => for child in o.values() { collect(child, out); }, Value::Array(a) => for child in a { collect(child, out); }, _ => {} }
     }
-    let mut out = std::collections::HashMap::new(); collect(&SCHEMA, &mut out); collect(&serde_json::from_str::<Value>(include_str!("../schema/studio-current.json")).unwrap(),&mut out); collect(&serde_json::from_str::<Value>(include_str!("../schema/module-configurations.json")).unwrap(),&mut out); out
+    let mut out = std::collections::HashMap::new(); collect(&SCHEMA, &mut out); collect(&serde_json::from_str::<Value>(include_str!("../schema/studio-current.json")).unwrap(),&mut out); collect(&serde_json::from_str::<Value>(include_str!("../schema/module-configurations.json")).unwrap(),&mut out); collect(&serde_json::from_str::<Value>(include_str!("../schema/capture-config.json")).unwrap(),&mut out); out
 });
 pub(crate) fn validate(v: &Value, s: &Value) -> bool {
     if let Some(b) = s.as_bool() { return b; }

@@ -1,5 +1,5 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -37,7 +37,7 @@ const cap = label => page.getByRole('button', { name: `Edit key ${label}`, exact
 const drag = async (target, dx, dy, cancel = false) => { await target.scrollIntoViewIfNeeded(); const b = await target.boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2 + dx, b.y + b.height / 2 + dy, { steps: 10 }); if (cancel) await page.keyboard.press(typeof cancel === 'string' ? cancel : 'Escape'); await page.mouse.up(); };
 const assign = () => page.getByRole('button', { name: 'Assign by pressing a key', exact: true }).click();
 try {
-  await page.goto('http://127.0.0.1:5193'); await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); await select('Keyboard');
+  await page.goto('http://127.0.0.1:5193'); await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await select('Keyboard');
   await check('canvas mode selects the same key in the inspector', async () => {
     await page.getByRole('button', { name: 'Edit keys on canvas', exact: true }).click();
     await expect(page.locator('.key-hitbox')).toHaveCount(module('keyboard').keys.length);
@@ -125,7 +125,7 @@ try {
   });
   await check('duplicated keys and customizations survive reload at 1366×768', async () => {
     const count = module('keyboard').keys.length; await page.getByRole('button', { name: 'Duplicate key', exact: true }).click(); await expect.poll(() => module('keyboard').keys.length).toBe(count + 1);
-    await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); await page.reload(); await select('Keyboard'); await expect(field('Edit key').locator('option')).toHaveCount(count + 1);
+    await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await page.reload(); await select('Keyboard'); await expect(field('Edit key').locator('option')).toHaveCount(count + 1);
     await page.setViewportSize({ width: 1366, height: 768 }); await page.getByRole('button', { name: 'Edit keys on canvas', exact: true }).click(); await expect(page.locator('.key-hitbox')).toHaveCount(count + 1);
     await expect(page.getByRole('button', { name: 'Paste style', exact: true })).toBeDisabled(); // clipboard is intentionally kept only for the current session
     await expect.poll(() => page.evaluate(() => {

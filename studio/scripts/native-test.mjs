@@ -1,6 +1,6 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 import { parseDocument } from '../src/core/config.ts';
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import WebSocket from 'ws';
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -78,7 +78,7 @@ try {
   await context.addInitScript(() => localStorage.setItem('studio.inspector-section', 'all'));
   await context.addInitScript(() => localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4465', token: 'native-smoke-test' })));
   await check('compiled frontend uses the actual Rust server', async () => {
-    await page.goto('http://127.0.0.1:4466/studio/index.html'); await expect(page.getByText('Capture connected')).toBeVisible();
+    await page.goto('http://127.0.0.1:4466/studio/index.html'); await expect(page.getByText('Capture server connected')).toBeVisible();
     const releaseVersion = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version;
     await expect(page.locator('.version')).toContainText(releaseVersion);
     await expect.poll(() => page.locator('.brand-mark img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
@@ -130,7 +130,7 @@ try {
     await expect.poll(async () => Object.keys(parseDocument(await readFile(new URL('studio.json', data), 'utf8')).shapes || {}).length).toBeGreaterThan(0);
     await openDetails('Text & typography'); await page.getByLabel('Show labels', { exact: true }).uncheck();
     await expect.poll(async () => parseDocument(await readFile(new URL('studio.json', data), 'utf8')).profiles[0].modules[0].appearance.showLabels).toBe(false);
-    await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible();
+    await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible();
     await expect(page.locator('.preview-viewport .module-keyboard .custom-shape').first()).toBeVisible();
     await expect(page.locator('.preview-viewport .module-keyboard .key-label').first()).toBeHidden();
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
@@ -214,8 +214,8 @@ try {
     });
   });
   await check('native restart restores saved profiles and web client reconnects', async () => {
-    await stop(); start(); await expect.poll(async()=>{try{return (await fetch('http://127.0.0.1:4466/studio/index.html')).status;}catch{return 0;}},{timeout:20000}).toBe(200); await expect(page.getByText('Capture connected')).toBeVisible({ timeout: 20000 });
-    await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); await page.getByRole('button', { name: 'Profiles', exact: true }).click(); await expect(page.getByLabel('Profile name', { exact: true })).toHaveValue('Native persisted');
+    await stop(); start(); await expect.poll(async()=>{try{return (await fetch('http://127.0.0.1:4466/studio/index.html')).status;}catch{return 0;}},{timeout:20000}).toBe(200); await expect(page.getByText('Capture server connected')).toBeVisible({ timeout: 20000 });
+    await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); await page.getByRole('button', { name: 'Profiles', exact: true }).click(); await expect(page.getByLabel('Profile name', { exact: true })).toHaveValue('Native persisted');
   });
   await check('compiled transparent OBS entry is served locally', async () => {
     const overlay = await context.newPage(); await overlay.goto('http://127.0.0.1:4466/studio/overlay.html#ws=ws%3A%2F%2F127.0.0.1%3A4465&token=native-smoke-test'); await expect(overlay.locator('.overlay-module')).toHaveCount(5); expect(await overlay.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)'); await overlay.close();
@@ -253,8 +253,8 @@ try {
     await page.getByLabel('Preset type', { exact: true }).selectOption('style');
     await page.getByRole('button', { name: 'Save preset', exact: true }).click();
     await expect.poll(async () => parseDocument(await readFile(new URL('studio.json', data), 'utf8')).presets.at(-1)?.description).toBe('Iris palette for streaming');
-    await stop(); start(); await expect.poll(async()=>{try{return (await fetch('http://127.0.0.1:4466/studio/index.html')).status;}catch{return 0;}},{timeout:20000}).toBe(200); await expect(page.getByText('Capture connected')).toBeVisible({ timeout: 20000 });
-    await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible();
+    await stop(); start(); await expect.poll(async()=>{try{return (await fetch('http://127.0.0.1:4466/studio/index.html')).status;}catch{return 0;}},{timeout:20000}).toBe(200); await expect(page.getByText('Capture server connected')).toBeVisible({ timeout: 20000 });
+    await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible();
     await page.getByRole('button', { name: 'Presets', exact: true }).click();
     const saved = page.locator('.saved-preset').filter({ has: page.getByRole('heading', { name: 'Native palette', exact: true }) });
     await expect(saved.getByText('Iris palette for streaming')).toBeVisible();

@@ -1,5 +1,5 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -47,7 +47,7 @@ const sample = async (points, filename = 'shared-artwork.png') => {
   return overlay.evaluate(async ({ data, points }) => { const image = new Image(); image.src = data; await image.decode(); const c = window.document.createElement('canvas'); c.width = image.width; c.height = image.height; const ctx = c.getContext('2d'); ctx.drawImage(image, 0, 0); return points.map(([x, y]) => [...ctx.getImageData(x, y, 1, 1).data]); }, { data: `data:image/png;base64,${buffer.toString('base64')}`, points });
 };
 try {
-  await page.goto('http://127.0.0.1:5194'); await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); await select('Keyboard');
+  await page.goto('http://127.0.0.1:5194'); await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await select('Keyboard');
   const data = await page.evaluate(() => { const c = window.document.createElement('canvas'); c.width = 900; c.height = 110; const ctx = c.getContext('2d'), g = ctx.createLinearGradient(0, 0, 900, 0); g.addColorStop(0, '#ff0000'); g.addColorStop(1, '#0000ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, 900, 110); return c.toDataURL('image/png'); });
   await field('Upload keycap image').setInputFiles({ name: 'shared-gradient.png', mimeType: 'image/png', buffer: Buffer.from(data.split(',')[1], 'base64') }); await expect(page.getByAltText('Keycap artwork')).toBeVisible(); await field('Image opacity').fill('1'); await expect.poll(() => module('keyboard').image.opacity).toBe(1);
   await overlay.setViewportSize({ width: 1920, height: 1080 }); await overlay.goto('http://127.0.0.1:5194/overlay.html#token=visual-features&ws=ws%3A%2F%2F127.0.0.1%3A4500');
@@ -63,7 +63,7 @@ try {
     expect(pixels[0][0]).toBeGreaterThan(pixels[1][0] + 20); expect(pixels[1][0]).toBeGreaterThan(pixels[2][0] + 100); expect(pixels[2][2]).toBeGreaterThan(pixels[0][2] + 150); expect(pixels[3][3]).toBe(0);
   });
   await check('cached surfaces refresh when another group member moves or the same asset is replaced', async () => {
-    await expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+    await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
     const saved = structuredClone(document), original = (await sample([[350, 230]]))[0];
     const publish = () => { revision++; broadcast({ type: 'studio_config', document, revision: String(revision) }); };
     try {
@@ -159,7 +159,7 @@ try {
   });
   await check('preview scenes release their image URLs and reload retains saved groups', async () => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click(); await expect.poll(() => page.evaluate(() => window.__activeBlobURLs.size)).toBe(0);
-    await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); await page.reload(); await page.getByRole('button', { name: 'Presets', exact: true }).click(); expect(document.presets[0].modules[0].image.groupId).toBeTruthy(); expect(document.presets[0].modules[0].image.flipX).toBe(true);
+    await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await page.reload(); await page.getByRole('button', { name: 'Presets', exact: true }).click(); expect(document.presets[0].modules[0].image.groupId).toBeTruthy(); expect(document.presets[0].modules[0].image.flipX).toBe(true);
     await page.getByRole('button', { name: /Full layouts/ }).click(); await page.getByRole('button', { name: /^Saved / }).click(); await page.locator('.saved-preset').first().getByRole('button', { name: 'Use full layout', exact: true }).click(); await page.getByRole('button', { name: 'Studio', exact: true }).click(); await select('Keyboard');
     await expect(field('Preview key state')).toHaveValue('Input'); await page.setViewportSize({ width: 1366, height: 768 }); await openImage(); await expect(dialog()).toBeVisible(); await dialog().getByLabel('Source guide (editor only)', { exact: true }).check();
     expect(await dialog().evaluate(el => el.getBoundingClientRect().height <= innerHeight * .95)).toBe(true); await page.screenshot({ path: fileURLToPath(new URL('visual-workspace-1366.png', artifacts)) }); await dialog().getByRole('button', { name: 'Cancel', exact: true }).click();

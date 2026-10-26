@@ -15,6 +15,21 @@ function fixture(data=new Map<string,string>()){
  return {data,events,storage,preferences,registry,library,apply};
 }
 describe('independent custom translations',()=>{
+ it('opens a retired built-in selection in English without discarding saved data',()=>{
+  for(const current of [false,true]){
+   const raw=JSON.stringify({version:1,locale:'sjn-teng-x-art',packageId:null,packs:[]});
+   const data=new Map([[current?languageStorageKey:'studio.locale',current?raw:'sjn-teng-x-art']]),f=fixture(data);
+   expect(storedStudioLocale(f.storage)).toBe('en');expect(f.preferences.getSnapshot()).toMatchObject({locale:'en',localePackageId:null,languagePacks:[]});f.apply();expect(f.registry.text('language:title')).toBe('Languages & text');
+   expect(f.storage.setItem).not.toHaveBeenCalled();expect(data.get(current?languageStorageKey:'studio.locale')).toBe(current?raw:'sjn-teng-x-art');
+   expect(()=>f.library.select('sjn-teng-x-art')).toThrow('language-missing');f.library.select('ru');expect(fixture(data).preferences.getSnapshot().locale).toBe('ru');
+  }
+ });
+ it('preserves imported artistic packages and their selected identities across reload',()=>{
+  const f=fixture(),pack=f.library.import({...input,locale:'sjn-teng-x-art',namespaces:{language:{title:'My artistic translation'}}});
+  f.library.select(pack.id!);const next=fixture(f.data);next.apply();expect(storedStudioLocale(next.storage)).toBe(pack.locale);expect(next.preferences.getSnapshot().localePackageId).toBe(pack.id);expect(next.registry.text('language:title')).toBe('My artistic translation');
+  next.library.remove(pack.id!);expect(next.preferences.getSnapshot().locale).toBe('en');
+  const legacy=fixture(new Map([['studio.locale',pack.locale],['studio.language-packs',JSON.stringify([{...input,locale:pack.locale}])]]));expect(legacy.preferences.getSnapshot().locale).toBe(pack.locale);expect(storedStudioLocale(legacy.storage)).toBe(pack.locale);expect(legacy.preferences.getSnapshot().localePackageId).toBeTruthy();
+ });
  it('creates a new UUID for every import, including identical names, locales and imported IDs',()=>{
   const f=fixture(),a=f.library.import(input),b=f.library.import({...input,id:a.id,origin:'builtin'});expect(a.id).not.toBe(b.id);expect(a.origin).toBe('custom');expect(b.origin).toBe('custom');expect(f.preferences.getSnapshot().languagePacks).toHaveLength(2);expect(localePackagesSchema.safeParse([a,{...b,id:a.id}]).success).toBe(false);
  });
@@ -68,7 +83,7 @@ describe('independent custom translations',()=>{
   const f=fixture(new Map([['studio.locale','ru'],['studio.language-packs',JSON.stringify([input])]]));expect(f.preferences.getSnapshot().localePackageId).toBe(f.preferences.getSnapshot().languagePacks[0].id);f.apply();expect(f.registry.text('language:title')).toBe('Custom title');f.library.select('ru');f.apply();expect(f.registry.text('language:title')).toBe('Языки и текст');
  });
  it('isolates current v4 locale resources deterministically without changing authored strings',()=>{
-  const d=initialDocument();d.languagePacks=[{...input,version:1}];d.profiles[0].locale='ru';const a=isolateDocumentLanguages(d),b=isolateDocumentLanguages(structuredClone(d));expect(a).toEqual(b);expect(d.languagePacks[0].id).toBeUndefined();expect(a.profiles[0].localePackageId).toBe(a.languagePacks[0].id);expect(a.languagePacks[0].namespaces).toEqual(input.namespaces);expect(isolateDocumentLanguages(a)).toBe(a);expect(parseDocument(JSON.stringify(encodeDocument(a)))).toEqual(a);
+  const d=initialDocument();d.languagePacks=[{...input,version:1}];d.profiles[0].locale='ru';const a=isolateDocumentLanguages(d),b=isolateDocumentLanguages(structuredClone(d));expect(a).toEqual(b);expect(d.languagePacks[0].id).toBeUndefined();expect(a.profiles[0].localePackageId).toBe(a.languagePacks[0].id);expect(a.languagePacks[0].namespaces).toEqual(input.namespaces);expect(isolateDocumentLanguages(a)).toBe(a);expect(encodeDocument(parseDocument(JSON.stringify(encodeDocument(a))))).toEqual(encodeDocument(a));
  });
  it('keeps selected overlay variants isolated through standalone export and parsing',()=>{
   const f=fixture(),a=f.library.import(input),b=f.library.import({...input,namespaces:{overlay:{sensitivity:'Second SENS'}}}),d=initialDocument();d.languagePacks=[a,b].map(p=>({...p,namespaces:{overlay:p.namespaces.overlay}}));d.profiles[0].locale='ru';d.profiles[0].localePackageId=b.id;

@@ -1,4 +1,4 @@
-import {chromium,expect} from '@playwright/test';
+import {chromium,expect} from './test-browser.mjs';
 import {createServer} from 'vite';
 import {WebSocketServer} from 'ws';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -18,7 +18,9 @@ const text=source=>page.evaluate(async source=>(await import('/src/core/localiza
 const button=async(source,scope=page)=>scope.getByRole('button',{name:await text(source),exact:true});
 const screenshot=async name=>page.screenshot({path:fileURLToPath(new URL(name+'.png',artifacts)),fullPage:true});
 async function scan(name){
- const found=await page.evaluate(()=>{
+ const found=await page.evaluate(async()=>{
+  // Measure final font metrics rather than a transient fallback while catalogs load.
+  await document.fonts.ready;
   const issues=[];
   if(document.documentElement.scrollWidth>innerWidth+1)issues.push({type:'page overflow',text:String(document.documentElement.scrollWidth)});
   const nodes=document.querySelectorAll('.content-page button,.property-scroll button,.inspector-tabs button,.editor-toolbar button,.workspace-tools button,.field>span,.number-field>span,.range-field>span,.hint,dialog label,dialog h2,dialog h3,.settings-section h3');
@@ -42,7 +44,7 @@ async function scanPage(name){
  }else await scan(name);
 }
 try{
- await page.goto('http://127.0.0.1:5244');await expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+ await page.goto('http://127.0.0.1:5244');await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
  await nav(3);await page.locator('.language-settings input[type=file]').setInputFiles({name:'audit-language.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({version:1,locale:'zz-x-audit',name:'日本語 · Benutzerübersetzung mit einem langen Namen',namespaces:{language:{title:'Audit custom'}}}))});await expect(page.locator('.language-package')).toHaveCount(1);
  for(const locale of ['en','ru','de','fr','es','pt-br','tr','pl','ja','ko','zh-cn','zh-tw']){
   await nav(3);await page.locator('.language-settings select').selectOption(locale);await expect(page.locator('.language-settings select')).toBeEnabled();

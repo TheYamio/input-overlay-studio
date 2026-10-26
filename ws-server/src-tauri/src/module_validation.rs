@@ -3,7 +3,7 @@ use serde_json::{json,Value};
 use std::{collections::HashSet,sync::LazyLock};
 static SCHEMA:LazyLock<Value>=LazyLock::new(||serde_json::from_str(include_str!("../schema/studio-current.json")).unwrap());
 static DEFINITIONS:LazyLock<Value>=LazyLock::new(||serde_json::from_str(include_str!("../schema/module-configurations.json")).unwrap());
-fn bounded_json(v:&Value,depth:usize,nodes:&mut usize)->bool{
+pub(crate) fn bounded_json(v:&Value,depth:usize,nodes:&mut usize)->bool{
  *nodes+=1;if *nodes>10000||depth>16{return false;}
  match v{
   Value::String(s)=>s.encode_utf16().count()<=16384&&crate::studio_validation::valid_text(s),
@@ -39,12 +39,14 @@ pub fn valid(d:&Value)->bool{
     };
     let (Some(assets),Some(shapes))=(resource_set("assets","assets"),resource_set("shapes","shapes"))else{return false;};
     let definition=&DEFINITIONS[m["type"].as_str().unwrap()];
-    let known=definition["schemaVersion"]==m["schemaVersion"]&&!definition.is_null();
+    let version=m["schemaVersion"].as_u64().unwrap().to_string();
+    let schema=&definition["versions"][&version];let known=!definition.is_null()&&!schema.is_null();
     let mut flat=if known{
-     if !validate(&m["config"],&definition["schema"]){return false;}let mut config=m["config"].clone();crate::studio_validation::apply_defaults(&mut config,&definition["schema"]);canonical[key][index]["modules"][module_index]["config"]=config.clone();config["type"]=definition["builtinType"].clone();config
+     if !validate(&m["config"],schema){return false;}let mut config=m["config"].clone();crate::studio_validation::apply_defaults(&mut config,schema);canonical[key][index]["modules"][module_index]["config"]=config.clone();
+     let mut view=definition["projection"].clone();view.as_object_mut().unwrap().extend(config.as_object().unwrap().clone());view["type"]=definition["builtinType"].clone();view
     }else{seed["profiles"][0]["modules"][3].clone()};
     flat.as_object_mut().unwrap().extend(m["common"].as_object().unwrap().clone());flat["id"]=m["id"].clone();
-    if known&&references(&flat)!=(assets,shapes){return false;}
+    if known{let required=references(&flat);if m["schemaVersion"]==1{if required!=(assets,shapes){return false;}}else if !required.0.is_subset(&assets)||!required.1.is_subset(&shapes){return false;}}
     modules.push(flat);
    }
    candidate[key][index]["modules"]=json!(modules);
@@ -53,9 +55,39 @@ pub fn valid(d:&Value)->bool{
  serde_json::to_vec(&canonical).is_ok_and(|bytes|bytes.len()<=1_800_000)&&crate::studio_validation::valid_projection(&candidate)
 }
 
+/// Trusted declarative recipes only; unknown types/versions remain opaque.
+/// Reads never rewrite a file. StudioStore backs up the original before commit.
+pub fn migrate(mut document:Value)->Result<Value,&'static str>{
+ if !valid(&document){return Err("invalid configuration");}
+ for key in ["profiles","presets"]{
+  for profile in document[key].as_array_mut().unwrap(){for module in profile["modules"].as_array_mut().unwrap(){
+   let definition=&DEFINITIONS[module["type"].as_str().unwrap()];if definition.is_null(){continue;}
+   while module["schemaVersion"].as_u64().unwrap()<definition["schemaVersion"].as_u64().unwrap(){
+    let from=module["schemaVersion"].as_u64().unwrap();let Some(step)=definition["migrations"].as_array().and_then(|steps|steps.iter().find(|step|step["from"]==from))else{break;};
+    if step["to"]!=from+1||step["kind"]!="pick-config"{return Err("invalid module migration");}
+    let mut source=module["config"].clone();crate::studio_validation::apply_defaults(&mut source,&definition["versions"][from.to_string()]);
+    let mut config=serde_json::Map::new();for field in step["fields"].as_array().ok_or("invalid module migration")?{let field=field.as_str().ok_or("invalid module migration")?;if let Some(value)=source.get(field){config.insert(field.into(),value.clone());}}
+    let target=Value::Object(config);if !crate::studio_validation::validate(&target,&definition["versions"][step["to"].as_u64().unwrap().to_string()]){return Err("invalid module migration result");}
+    module["config"]=target;module["schemaVersion"]=step["to"].clone();
+   }
+  }}
+ }
+ Ok(document)
+}
+
 #[cfg(test)]
 mod tests{
  use super::*;
+ #[test]
+ fn each_builtin_migration_matches_the_frontend_and_preserves_opaque_resources(){
+  let cases:Value=serde_json::from_str(include_str!("../test-fixtures/module-migrations.json")).unwrap();
+  for case in cases.as_array().unwrap(){let before=case["legacy"].clone();let current=migrate(before.clone()).unwrap();assert_eq!(current,case["current"],"{}",case["type"]);assert!(valid(&current));assert_eq!(current["profiles"][0]["modules"][1],before["profiles"][0]["modules"][1]);assert_eq!(migrate(current.clone()).unwrap(),current);}
+ }
+ #[test]
+ fn invalid_legacy_migration_never_coerces_or_mutates_its_source(){
+  let cases:Value=serde_json::from_str(include_str!("../test-fixtures/module-migrations.json")).unwrap();
+  for case in cases.as_array().unwrap(){let mut source=case["legacy"].clone();source["profiles"][0]["modules"][0]["config"]["gap"]=json!(-1);let before=source.clone();assert!(migrate(source.clone()).is_err());assert_eq!(source,before);}
+ }
  #[test]
  fn compact_inactive_modules_are_not_limited_by_their_internal_projection(){
   let mut document:Value=serde_json::from_str(include_str!("../schema/default-current.json")).unwrap();

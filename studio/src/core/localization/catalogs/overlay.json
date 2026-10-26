@@ -94,13 +94,5 @@
     "turn": "公分 / 360°",
     "cm": "公分",
     "m": "公尺"
-  },
-  "sjn-teng-x-art": {
-    "game": "GAME",
-    "sensitivity": "SENS",
-    "unknown": "Unknown scale",
-    "turn": "CM / 360°",
-    "cm": "cm",
-    "m": "m"
   }
 }

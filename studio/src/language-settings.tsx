@@ -1,3 +1,4 @@
+import {StudioLanguageSelect} from './studio-language-select';
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {X} from 'lucide-react';
 import {loadBuiltinLanguage} from './core/localization/load-language';
@@ -28,14 +29,8 @@ export function LanguageSettings({preferences,notify}:{preferences:PreferenceSet
  const choices=languageChoices(state.languagePacks),selected=state.localePackageId??state.locale;
  const error=(value:unknown)=>notify(t(value instanceof Error&&value.message==='language-storage'?'language:storage':'language:invalid'));
  return <section className="settings-section language-settings"><h3>{t('language:title')}</h3>
-  <label className="field"><span className="language-selector-label">{t('language:studio')} <small className="experimental-badge">{t('language:experimental')}</small></span>
-   <select aria-label={t('language:studio')} aria-describedby="language-experimental-help" value={selected} disabled={switching} aria-busy={switching} onChange={async e=>{const id=e.target.value,choice=choices.find(p=>p.id===id);if(!choice)return;setSwitching(true);try{await loadBuiltinLanguage(choice.locale,registry);library.select(id);}catch(e){notify(t(e instanceof Error&&e.message==='language-storage'?'language:storage':'language:loadError'));}finally{setSwitching(false);}}}>
-    {!choices.some(p=>p.id===selected)&&<option value={selected}>{state.locale} · {t('language:fallback')}</option>}
-    {choices.map(p=><option key={p.id} value={p.id}>{p.name}{p.origin==='custom'?` · ${t('language:custom')} · ${p.author??p.locale} · ${p.id.slice(0,8)}`:''}</option>)}
-   </select>
-  </label>
-  <p className="hint" id="language-experimental-help">{t('language:experimentalHelp')}</p>
-  <p className="hint">{t('language:help')}</p><p className="hint">{t('language:unicode')}</p>{state.locale==='sjn-teng-x-art'&&<p className="hint">{t('language:artistic')}</p>}
+  <StudioLanguageSelect preferences={preferences} disabled={switching} onBusyChange={setSwitching} notify={notify}/>
+  <p className="hint">{t('language:help')}</p><p className="hint">{t('language:unicode')}</p>
   <div className="language-actions">
    <button className="secondary" disabled={switching} onClick={()=>file.current?.click()}>{t('language:import')}</button>
    <button className="secondary" disabled={switching||!choices.some(p=>p.id===selected)} onClick={async()=>{setSwitching(true);try{await loadBuiltinLanguage(state.locale,registry);download(library.export(selected),'input-overlay-translation.json');}catch(e){error(e);}finally{setSwitching(false);}}}>{t('language:exportSelected')}</button>

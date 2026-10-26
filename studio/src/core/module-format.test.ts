@@ -11,7 +11,7 @@ import { negotiate,readIssue,writeIssue } from './compatibility/capabilities';
 import contract from './compatibility/contract.json';
 import { readFileSync } from 'node:fs';
 const key='input-overlay-studio.document';
-const envelope=()=>({...encodeModule(makeModule('distance')),type:'test.badge',config:{caption:'kept',nested:{list:[null,true,1,'text']}},resources:{assets:[],shapes:[]}});
+const envelope=()=>({...encodeModule(makeModule('distance')),type:'test.badge',schemaVersion:1,config:{caption:'kept',nested:{list:[null,true,1,'text']}},resources:{assets:[],shapes:[]}});
 const fallback=(id:string)=>makeModule('distance',0,id);
 function withUnknown(){const document=encodeDocument(initialDocument());document.profiles[0].modules.push(envelope());return document;}
 function local(raw:string){const data=new Map([[key,raw]]),storage={getItem:(k:string)=>data.get(k)??null,setItem:vi.fn((k:string,v:string)=>data.set(k,v))};vi.stubGlobal('localStorage',storage);return {data,storage};}
@@ -20,7 +20,7 @@ afterEach(()=>vi.unstubAllGlobals());
 describe('versioned module envelopes',()=>{
  it('serializes cleared optional builtin overrides with the canonical JSON semantics',()=>{
   const document=initialDocument();document.profiles[0].modules[0].keys[0].style=undefined;document.profiles[0].modules[0].image.groupId=undefined;
-  const wire=encodeDocument(document);expect(wire.profiles[0].modules[0].config.image).not.toHaveProperty('groupId');expect(parseDocument(JSON.stringify(wire))).toEqual(documentSchema.parse(JSON.parse(JSON.stringify(document))));
+  const wire=encodeDocument(document);expect(wire.profiles[0].modules[0].config.image).not.toHaveProperty('groupId');expect(encodeDocument(parseDocument(JSON.stringify(wire)))).toEqual(wire);
  });
  it('accepts compact inactive modules independently of the size of private editing views',()=>{
   const wire=encodeDocument(initialDocument()),seed={...encodeModule(makeModule('distance')),type:'test.future',enabled:false,config:{}};
@@ -34,7 +34,7 @@ describe('versioned module envelopes',()=>{
  it('roundtrips all builtin fields through common/config without reallocating identities',()=>{
   const document=initialDocument(),before=structuredClone(document),wire=encodeDocument(document);
   expect(wire.version).toBe(4);expect(wire.profiles[0].modules[0].type).toBe('overlay.keyboard');expect(wire.profiles[0].modules[0]).not.toHaveProperty('keys');
-  const random=vi.spyOn(crypto,'randomUUID');expect(parseDocument(JSON.stringify(wire))).toEqual(before);expect(random).not.toHaveBeenCalled();random.mockRestore();expect(document).toEqual(before);
+  const random=vi.spyOn(crypto,'randomUUID');expect(encodeDocument(parseDocument(JSON.stringify(wire)))).toEqual(wire);expect(random).not.toHaveBeenCalled();random.mockRestore();expect(document).toEqual(before);
  });
 
  it('retains unknown configs and common edits without rendering them as a builtin',()=>{
@@ -43,7 +43,7 @@ describe('versioned module envelopes',()=>{
   expect(output.config).toEqual(source.profiles[0].modules.at(-1)!.config);expect(output.common).toMatchObject({x:100,name:'New name'});expect(wire).toEqual(source);
  });
  it('preserves future builtin schema versions instead of coercing their config',()=>{
-  const wire=encodeDocument(initialDocument()),module=wire.profiles[0].modules[0];module.schemaVersion=2;module.config={future:'unaltered'};
+  const wire=encodeDocument(initialDocument()),module=wire.profiles[0].modules[0];module.schemaVersion=3;module.config={future:'unaltered'};
   const view=parseDocument(JSON.stringify(wire));expect(moduleAvailable(view.profiles[0].modules[0])).toBe(false);expect(encodeDocument(view)).toEqual(wire);
  });
  it('keeps disabled builtin configs and reactivates the exact original when enabled',()=>{
@@ -70,7 +70,7 @@ describe('versioned module envelopes',()=>{
  it('rejects duplicate module IDs, missing resources and undeclared builtin references',()=>{
   const wire=withUnknown();wire.profiles[0].modules[1].id=wire.profiles[0].modules[0].id;expect(documentSchema.safeParse(wire).success).toBe(false);
   wire.profiles[0].modules[1].id='other';wire.profiles[0].modules.at(-1)!.resources.assets=['missing'];expect(documentSchema.safeParse(wire).success).toBe(false);
-  const module=encodeModule(makeModule('keyboard'));module.resources.shapes=['extra'];expect(()=>decodeModule(module,fallback)).toThrow('Unexpected builtin');
+  const module=encodeModule(makeModule('keyboard'));module.resources.shapes=['extra'];expect(decodeModule(module,fallback).extension?.resources.shapes).toEqual(['extra']);
  });
  it('bounds opaque JSON depth, nodes, strings, size and unsafe keys',()=>{
   expect(boundedModuleJSON({good:[true,1,null]})).toBe(true);expect(boundedModuleJSON(JSON.parse('{"__proto__":{}}'))).toBe(false);expect(boundedModuleJSON({x:Infinity})).toBe(false);expect(boundedModuleJSON({x:()=>0})).toBe(false);expect(boundedModuleJSON({x:'x'.repeat(16385)})).toBe(false);expect(boundedModuleJSON({x:Array(1001).fill(0)})).toBe(false);

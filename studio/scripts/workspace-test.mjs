@@ -1,7 +1,7 @@
 import {parseDocument} from '../src/core/config.ts';
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Layout regressions use synthetic transport, never the user's live configuration.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -35,7 +35,7 @@ const check = async (name, fn) => { await fn(); results.push(name); console.log(
 const tab = name => page.getByRole('group', { name: 'Property sections' }).getByRole('button', { name, exact: true });
 try {
   await page.goto('http://127.0.0.1:5207');
-  await expect(page.getByText('Capture connected')).toBeVisible();
+  await expect(page.getByText('Capture server connected')).toBeVisible();
   await page.locator('.layer-list').getByRole('button', { name: 'Keyboard', exact: true }).click();
   await check('contextual sections preserve edits and keep unrelated fields out of the tab order', async () => {
     await expect(tab('Appearance')).toHaveAttribute('aria-pressed', 'true');
@@ -72,7 +72,7 @@ try {
     await hex.fill(previous); await hex.press('Enter');
   });
   await check('right inspector width is adjustable by keyboard without changing overlay geometry', async () => {
-    await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); const before = JSON.stringify(document);
+    await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); const before = JSON.stringify(document);
     const handle = page.getByRole('separator', { name: 'Properties panel width' });
     const width = (await page.locator('.properties-panel').boundingBox()).width;
     await handle.focus(); await handle.press('ArrowLeft'); await handle.press('ArrowLeft');
@@ -84,7 +84,7 @@ try {
     const handle=page.getByRole('separator',{name:'Properties panel width'}), original=Number(await handle.getAttribute('aria-valuenow')), before=JSON.stringify(document);
     const box=await handle.boundingBox(); await page.mouse.move(box.x+box.width/2,box.y+box.height/2); await page.mouse.down(); await page.mouse.move(box.x+box.width/2-80,box.y+box.height/2,{steps:8});
     await expect(handle).toHaveAttribute('aria-valuenow',String(original+80)); await page.keyboard.press('Escape'); await page.mouse.up(); await expect(handle).toHaveAttribute('aria-valuenow',String(original));
-    await handle.focus(); await handle.press('ArrowLeft'); const width=Number(await handle.getAttribute('aria-valuenow')); await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); await page.locator('.layer-list').getByRole('button',{name:'Keyboard',exact:true}).click();
+    await handle.focus(); await handle.press('ArrowLeft'); const width=Number(await handle.getAttribute('aria-valuenow')); await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); await page.locator('.layer-list').getByRole('button',{name:'Keyboard',exact:true}).click();
     await expect(handle).toHaveAttribute('aria-valuenow',String(width)); expect(JSON.stringify(document)).toBe(before);
   });
   await check('selecting a module reopens its hidden properties', async () => {
@@ -133,7 +133,7 @@ try {
   }
   await page.setViewportSize({ width: 1366, height: 768 });
   await check('collapsing panels gives the scene room without changing the document', async () => {
-    await expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+    await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
     // Resizing across the compact breakpoint reopens layers asynchronously.
     // Measure only after that state has reached the docked desktop layout.
     await expect(page.locator('.modules-panel')).toBeVisible();
@@ -206,7 +206,7 @@ try {
     const dpiContext=await browser.newContext({viewport:{width,height},deviceScaleFactor:density});
     try {
       await dpiContext.addInitScript(()=>localStorage.setItem('studio.connection',JSON.stringify({url:'ws://127.0.0.1:4598',token:'workspace-test'})));
-      const dpi=await dpiContext.newPage(); await dpi.goto('http://127.0.0.1:5207'); await expect(dpi.locator('.statusbar')).toContainText('Synced to OBS');
+      const dpi=await dpiContext.newPage(); await dpi.goto('http://127.0.0.1:5207'); await expect(dpi.locator('.statusbar')).toContainText('Saved to capture server');
       await dpi.getByRole('button',{name:'Toggle layers',exact:true}).click(); await dpi.locator('.layer-list').getByRole('button',{name:'Keyboard',exact:true}).click();
       expect(await dpi.evaluate(()=>devicePixelRatio)).toBe(density); expect(await dpi.evaluate(()=>document.documentElement.scrollWidth<=innerWidth && document.documentElement.scrollHeight<=innerHeight)).toBe(true);
       await dpi.getByRole('group',{name:'Property sections'}).getByRole('button',{name:'Position',exact:true}).click(); await dpi.getByRole('button',{name:'Delete module',exact:true}).scrollIntoViewIfNeeded(); await expect(dpi.getByRole('button',{name:'Delete module',exact:true})).toBeInViewport();
@@ -246,7 +246,7 @@ try {
     }, linux);
     const native = await nativeContext.newPage(); native.on('pageerror', error => errors.push(error.message));
     try {
-      await native.goto('http://127.0.0.1:5207'); await expect(native.getByText('Capture connected')).toBeVisible();
+      await native.goto('http://127.0.0.1:5207'); await expect(native.getByText('Capture server connected')).toBeVisible();
       await native.getByRole('navigation').getByRole('button', { name: 'Settings', exact: true }).click();
       await native.getByText('Advanced capture settings', { exact: true }).click();
       await native.getByLabel('Allowed input names', { exact: true }).fill('key_w, mouse_left');

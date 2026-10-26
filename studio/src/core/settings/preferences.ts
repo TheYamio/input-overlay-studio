@@ -1,3 +1,4 @@
+import {setupStateSchema,setupStorageKey,type SetupState} from '../setup';
 import {localePackagesSchema} from '../localization/pack-schema';
 import type {LocalePack} from '../localization/registry';
 import { localeId } from '../localization/registry';
@@ -12,6 +13,7 @@ import {studioLocalization} from '../localization/builtins';
 
 export interface PreferenceStorage { getItem(key: string): string | null; setItem(key: string,value: string): void }
 export interface Preferences {
+  setup: SetupState;
   locale: string;
   localePackageId: string|null;
   languagePacks: LocalePack[];
@@ -20,20 +22,25 @@ export interface Preferences {
   shortcuts: ShortcutMap;
   connection: ConnectionOptions;
 }
-const keys = {languagePacks:'studio.language-packs',locale:'studio.locale',inspectorWidth:'studio.inspector-width',inspectorSection:'studio.inspector-section',shortcuts:shortcutStorageKey,connection:'studio.connection'} as const;
+const keys = {setup:setupStorageKey,languagePacks:'studio.language-packs',locale:'studio.locale',inspectorWidth:'studio.inspector-width',inspectorSection:'studio.inspector-section',shortcuts:shortcutStorageKey,connection:'studio.connection'} as const;
 export const languageStorageKey='studio.localization';
 const languageStateSchema=z.strictObject({version:z.literal(1),locale:z.string().max(64),packageId:z.string().regex(packageIdPattern).nullable(),packs:localePackagesSchema});
 type LanguageState={locale:string;packageId:string|null;packs:LocalePack[]};
+// Retire only the former built-in glossary; imported translations are independent.
+function restoredStudioLocale(locale:string,custom:boolean){const normalized=localeId(locale);return normalized==='sjn-teng-x-art'&&!custom?'en':normalized;}
 export function storedStudioLocale(storage:Pick<PreferenceStorage,'getItem'>){
- try{const raw=storage.getItem(languageStorageKey);if(raw){const parsed=languageStateSchema.parse(JSON.parse(raw));return localeId(parsed.locale);}return localeId(storage.getItem(keys.locale)||'en');}catch{return 'en';}
+ try{const raw=storage.getItem(languageStorageKey);if(raw){const parsed=languageStateSchema.parse(JSON.parse(raw));return restoredStudioLocale(parsed.locale,parsed.packageId!==null);}const locale=localeId(storage.getItem(keys.locale)||'en');return restoredStudioLocale(locale,locale==='sjn-teng-x-art'&&localePackagesSchema.parse(JSON.parse(storage.getItem(keys.languagePacks)||'[]')).some(p=>p.locale.toLowerCase()===locale));}catch{return 'en';}
 }
 export class PreferenceSettings {
   private state: Preferences;
   private listeners = new Set<() => void>();
   private disposed=false;
   private protectedLanguages=false;
+  private protectedSetup=false;
   constructor(private readonly storage: PreferenceStorage, private readonly events: SettingsEvents) {
     const get = (key: string) => { try { return storage.getItem(key); } catch { return null; } };
+    let setup:SetupState={version:1,status:get('input-overlay-studio.document')?'skipped':'new',step:0};
+    let rawSetup:string|null=null;try{rawSetup=storage.getItem(setupStorageKey);}catch{this.protectedSetup=true;setup={version:1,status:'skipped',step:0};}if(rawSetup){try{setup=setupStateSchema.parse(JSON.parse(rawSetup));}catch{this.protectedSetup=true;setup={version:1,status:'skipped',step:0};}}
     const width = Number(get(keys.inspectorWidth));
     let connection: ConnectionOptions = {url:'ws://127.0.0.1:4455',token:''};
     try { const value = JSON.parse(get(keys.connection) || '{}'); connection={url:typeof value.url==='string' ? value.url : connection.url,token:typeof value.token==='string' ? value.token : ''}; } catch { /* Keep the existing fallback. */ }
@@ -43,12 +50,13 @@ export class PreferenceSettings {
     if(raw){try{const saved=languageStateSchema.parse(JSON.parse(raw));locale=localeId(saved.locale);languagePacks=saved.packs;localePackageId=saved.packageId;if(localePackageId&&!languagePacks.some(p=>p.id===localePackageId&&p.locale.toLowerCase()===locale))throw Error('Missing language package');}catch{this.protectedLanguages=true;locale='en';languagePacks=[];localePackageId=null;}}
     else{try{languagePacks=localePackagesSchema.parse(JSON.parse(get(keys.languagePacks)||'[]'));}catch{/* Keep the original data for recovery. */}}
     languagePacks=languagePacks.map(input=>({...parseLocalePack(input),id:input.id??crypto.randomUUID(),origin:'custom' as const}));
+    if(!raw&&languagePacks.length)localePackageId=languagePacks.find(p=>p.locale===locale)?.id??null;
+    locale=restoredStudioLocale(locale,localePackageId!==null);
     if(!raw&&languagePacks.length){
-      localePackageId=languagePacks.find(p=>p.locale===locale)?.id??null;
       // Back up current installed packages before moving them to one atomic record.
       try{storage.setItem('studio.localization.backup',JSON.stringify({locale:get(keys.locale),packs:get(keys.languagePacks)}));storage.setItem(languageStorageKey,JSON.stringify({version:1,locale,packageId:localePackageId,packs:languagePacks}));}catch{/* Old records remain intact and are retried on the next write. */}
     }
-    this.state=immutable({locale,localePackageId,languagePacks,inspectorWidth:width>=320 && width<=560 ? width : 360,inspectorSection:get(keys.inspectorSection)||'appearance',shortcuts:parseShortcuts(get(keys.shortcuts)),connection});
+    this.state=immutable({setup,locale,localePackageId,languagePacks,inspectorWidth:width>=320 && width<=560 ? width : 360,inspectorSection:get(keys.inspectorSection)||'appearance',shortcuts:parseShortcuts(get(keys.shortcuts)),connection});
   }
   getSnapshot = () => this.state;
   subscribe = (listener: () => void) => { this.listeners.add(listener); return ()=>{this.listeners.delete(listener);}; };
@@ -61,6 +69,7 @@ export class PreferenceSettings {
   write<K extends keyof Preferences>(key: K, value: Preferences[K]): boolean {
     this.events.assertWritable();
     if(this.disposed)throw new SettingsError('disposed','Preferences have been disposed.');
+    if(key==='setup'&&(this.protectedSetup||!setupStateSchema.safeParse(value).success))return false;
     if(key==='locale'||key==='languagePacks'||key==='localePackageId'){
       const packs=key==='languagePacks'?localePackagesSchema.parse(value).map(p=>({...parseLocalePack(p),id:p.id??crypto.randomUUID(),origin:'custom' as const})):this.state.languagePacks;
       const locale=key==='locale'?localeId(value as string):this.state.locale;
@@ -98,7 +107,7 @@ export class PreferenceSettings {
     return true;
   }
   reset(key: keyof Preferences) {
-    const defaults: Preferences={locale:'en',localePackageId:null,languagePacks:[],inspectorWidth:360,inspectorSection:'appearance',shortcuts:defaultShortcuts(),connection:{url:'ws://127.0.0.1:4455',token:''}};
+    const defaults: Preferences={setup:{version:1,status:'new',step:0},locale:'en',localePackageId:null,languagePacks:[],inspectorWidth:360,inspectorSection:'appearance',shortcuts:defaultShortcuts(),connection:{url:'ws://127.0.0.1:4455',token:''}};
     return this.write(key,defaults[key]);
   }
   dispose() { this.disposed=true;this.listeners.clear(); }

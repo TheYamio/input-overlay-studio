@@ -1,4 +1,5 @@
-import type { z } from 'zod';
+import {moduleConfigurations} from '../module-format';
+import { z } from 'zod';
 import { currentDocumentSchema, initialDocument, makeModule, moduleSchema, gameProfileSchema, profileSchema, type OverlayModule } from '../config';
 import { appearanceSchema, imageSettingsSchema, trailAppearanceSchema } from '../visual';
 import type { Binding, Control, DefaultContext, DefinitionId, ModuleDefinition, SettingDefinition, SettingUI } from './contracts';
@@ -19,13 +20,18 @@ const visualInfo = [
   ['distance','Distance','Physical movement, in cm or m',['input.distance']],
   ['sensitivity','Sensitivity','Your setup at a glance',['profiles.game']],
 ] as const;
+function configurationField(schema:z.ZodType,path:readonly string[]):z.ZodType|undefined {
+ let current:z.ZodType|undefined=schema;
+ for(const field of path){while(current instanceof z.ZodDefault||current instanceof z.ZodOptional||current instanceof z.ZodNullable)current=current.unwrap() as z.ZodType;if(!(current instanceof z.ZodObject))return undefined;current=current.shape[field];}
+ return current;
+}
 
 function at(value: unknown, path: readonly string[]): unknown {
   for (const part of path) value = value && typeof value === 'object' ? (value as Record<string, unknown>)[part] : undefined;
   return value;
 }
 function moduleDefault(context: DefaultContext, path: readonly string[]) {
-  const type = moduleSchema.shape.type.parse(context.moduleType);
+  const type = moduleSchema.shape.type.parse(moduleConfigurations.get(context.moduleType ?? "")?.builtinType ?? context.moduleType);
   return at(makeModule(type), path);
 }
 // Metadata adapts the existing schemas/factories. No new persisted defaults,
@@ -36,7 +42,14 @@ export function createBuiltinDefinitions() {
   function fields<S extends Record<string, z.ZodType>>(shape: S, rows: readonly Row<S>[], group: DefinitionId, binding: Omit<Binding, 'path' | 'overrides'>, prefix: readonly string[], types: readonly ModuleType[] = allTypes, inherited = false) {
     for (const [field, stableName, label, control, unit, component] of rows) {
       const id: DefinitionId = `${group}.${stableName}`, path = [...prefix, field];
-      const schema = shape[field]; if (!schema) throw Error(`Missing existing schema for ${id}`);
+      let schema:z.ZodType = shape[field]; if (!schema) throw Error(`Missing existing schema for ${id}`);
+      if(binding.scope==='module'){
+        const owned=types.map(type=>configurationField(moduleConfigurations.get(`overlay.${type}`)!.schema,path));
+        if(owned.every((candidate):candidate is z.ZodType=>!!candidate)){
+          const constraints=JSON.stringify(z.toJSONSchema(owned[0],{io:'input'}));if(owned.some(candidate=>JSON.stringify(z.toJSONSchema(candidate,{io:'input'}))!==constraints))throw Error(`Use per-module setting IDs for different constraints: ${id}`);
+          schema=owned[0];
+        }
+      }
       settings.push({ id, schemaVersion: 1, schema, binding: { ...binding, path, ...(inherited ? { overrides: { key: ['style',field], mouseButton: [field] } } : {}) },
         label: { key: `settings:${id}.label`, fallback: label }, ui: { control, group, ...(unit ? {unit} : {}), ...(component ? {component} : {}) },
         targets: ['studio','obs'], apply: 'live', defaultValue: context => binding.scope === 'module' ? moduleDefault(context, path) : at(binding.scope==='game-profile'?initialDocument().gameProfiles[0]:binding.root==='profile'?initialDocument().profiles[0]:initialDocument(),path),
@@ -168,7 +181,7 @@ export function createBuiltinDefinitions() {
     service('core.profiles','Profiles',['profiles.game','profiles.overlay'],[],profileIds.concat(globalIds.filter(id => id.startsWith('studio.')),externalDefinitions.filter(s=>s.binding.store==='preferences').map(s=>s.id)),['studio','obs','native']),
     service('core.renderer','Renderer',['render.scene'],['core.input','core.profiles'],globalIds.filter(id => id.startsWith('render.')),['studio','obs']),
     ...visualInfo.map(([type,name,description,requires]): ModuleDefinition => ({
-      id:`overlay.${type}`, schemaVersion:1, kind:'visual', label:{key:`modules:overlay.${type}.label`,fallback:name}, description:{key:`modules:overlay.${type}.description`,fallback:description},
+      id:`overlay.${type}`, schemaVersion:moduleConfigurations.get(`overlay.${type}`)!.schemaVersion, kind:'visual', label:{key:`modules:overlay.${type}.label`,fallback:name}, description:{key:`modules:overlay.${type}.description`,fallback:description},
       builtinType:type, configuration:moduleSchema, renderer:`editor.scene.${type}`, inspector:`editor.inspector.${type}`,
       dependencies:['core.renderer'], capabilities:[`overlay.${type}`], requires, settings:byType.get(type)!, targets:['studio','obs'],
     })),

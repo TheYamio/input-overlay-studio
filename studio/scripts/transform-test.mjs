@@ -1,5 +1,5 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -37,7 +37,7 @@ const cap = label => page.getByRole('button', { name: `Edit key ${label}`, exact
 const drag = async (target, dx, dy, cancel = false) => { await target.scrollIntoViewIfNeeded(); const b = await target.boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2 + dx, b.y + b.height / 2 + dy, { steps: 10 }); if (cancel) await page.keyboard.press(typeof cancel === 'string' ? cancel : 'Escape'); await page.mouse.up(); };
 const assign = () => page.getByRole('button', { name: 'Assign by pressing a key', exact: true }).click();
 try {
-  await page.goto('http://127.0.0.1:5198'); await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); await select('Keyboard');
+  await page.goto('http://127.0.0.1:5198'); await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await select('Keyboard');
   const hit = page.getByRole('button', { name: 'Select Keyboard', exact: true });
   const shape = () => { const { x, y, w, h } = module('keyboard'); return { x, y, w, h }; };
   await check('eight module handles remain usable at canvas boundary and small zoom', async () => {

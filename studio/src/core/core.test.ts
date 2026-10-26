@@ -26,7 +26,7 @@ describe('sensitivity and profile validation', () => {
     d.activeProfileId = d.profiles[0].id; d.profiles[0].modules.push(d.profiles[0].modules[0]); expect(documentSchema.safeParse(d).success).toBe(false);
   });
   it('roundtrips all factory themes through the same schema', () => {
-    for (const theme of themeNames) { const d = initialDocument(); d.profiles[0].theme = theme; d.profiles[0].modules = applyTheme(d.profiles[0].modules, theme); expect(parseDocument(JSON.stringify(encodeDocument(d)))).toEqual(d); }
+    for (const theme of themeNames) { const d = initialDocument(); d.profiles[0].theme = theme; d.profiles[0].modules = applyTheme(d.profiles[0].modules, theme); expect(encodeDocument(parseDocument(JSON.stringify(encodeDocument(d))))).toEqual(encodeDocument(d)); }
   });
   it('strips credentials and rejects unsupported versions and oversized imports', () => {
     const d = initialDocument(); const text = JSON.stringify({ ...d, token: 'secret' });

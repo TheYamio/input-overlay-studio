@@ -1,7 +1,7 @@
 import {parseDocument} from '../src/core/config.ts';
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Two real editor contexts against a controlled revision-aware transport.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -34,7 +34,7 @@ const makeContext = async () => { const context = await browser.newContext({ vie
 const check = async (name, fn) => { await fn(); results.push(name); console.log(`PASS ${name}`); };
 try {
   const ca = await makeContext(), cb = await makeContext(); const a = await ca.newPage(), b = await cb.newPage();
-  for (const page of [a, b]) { page.on('pageerror', e => errors.push(e.message)); await page.goto('http://127.0.0.1:5191'); await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); await page.getByRole('button', { name: 'Profiles', exact: true }).click(); }
+  for (const page of [a, b]) { page.on('pageerror', e => errors.push(e.message)); await page.goto('http://127.0.0.1:5191'); await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await page.getByRole('button', { name: 'Profiles', exact: true }).click(); }
   const name = page => page.getByLabel('Profile name', { exact: true });
   const conflict = page => page.getByRole('button', { name: 'Publish local version', exact: true });
   const publish = page => page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
@@ -45,7 +45,7 @@ try {
   });
   await check('explicit local resolution publishes safely and updates the other editor', async () => {
     await conflict(a).click(); await expect.poll(() => document.gameProfiles[0].name).toBe('Local A'); await expect(name(b)).toHaveValue('Local A');
-    await expect(a.locator('.statusbar')).toContainText('Synced to OBS');
+    await expect(a.locator('.statusbar')).toContainText('Saved to capture server');
   });
   await check('server resolution retains the discarded draft in Undo', async () => {
     await name(a).fill('Kept in Undo'); await name(b).fill('New server'); await publish(b);
@@ -68,7 +68,7 @@ try {
     delayAck = true; await name(b).fill('First pending'); await publish(b);
     await expect.poll(() => document.gameProfiles[0].name).toBe('First pending'); await name(b).fill('Newest pending');
     await expect.poll(() => document.gameProfiles[0].name).toBe('Newest pending');
-    await expect(b.locator('.statusbar')).toContainText('Synced to OBS'); delayAck = false;
+    await expect(b.locator('.statusbar')).toContainText('Saved to capture server'); delayAck = false;
   });
   await check('server write error retains the draft and retry succeeds', async () => {
     rejectSave = true; const before = document.gameProfiles[0].name;

@@ -1,0 +1,4 @@
+import {z} from 'zod';
+import {surfaceConfiguration} from './shared.ts';
+import {trailAppearanceSchema,defaultTrailAppearance} from '../visual.ts';
+export const trailConfiguration=z.strictObject({...surfaceConfiguration,trailAppearance:trailAppearanceSchema.default(defaultTrailAppearance),trailStyle:z.enum(['Clean Line','Fade Trail','Neon Trail','Speed Gradient','Segmented Trail']),position:z.enum(['Fixed Field','Follow / Recenter']),scaleMode:z.enum(['Manual Scale','DPI Normalized Scale']),scale:z.number().min(.01).max(10),duration:z.number().min(100).max(10000),thickness:z.number().min(.5).max(15),glow:z.number().min(0).max(30),grid:z.boolean(),center:z.boolean(),marker:z.enum(['Dot','Crosshair','None']),clickEffects:z.enum(['Off','Marker','Ripple']),originX:z.number().min(0).max(1),originY:z.number().min(0).max(1)});

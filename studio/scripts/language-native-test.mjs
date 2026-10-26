@@ -1,4 +1,4 @@
-import {chromium,expect} from '@playwright/test';
+import {chromium,expect} from './test-browser.mjs';
 import {spawn} from 'node:child_process';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -17,7 +17,7 @@ const start=async()=>{child=spawn(exe,['--tray'],{windowsHide:true,stdio:'ignore
 const stop=async()=>{if(child&&child.exitCode===null){const done=new Promise(resolve=>child.once('exit',resolve));child.kill();await done;}};
 const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};
 try{
- await start();await page.goto(base);await expect(page.locator('.statusbar')).toContainText('Synced to OBS');await page.getByRole('button',{name:'Settings',exact:true}).click();
+ await start();await page.goto(base);await expect(page.locator('.statusbar')).toContainText('Saved to capture server');await page.getByRole('button',{name:'Settings',exact:true}).click();
  await check('compiled Studio starts without downloading unused language catalogs',async()=>{
   expect(requests.filter(url=>/\/assets\/(?:zh-cn|zh-tw|es|pt-br|de|fr|tr|pl|ja|ko|ru-supplement)-.*\.js/.test(url))).toEqual([]);
   await expect(page.locator('.experimental-badge')).toHaveText('Experimental');
@@ -29,13 +29,18 @@ try{
   await expect(page.getByRole('heading',{name:'Langues et texte',exact:true})).toBeVisible();
  });
  await check('every built-in language loads from embedded native HTTP assets',async()=>{
-  for(const [locale,badge] of [['ru','Экспериментально'],['zh-cn','实验性'],['es','Experimental'],['pt-br','Experimental'],['de','Experimentell'],['fr','Expérimental'],['tr','Deneysel'],['pl','Eksperymentalne'],['ja','試験的'],['ko','실험적'],['zh-tw','實驗性'],['sjn-teng-x-art','Experimental']]){
+  for(const [locale,badge] of [['ru','Экспериментально'],['zh-cn','实验性'],['es','Experimental'],['pt-br','Experimental'],['de','Experimentell'],['fr','Expérimental'],['tr','Deneysel'],['pl','Eksperymentalne'],['ja','試験的'],['ko','실험적'],['zh-tw','實驗性']]){
    await page.locator('.language-settings select').selectOption(locale);await expect(page.locator('.experimental-badge')).toHaveText(badge);
    await expect(page.locator('.brand')).toContainText('input');await expect(page.locator('.brand')).toContainText('OVERLAY STUDIO');
   }
   expect(requests.every(url=>new URL(url).hostname==='127.0.0.1')).toBe(true);
  });
+ await check('removed built-in locale restores English without changing saved overlays',async()=>{
+  await page.evaluate(()=>localStorage.setItem('studio.localization',JSON.stringify({version:1,locale:'sjn-teng-x-art',packageId:null,packs:[]})));await page.reload();await page.getByRole('button',{name:'Settings',exact:true}).click();await expect(page.locator('.language-settings select')).toHaveValue('en');await expect(page.locator('.language-settings select option')).toHaveCount(12);expect(await readFile(new URL('studio.json',data),'utf8')).toBe(original);
+ });
  await check('loaded languages are reused and Studio language does not alter overlay data',async()=>{
+  // Warm this page after the preceding reload; only repeated selections reuse its module cache.
+  await page.locator('.language-settings select').selectOption('es');await expect(page.locator('.language-settings select')).toBeEnabled();
   const before=requests.filter(url=>/\/assets\/es-.*\.js/.test(url)).length;
   await page.locator('.language-settings select').selectOption('es');await page.locator('.language-settings select').selectOption('de');await page.locator('.language-settings select').selectOption('es');
   expect(requests.filter(url=>/\/assets\/es-.*\.js/.test(url)).length).toBe(before);

@@ -1,5 +1,5 @@
 import {UnicodeInput} from './unicode-input';
-import {tr} from './core/localization/messages.ts';
+import {tr,trText} from './core/localization/messages.ts';
 import { useId, useState, useSyncExternalStore } from 'react';
 import { SettingsComponentRegistry } from './settings-components';
 import { builtinCatalog } from './core/architecture/builtins';
@@ -20,7 +20,7 @@ const capabilities=new Set(builtinCatalog.modules.all().flatMap(module=>[...modu
 type FieldProps={settings:SettingsService;id:DefinitionId;address:SettingsAddress;catalog?:Catalog;available?:ReadonlySet<DefinitionId>;specialized?:SettingsComponentRegistry;showReset?:boolean;labelPrefix?:string;adapter?:SettingsFieldAdapter;caption?:LocalizedText};
 export function SettingsFields({group,section,defaultSection,...props}:Omit<FieldProps,'id'>&{group:DefinitionId;section?:DefinitionId;defaultSection?:DefinitionId}) {
   useSyncExternalStore(props.settings.subscribe,props.settings.getSnapshot);
-  return <>{groupSettings(props.catalog??builtinCatalog,props.settings,group,props.address).filter(definition=>!section||(definition.ui.section??defaultSection)===section).sort((a,b)=>(a.ui.order??Infinity)-(b.ui.order??Infinity)).map(definition=><SettingsField key={definition.id} {...props} id={definition.id}/>)}</>;
+  return <>{groupSettings(props.catalog??props.settings.catalog,props.settings,group,props.address).filter(definition=>!section||(definition.ui.section??defaultSection)===section).sort((a,b)=>(a.ui.order??Infinity)-(b.ui.order??Infinity)).map(definition=><SettingsField key={definition.id} {...props} id={definition.id}/>)}</>;
 }
 
 export function SettingsField(props:FieldProps) {
@@ -28,14 +28,14 @@ export function SettingsField(props:FieldProps) {
   const identity=JSON.stringify([id,address.scope,'profileId' in address?address.profileId:null,address.scope==='module'?address.moduleId:null,address.scope==='module'?address.element:null]);
   return <BoundSettingsField key={identity} {...props}/>;
 }
-function BoundSettingsField({settings,id,address,catalog=builtinCatalog,available=capabilities,specialized=components,showReset=false,labelPrefix='',adapter,caption}:FieldProps) {
+function BoundSettingsField({settings,id,address,catalog=settings.catalog,available=capabilities,specialized=components,showReset=false,labelPrefix='',adapter,caption}:FieldProps) {
   const snapshot=useSyncExternalStore(settings.subscribe,settings.getSnapshot);
   useSyncExternalStore(specialized.subscribe,specialized.getSnapshot);
   const t=useSettingsText(),description=useId(),[failed,setFailed]=useState(false);
   const {definition:d,constraints:c,value,visible,enabled}=fieldModel(catalog,settings,id,address,available,adapter);
   if(!visible)return null;
   const labelText=caption??d.label;
-  const label=labelPrefix+t(labelText.key,labelText.fallback), Custom=d.ui.component && specialized.get(d.ui.component);
+  const label=trText(labelPrefix)+t(labelText.key,labelText.fallback), Custom=d.ui.component && specialized.get(d.ui.component);
   const missing=d.ui.control==='custom' && !Custom;
   const reason=d.binding.store==='document' && snapshot.unsupported ? t('controls:readonly') : adapter?.unavailable?.(d) || (missing ? t('controls:component') : !enabled ? d.disabledReason ? t(d.disabledReason.key,d.disabledReason.fallback) : t('controls:dependency') : '');
   const disabled=!!reason, inherited=isInherited(settings,catalog,id,address);

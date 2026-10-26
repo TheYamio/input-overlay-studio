@@ -1,8 +1,12 @@
+import {parseConnectionStatus,type ConnectionStatus} from './connection-status';
 import { localCapabilities, negotiate, readIssue, writeIssue, type ClientRole, type Negotiation } from './compatibility/capabilities';
 import type { PreservedConfiguration } from './compatibility/preserved';
 import { validateArtwork } from './artwork';
 import { MAX_MESSAGE_BYTES, utf8Bytes } from './limits';
-import { documentSchema, encodeDocument, type StudioDocument } from './config';
+import { type StudioDocument } from './config';
+import {parseModuleDocument} from './document-snapshot';
+import {moduleConfigurations} from './module-format';
+import {serializeDocument,withDocument} from './document-serialization';
 import { decodeInput, decodeSnapshot, type InputEngine } from './input';
 export type ConnectionState = 'Offline' | 'Connecting' | 'Authenticating' | 'Connected' | 'Authentication failed' | 'Paused';
 export interface ConnectionOptions { url: string; token: string }
@@ -29,12 +33,15 @@ export class InputConnection {
   private get revisionSupported() {return this.negotiation.features['config.revisions']===1;}
   onUnsupported: (source:PreservedConfiguration)=>void=()=>{};
   onStatus: (s: ConnectionState) => void = () => {};
+  onConnectionStatus:(status:ConnectionStatus|null)=>void=()=>{};
+  private statusSequence=-1;
+  private runtimeAck?:{revision:string;state:'ready'|'error'};
   onDocument: (d: StudioDocument | null, revision?: string) => void = () => {};
   onRecovery: (backup: StudioDocument | null, revision?: string) => void = () => {};
   onError: (s: string) => void = () => {};
   onSaved: (documentJson: string, revision?: string) => void = () => {};
   onConflict: (d: StudioDocument | null, revision?: string) => void = () => {};
-  constructor(private engine: InputEngine, private readonly role:ClientRole='studio') {}
+  constructor(private engine: InputEngine, private readonly role:ClientRole='studio',private readonly configurations=moduleConfigurations) {}
   connect(options: ConnectionOptions) {
     this.stop(); this.options = options; this.stopped = false; this.attempts = 0; this.negotiation=negotiate({});this.configurationBlocked=false;this.revision=undefined;this.open();
   }
@@ -69,6 +76,10 @@ export class InputConnection {
         ws.send(JSON.stringify({ type: 'studio_get' })); return;
       }
       if (!this.authenticated) return;
+      if(value.type==='heartbeat'){if(this.role==='runtime'&&this.negotiation.features['runtime.status']===1&&this.runtimeAck?.revision===this.revision&&!this.configurationBlocked)ws.send(JSON.stringify({type:'runtime_ready',...this.runtimeAck}));return;}
+      if(value.type==='connection_status'){
+        if(this.role==='studio'&&this.negotiation.features['runtime.status']===1){const status=parseConnectionStatus(value);if(status&&status.sequence>=this.statusSequence){this.statusSequence=status.sequence;this.onConnectionStatus(status);}}return;
+      }
       if (value.type === 'input_snapshot') {
         const snapshot = decodeSnapshot(value);
         if (snapshot && snapshot.sequence >= this.lastInputSequence) { this.lastInputSequence = snapshot.sequence; this.engine.applySnapshot(snapshot); }
@@ -80,7 +91,7 @@ export class InputConnection {
         this.onUnsupported({source:'server',version,reason:'The server configuration requires a newer Input Overlay Studio. Original data is preserved.',...(typeof value.original_json==='string'?{text:value.original_json}:value.document&&typeof value.document==='object'?{text:JSON.stringify(value.document)}:{})});return;
       }
       if (value.type === 'studio_recovery') {
-        const backup = documentSchema.safeParse(value.backup);
+        const backup = parseModuleDocument(value.backup,this.configurations);
         this.revision = typeof value.revision === 'string' ? value.revision : undefined;
         this.onRecovery(backup.success ? backup.data : null, this.revision); return;
       }
@@ -97,7 +108,7 @@ export class InputConnection {
         const source=value.document, version=source&&typeof source==='object'&&'version' in source&&typeof source.version==='number'?source.version:0;
         const incompatible=version>4 ? `Configuration version ${version} requires a newer Input Overlay Studio. The original is preserved.` : value.document===null ? this.negotiation.issue : readIssue(this.negotiation,source);
         if(incompatible) {this.configGeneration++;this.configurationBlocked=true;this.inFlight=undefined;clearTimeout(this.saveTimer);this.onUnsupported({source:'server',version,reason:incompatible,...(source!==null?{text:JSON.stringify(source)}:{})});return;}
-        const parsed = documentSchema.safeParse(value.document);
+        const parsed = parseModuleDocument(value.document,this.configurations);
         const revision = typeof value.revision === 'string' ? value.revision : undefined;
         if (this.revisionSupported && !revision) { this.onError('Server did not provide a configuration revision.'); return; }
         if (parsed.success || value.document === null) {
@@ -138,7 +149,7 @@ export class InputConnection {
     };
     ws.onerror = () => { /* close handles backoff without exposing URL credentials */ };
     ws.onclose = () => {
-      clearInterval(this.watchdog); clearTimeout(this.saveTimer); this.authenticated = false; this.inFlight = undefined; this.engine.reset();
+      clearInterval(this.watchdog); clearTimeout(this.saveTimer); this.onConnectionStatus(null);this.statusSequence=-1;this.runtimeAck=undefined;this.authenticated = false; this.inFlight = undefined; this.engine.reset();
       if (this.stopped) return;
       this.onStatus('Offline');
       this.timer = setTimeout(() => this.open(), Math.min(1000 * 2 ** this.attempts++, 15000));
@@ -149,9 +160,8 @@ export class InputConnection {
     if(this.configurationBlocked) {this.onError('Configuration is read-only. The unsupported original is preserved.');return false;}
     const issue=writeIssue(this.negotiation,document,this.role);if(issue){this.onError(issue);return false;}
     if (!baseRevision) return false;
-    const id = ++this.sequence, json = JSON.stringify(document);
-    const wire=encodeDocument(document);
-    const packet = JSON.stringify({ type: 'studio_set', document:wire, base_revision: baseRevision, origin: this.clientId, request_id: id });
+    const id = ++this.sequence, {json,wireJson} = serializeDocument(document);
+    const packet = withDocument({ type: 'studio_set', base_revision: baseRevision, origin: this.clientId, request_id: id },wireJson);
     if (utf8Bytes(packet) > MAX_MESSAGE_BYTES) { this.onError('Configuration exceeds the server message limit.'); return false; }
     this.inFlight = { id, json }; this.socket.send(packet);
     this.saveTimer = setTimeout(() => {
@@ -160,9 +170,14 @@ export class InputConnection {
     }, 12000);
     return true;
   }
-  resetDistance() { if (this.authenticated) this.socket?.send(JSON.stringify({ type: 'distance_reset' })); }
+  acknowledgeRuntime(revision:string,state:'ready'|'error') {
+    if(this.role!=='runtime'||!this.authenticated||this.configurationBlocked||this.negotiation.features['runtime.status']!==1||this.revision!==revision||this.socket?.readyState!==WebSocket.OPEN)return false;
+    if(this.runtimeAck?.revision===revision&&this.runtimeAck.state===state)return true;this.runtimeAck={revision,state};
+    this.socket.send(JSON.stringify({type:'runtime_ready',revision,state}));return true;
+  }
+  resetDistance() { if (this.role==='studio'&&this.authenticated&&!this.negotiation.issue&&this.socket?.readyState===WebSocket.OPEN) this.socket.send(JSON.stringify({ type: 'distance_reset' })); }
   stop() {
-    this.stopped = true; this.configGeneration++; clearTimeout(this.timer); clearTimeout(this.saveTimer); clearInterval(this.watchdog); this.authenticated = false; this.inFlight = undefined;
+    this.stopped = true;this.onConnectionStatus(null);this.statusSequence=-1;this.runtimeAck=undefined; this.configGeneration++; clearTimeout(this.timer); clearTimeout(this.saveTimer); clearInterval(this.watchdog); this.authenticated = false; this.inFlight = undefined;
     if (this.socket) { this.socket.onclose = null; this.socket.close(); this.socket = undefined; }
     this.engine.reset();
   }

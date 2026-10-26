@@ -1,4 +1,4 @@
-import {chromium,expect} from '@playwright/test';
+import {chromium,expect} from './test-browser.mjs';
 import {createServer} from 'vite';
 import {WebSocketServer} from 'ws';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
@@ -10,12 +10,15 @@ const vite=await createServer({server:{host:'127.0.0.1',port:5227,strictPort:tru
 const wss=new WebSocketServer({host:'127.0.0.1',port:4627});let document=initialDocument(),revision=0;
 const send=(ws,packet)=>ws.send(JSON.stringify(packet));const broadcast=packet=>{for(const ws of wss.clients)if(ws.authed&&ws.readyState===1)send(ws,packet);};
 wss.on('connection',ws=>ws.on('message',raw=>{const m=JSON.parse(String(raw));if(m.type==='auth'){ws.authed=m.token==='localization-test';send(ws,{type:'auth_response',status:ws.authed?'success':'failed',protocol:5,studio_capabilities:{...contract,role:'capture'}});return;}if(!ws.authed)return;if(m.type==='studio_get')send(ws,{type:'studio_config',document:encodeDocument(document),revision:String(revision)});if(m.type==='studio_set'){if(m.base_revision!==String(revision)){send(ws,{type:'studio_conflict',document:encodeDocument(document),revision:String(revision),request_id:m.request_id});return;}document=parseDocument(JSON.stringify(m.document));revision++;broadcast({type:'studio_config',document:encodeDocument(document),revision:String(revision),origin:m.origin});send(ws,{type:'studio_saved',revision:String(revision),request_id:m.request_id});}}));
-const browser=await chromium.launch({headless:true}),context=await browser.newContext({acceptDownloads:true,viewport:{width:1560,height:1000}});await context.addInitScript(()=>localStorage.setItem('studio.connection',JSON.stringify({url:'ws://127.0.0.1:4627',token:'localization-test'})));const page=await context.newPage(),errors=[],results=[];page.on('pageerror',e=>errors.push(e.message));const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};const synced=()=>expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+const browser=await chromium.launch({headless:true}),context=await browser.newContext({acceptDownloads:true,viewport:{width:1560,height:1000}});await context.addInitScript(()=>localStorage.setItem('studio.connection',JSON.stringify({url:'ws://127.0.0.1:4627',token:'localization-test'})));const page=await context.newPage(),errors=[],results=[];page.on('pageerror',e=>errors.push(e.message));const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};const synced=()=>expect(page.locator('.statusbar')).toContainText('Saved to capture server');
 try{
  await page.goto('http://127.0.0.1:5227');await synced();
  await check('Studio switches to Russian without changing document labels or overlay locale',async()=>{await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByLabel('Studio language',{exact:true}).selectOption('ru');await expect(page.getByRole('heading',{name:'Языки и текст'})).toBeVisible();await expect(page.getByRole('button',{name:'Сохранить профиль',exact:true})).toBeVisible();expect(document.profiles[0].locale).toBe('en');expect(document.profiles[0].modules[0].keys[0].label).toBe('W');});
  await check('Russian pages and inspector fit desktop and compact viewports',async()=>{for(const width of [1560,1100,820]){await page.setViewportSize({width,height:1000});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}await page.setViewportSize({width:1560,height:1000});await page.screenshot({path:fileURLToPath(new URL('russian-settings.png',artifacts)),fullPage:true});});
- await check('artistic locale identifies its partial creative glossary and uses English fallback',async()=>{await page.getByLabel('Язык Studio',{exact:true}).selectOption('sjn-teng-x-art');await expect(page.getByText(/not a complete or certified Tolkien translation/)).toBeVisible();await page.getByLabel('Studio language',{exact:true}).selectOption('en');});
+ await check('language selectors only offer the twelve built-in translations',async()=>{await expect(page.locator('.language-settings select option')).toHaveCount(12);await expect(page.locator('.language-settings select option[value="sjn-teng-x-art"]')).toHaveCount(0);await page.getByLabel('Язык Studio',{exact:true}).selectOption('en');});
+ await check('a saved retired built-in selection restores English without changing the overlay',async()=>{
+  const before=JSON.stringify(document);await page.evaluate(()=>localStorage.setItem('studio.localization',JSON.stringify({version:1,locale:'sjn-teng-x-art',packageId:null,packs:[]})));await page.reload();await synced();await page.getByRole('button',{name:'Settings',exact:true}).click();await expect(page.locator('.language-settings select')).toHaveValue('en');await expect(page.getByRole('heading',{name:'Languages & text',exact:true})).toBeVisible();expect(JSON.stringify(document)).toBe(before);
+ });
  await check('failed language downloads keep the selection and can be retried',async()=>{
   await page.route('**/catalogs/fr.json*',route=>route.abort());
   await page.locator('.language-settings select').selectOption('fr');
@@ -32,7 +35,7 @@ try{
    await page.locator('.language-settings select').selectOption(locale);
    await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();
    await expect(page.locator('.experimental-badge')).toHaveText(badge);await expect(page.locator('.brand')).toHaveText('inputOVERLAY STUDIO');await expect(page).toHaveTitle('Input Overlay Studio');
-   await expect(page.locator('#language-experimental-help')).toBeVisible();
+   await expect(page.locator('.language-settings .studio-language-selector .hint').first()).toBeVisible();
    for(const width of [1560,820]){await page.setViewportSize({width,height:1000});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
    await page.setViewportSize({width:1560,height:1000});
   }
@@ -43,6 +46,20 @@ try{
   await page.locator('.language-settings select').selectOption('ru');
   await page.screenshot({path:fileURLToPath(new URL('experimental-languages.png',artifacts)),fullPage:true});
   await page.locator('.language-settings select').selectOption('en');
+ });
+ await check('dynamic preset filters, default names and focused canvas captions follow the selected language',async()=>{
+  const before=JSON.stringify(document),text=source=>page.evaluate(async source=>(await import('/src/core/localization/messages.ts')).trText(source),source);
+  for(const locale of ['ru','de','ja']){
+   await page.locator('.navigation nav button').nth(3).click();await page.locator('.language-settings select').selectOption(locale);await page.locator('.navigation nav button').nth(2).click();
+   for(const source of ['All','Factory','Saved'])await expect(page.locator('.library-toolbar [role=group] button').filter({hasText:await text(source)})).toHaveCount(1);
+   await page.getByRole('button',{name:await text('Save current setup'),exact:true}).click();await expect(page.getByRole('dialog').locator('input').first()).toHaveValue(await text('My custom layout'));await page.getByRole('dialog').getByRole('button',{name:await text('Cancel'),exact:true}).click();
+   await page.locator('.navigation nav button').nth(0).click();await page.locator('.layer-list').getByRole('button',{name:'Keyboard',exact:true}).click();const focus=page.getByRole('button',{name:await text('Focus selection'),exact:true});await focus.click();await expect(page.locator('.canvas-info')).toContainText(await text('FOCUS'));await focus.click();
+  }
+  expect(JSON.stringify(document)).toBe(before);await page.locator('.navigation nav button').nth(3).click();await page.locator('.language-settings select').selectOption('en');
+ });
+ await check('SVG import feedback translates while the authored filename remains intact',async()=>{
+  await page.locator('.language-settings select').selectOption('ru');await page.locator('.navigation nav button').nth(0).click();await page.locator('.layer-list').getByRole('button',{name:'Keyboard',exact:true}).click();const text=source=>page.evaluate(async source=>(await import('/src/core/localization/messages.ts')).trText(source),source);await page.getByText(await text('Borders & shape'),{exact:true}).click();
+  await page.locator('.shape-control input[type=file]').first().setInputFiles({name:'My custom shape.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100"/></svg>')});await expect(page.locator('.shape-control [role=status]').first()).toContainText('Импортировано: My custom shape');await expect(page.locator('.statusbar')).toContainText('Сохранено на сервере захвата');await page.locator('.navigation nav button').nth(3).click();await page.locator('.language-settings select').selectOption('en');
  });
  let packId;
  const pack={version:1,locale:'zz-x-ja',name:'日本語テスト',namespaces:{ui:{'s-c96c6d5be8d0':'Wrong name','s-0150f6d8bb28':'Wrong studio','s-6994f174da0a':'Wrong app','s-17eeaf6a27f7':'Wrong about'},language:{title:'言語と文字'},overlay:{sensitivity:'感度',turn:'CM / 360°'}}};

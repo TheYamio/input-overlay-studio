@@ -1,6 +1,6 @@
 [package]
 name = "input-overlay-ws"
-version = "0.6.3"
+version = "0.6.9"
 description = "Input Overlay Studio - local input capture and OBS overlay editor"
 license = "GPL-3.0-only"
 authors = []
@@ -49,6 +49,9 @@ windows = { version = "0.58", features = [
     "Win32_UI_WindowsAndMessaging",
     "Win32_System_Threading",
     "Win32_System_LibraryLoader",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_Storage_FileSystem",
+    "Win32_UI_Shell",
 ] }
 
 [profile.release]

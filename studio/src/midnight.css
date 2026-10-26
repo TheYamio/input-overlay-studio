@@ -431,4 +431,4 @@ input[type=range] { min-height: 28px; height: 28px; }
 input:not([type=number]):not([type=range]):not([type=color]),textarea,.layer-row>button>span,.profile-card-heading>b,.profile-list button>div,.module-label{unicode-bidi:plaintext}
 html[dir=rtl] .preview-stage,html[dir=rtl] .canvas-scrollport,.overlay-scene{direction:ltr}
 
-body,button,input,textarea,select{font-family:"Segoe UI","IOS Noto","IOS Arabic","IOS Hebrew","IOS Devanagari","IOS Thai","IOS Bengali","IOS Tamil","IOS Telugu","IOS Gujarati","IOS Gurmukhi","IOS Kannada","IOS Malayalam","IOS Sinhala","IOS Khmer","IOS Lao","IOS Myanmar","IOS Armenian","IOS Georgian","IOS CJK","IOS Emoji","Segoe UI Emoji",sans-serif}
+body,button,input,textarea,select{font-family:"Segoe UI","IOS Tengwar","IOS Noto","IOS Arabic","IOS Hebrew","IOS Devanagari","IOS Thai","IOS Bengali","IOS Tamil","IOS Telugu","IOS Gujarati","IOS Gurmukhi","IOS Kannada","IOS Malayalam","IOS Sinhala","IOS Khmer","IOS Lao","IOS Myanmar","IOS Armenian","IOS Georgian","IOS CJK","IOS Emoji","Segoe UI Emoji",sans-serif}

@@ -72,7 +72,7 @@ describe('native persistence boundary',()=>{
   it('rejects failed commits without success notifications and allows retry',async()=>{
     const events=new SettingsEvents(),listener=vi.fn();events.subscribe(['capture','global'],listener);
     const invoke=vi.fn().mockRejectedValueOnce(Error('disk')).mockResolvedValueOnce(false).mockResolvedValueOnce(undefined),settings=new NativeSettings(()=>({invoke} as NativeBridge),events);
-    await expect(settings.save(nativeConfig)).rejects.toThrow('disk');await expect(settings.setAutostart(true)).rejects.toThrow('Startup');expect(listener).not.toHaveBeenCalled();
+    await expect(settings.save(nativeConfig)).rejects.toThrow('could not be saved');await expect(settings.setAutostart(true)).rejects.toThrow('Startup');expect(listener).not.toHaveBeenCalled();
     await settings.save(nativeConfig);expect(listener).toHaveBeenCalledTimes(1);
   });
   it('clears observers when an in-flight native request completes after disposal',async()=>{

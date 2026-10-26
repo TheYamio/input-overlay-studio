@@ -1,5 +1,5 @@
 // Frozen baseline is test input only. No historical reader is added to the app.
-import {chromium,expect} from '@playwright/test';
+import {chromium,expect} from './test-browser.mjs';
 import {createServer} from 'node:http';
 import {WebSocketServer} from 'ws';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';

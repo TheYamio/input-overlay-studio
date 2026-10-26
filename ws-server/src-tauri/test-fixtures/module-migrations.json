@@ -1,0 +1,5412 @@
+[
+  {
+    "type": "distance",
+    "legacy": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-distance",
+              "type": "overlay.distance",
+              "schemaVersion": 1,
+              "enabled": true,
+              "common": {
+                "name": "Distance",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "backgroundOpacity": 0,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 0,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22,
+                  "shapeId": "migration-shape"
+                },
+                "image": {
+                  "enabled": false,
+                  "assetId": "migration-paint",
+                  "fit": "Cover",
+                  "scale": 1,
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "opacity": 0.75,
+                  "blend": "normal",
+                  "brightness": 1,
+                  "contrast": 1,
+                  "saturation": 1,
+                  "tint": "#ffffff",
+                  "tintOpacity": 0,
+                  "press": "Tint",
+                  "pressTint": 0.55
+                },
+                "buttonStyles": {},
+                "buttonGeometry": {},
+                "buttonImages": {},
+                "trailAppearance": {
+                  "gridColor": "#ffffff",
+                  "gridOpacity": 0.05,
+                  "gridSpacing": 36,
+                  "centerColor": "#ffffff",
+                  "centerSize": 6,
+                  "markerColor": "#a5ef6b",
+                  "markerSize": 4,
+                  "slowColor": "#55cfff",
+                  "fastColor": "#ff9055",
+                  "speedRange": 10,
+                  "leftClickColor": "#a5ef6b",
+                  "rightClickColor": "#ff9cbd",
+                  "clickDuration": 500,
+                  "clickSize": 24,
+                  "followMs": 240
+                },
+                "wheelDuration": 110,
+                "mouseBodyShapeId": "retained-shape",
+                "textLayout": "Horizontal",
+                "keys": [
+                  {
+                    "id": "87",
+                    "code": 87,
+                    "label": "W",
+                    "x": 62,
+                    "y": 0,
+                    "w": 54,
+                    "h": 54,
+                    "style": {
+                      "shapeId": "retained-shape"
+                    }
+                  },
+                  {
+                    "id": "65",
+                    "code": 65,
+                    "label": "A",
+                    "x": 0,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "83",
+                    "code": 83,
+                    "label": "S",
+                    "x": 62,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "68",
+                    "code": 68,
+                    "label": "D",
+                    "x": 124,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "160",
+                    "code": 160,
+                    "label": "SHIFT",
+                    "x": 0,
+                    "y": 124,
+                    "w": 84,
+                    "h": 54
+                  },
+                  {
+                    "id": "162",
+                    "code": 162,
+                    "label": "CTRL",
+                    "x": 0,
+                    "y": 186,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "32",
+                    "code": 32,
+                    "label": "SPACE",
+                    "x": 62,
+                    "y": 186,
+                    "w": 116,
+                    "h": 54
+                  }
+                ],
+                "layout": "WASD + modifiers",
+                "gap": 8,
+                "mouseMode": "Compact Buttons",
+                "buttons": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ],
+                "buttonLabels": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "M4",
+                  "M5",
+                  "↑",
+                  "↓"
+                ],
+                "trailStyle": "Clean Line",
+                "position": "Fixed Field",
+                "scaleMode": "DPI Normalized Scale",
+                "scale": 0.65,
+                "duration": 1200,
+                "thickness": 2,
+                "glow": 10,
+                "grid": true,
+                "center": true,
+                "marker": "Dot",
+                "clickEffects": "Ripple",
+                "originX": 0.5,
+                "originY": 0.5,
+                "unit": "Auto",
+                "decimals": 1,
+                "caption": "距離 · Distance",
+                "sensitivityStyle": "Detailed",
+                "showGame": true,
+                "showDpi": true,
+                "showSens": true,
+                "showEdpi": true,
+                "showCm": true
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              }
+            },
+            {
+              "id": "migration-unknown",
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "current": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "type": "overlay.distance",
+              "schemaVersion": 2,
+              "enabled": true,
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "shapeId": "migration-shape",
+                  "backgroundOpacity": 0,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 0,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22
+                },
+                "textLayout": "Horizontal",
+                "unit": "Auto",
+                "decimals": 1,
+                "caption": "距離 · Distance"
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-distance",
+              "common": {
+                "name": "Distance",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            },
+            {
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-unknown",
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "model": {
+      "version": 4,
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-distance",
+              "type": "distance",
+              "name": "Distance",
+              "x": 80,
+              "y": 60,
+              "w": 400,
+              "h": 360,
+              "appearance": {
+                "backgroundOpacity": 0,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 0,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22,
+                "shapeId": "migration-shape"
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "migration-paint",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": true,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Instant",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54,
+                  "style": {
+                    "shapeId": "retained-shape"
+                  }
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Clean Line",
+              "position": "Fixed Field",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "距離 · Distance",
+              "sensitivityStyle": "Detailed",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "mouseBodyShapeId": "retained-shape"
+            },
+            {
+              "id": "migration-unknown",
+              "type": "distance",
+              "name": "Opaque resources",
+              "x": 80,
+              "y": 60,
+              "w": 400,
+              "h": 360,
+              "appearance": {
+                "backgroundOpacity": 0,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 0,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": false,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Soft Press",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Fade Trail",
+              "position": "Follow / Recenter",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "DISTANCE",
+              "sensitivityStyle": "Standard",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "extension": {
+                "type": "future.retained",
+                "schemaVersion": 7,
+                "enabled": false,
+                "config": {
+                  "caption": "日本語 العربية",
+                  "unknown": {
+                    "retain": [
+                      1,
+                      true,
+                      "value"
+                    ]
+                  }
+                },
+                "resources": {
+                  "assets": [
+                    "migration-paint"
+                  ],
+                  "shapes": [
+                    "retained-shape"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    }
+  },
+  {
+    "type": "sensitivity",
+    "legacy": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-sensitivity",
+              "type": "overlay.sensitivity",
+              "schemaVersion": 1,
+              "enabled": true,
+              "common": {
+                "name": "Sensitivity",
+                "x": 80,
+                "y": 60,
+                "w": 780,
+                "h": 160,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "backgroundOpacity": 0,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 0,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22,
+                  "shapeId": "migration-shape"
+                },
+                "image": {
+                  "enabled": false,
+                  "assetId": "migration-paint",
+                  "fit": "Cover",
+                  "scale": 1,
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "opacity": 0.75,
+                  "blend": "normal",
+                  "brightness": 1,
+                  "contrast": 1,
+                  "saturation": 1,
+                  "tint": "#ffffff",
+                  "tintOpacity": 0,
+                  "press": "Tint",
+                  "pressTint": 0.55
+                },
+                "buttonStyles": {},
+                "buttonGeometry": {},
+                "buttonImages": {},
+                "trailAppearance": {
+                  "gridColor": "#ffffff",
+                  "gridOpacity": 0.05,
+                  "gridSpacing": 36,
+                  "centerColor": "#ffffff",
+                  "centerSize": 6,
+                  "markerColor": "#a5ef6b",
+                  "markerSize": 4,
+                  "slowColor": "#55cfff",
+                  "fastColor": "#ff9055",
+                  "speedRange": 10,
+                  "leftClickColor": "#a5ef6b",
+                  "rightClickColor": "#ff9cbd",
+                  "clickDuration": 500,
+                  "clickSize": 24,
+                  "followMs": 240
+                },
+                "wheelDuration": 110,
+                "mouseBodyShapeId": "retained-shape",
+                "textLayout": "Horizontal",
+                "keys": [
+                  {
+                    "id": "87",
+                    "code": 87,
+                    "label": "W",
+                    "x": 62,
+                    "y": 0,
+                    "w": 54,
+                    "h": 54,
+                    "style": {
+                      "shapeId": "retained-shape"
+                    }
+                  },
+                  {
+                    "id": "65",
+                    "code": 65,
+                    "label": "A",
+                    "x": 0,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "83",
+                    "code": 83,
+                    "label": "S",
+                    "x": 62,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "68",
+                    "code": 68,
+                    "label": "D",
+                    "x": 124,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "160",
+                    "code": 160,
+                    "label": "SHIFT",
+                    "x": 0,
+                    "y": 124,
+                    "w": 84,
+                    "h": 54
+                  },
+                  {
+                    "id": "162",
+                    "code": 162,
+                    "label": "CTRL",
+                    "x": 0,
+                    "y": 186,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "32",
+                    "code": 32,
+                    "label": "SPACE",
+                    "x": 62,
+                    "y": 186,
+                    "w": 116,
+                    "h": 54
+                  }
+                ],
+                "layout": "WASD + modifiers",
+                "gap": 8,
+                "mouseMode": "Compact Buttons",
+                "buttons": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ],
+                "buttonLabels": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "M4",
+                  "M5",
+                  "↑",
+                  "↓"
+                ],
+                "trailStyle": "Clean Line",
+                "position": "Fixed Field",
+                "scaleMode": "DPI Normalized Scale",
+                "scale": 0.65,
+                "duration": 1200,
+                "thickness": 2,
+                "glow": 10,
+                "grid": true,
+                "center": true,
+                "marker": "Dot",
+                "clickEffects": "Ripple",
+                "originX": 0.5,
+                "originY": 0.5,
+                "unit": "Auto",
+                "decimals": 1,
+                "caption": "距離 · Distance",
+                "sensitivityStyle": "Detailed",
+                "showGame": true,
+                "showDpi": true,
+                "showSens": true,
+                "showEdpi": true,
+                "showCm": true
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              }
+            },
+            {
+              "id": "migration-unknown",
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 780,
+                "h": 160,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "current": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "type": "overlay.sensitivity",
+              "schemaVersion": 2,
+              "enabled": true,
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "shapeId": "migration-shape",
+                  "backgroundOpacity": 0,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 0,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22
+                },
+                "textLayout": "Horizontal",
+                "sensitivityStyle": "Detailed",
+                "showGame": true,
+                "showDpi": true,
+                "showSens": true,
+                "showEdpi": true,
+                "showCm": true
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-sensitivity",
+              "common": {
+                "name": "Sensitivity",
+                "x": 80,
+                "y": 60,
+                "w": 780,
+                "h": 160,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            },
+            {
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-unknown",
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 780,
+                "h": 160,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "model": {
+      "version": 4,
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-sensitivity",
+              "type": "sensitivity",
+              "name": "Sensitivity",
+              "x": 80,
+              "y": 60,
+              "w": 780,
+              "h": 160,
+              "appearance": {
+                "backgroundOpacity": 0,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 0,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22,
+                "shapeId": "migration-shape"
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "migration-paint",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": true,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Instant",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54,
+                  "style": {
+                    "shapeId": "retained-shape"
+                  }
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Clean Line",
+              "position": "Fixed Field",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "距離 · Distance",
+              "sensitivityStyle": "Detailed",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "mouseBodyShapeId": "retained-shape"
+            },
+            {
+              "id": "migration-unknown",
+              "type": "distance",
+              "name": "Opaque resources",
+              "x": 80,
+              "y": 60,
+              "w": 780,
+              "h": 160,
+              "appearance": {
+                "backgroundOpacity": 0,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 0,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": false,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Soft Press",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Fade Trail",
+              "position": "Follow / Recenter",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "DISTANCE",
+              "sensitivityStyle": "Standard",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "extension": {
+                "type": "future.retained",
+                "schemaVersion": 7,
+                "enabled": false,
+                "config": {
+                  "caption": "日本語 العربية",
+                  "unknown": {
+                    "retain": [
+                      1,
+                      true,
+                      "value"
+                    ]
+                  }
+                },
+                "resources": {
+                  "assets": [
+                    "migration-paint"
+                  ],
+                  "shapes": [
+                    "retained-shape"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    }
+  },
+  {
+    "type": "trail",
+    "legacy": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-trail",
+              "type": "overlay.trail",
+              "schemaVersion": 1,
+              "enabled": true,
+              "common": {
+                "name": "Mouse Trail",
+                "x": 80,
+                "y": 60,
+                "w": 500,
+                "h": 380,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "backgroundOpacity": 1,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 1,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22,
+                  "shapeId": "migration-shape"
+                },
+                "image": {
+                  "enabled": false,
+                  "assetId": "migration-paint",
+                  "fit": "Cover",
+                  "scale": 1,
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "opacity": 0.75,
+                  "blend": "normal",
+                  "brightness": 1,
+                  "contrast": 1,
+                  "saturation": 1,
+                  "tint": "#ffffff",
+                  "tintOpacity": 0,
+                  "press": "Tint",
+                  "pressTint": 0.55
+                },
+                "buttonStyles": {},
+                "buttonGeometry": {},
+                "buttonImages": {},
+                "trailAppearance": {
+                  "gridColor": "#ffffff",
+                  "gridOpacity": 0.05,
+                  "gridSpacing": 36,
+                  "centerColor": "#ffffff",
+                  "centerSize": 6,
+                  "markerColor": "#a5ef6b",
+                  "markerSize": 4,
+                  "slowColor": "#55cfff",
+                  "fastColor": "#ff9055",
+                  "speedRange": 10,
+                  "leftClickColor": "#a5ef6b",
+                  "rightClickColor": "#ff9cbd",
+                  "clickDuration": 500,
+                  "clickSize": 24,
+                  "followMs": 240
+                },
+                "wheelDuration": 110,
+                "mouseBodyShapeId": "retained-shape",
+                "textLayout": "Horizontal",
+                "keys": [
+                  {
+                    "id": "87",
+                    "code": 87,
+                    "label": "W",
+                    "x": 62,
+                    "y": 0,
+                    "w": 54,
+                    "h": 54,
+                    "style": {
+                      "shapeId": "retained-shape"
+                    }
+                  },
+                  {
+                    "id": "65",
+                    "code": 65,
+                    "label": "A",
+                    "x": 0,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "83",
+                    "code": 83,
+                    "label": "S",
+                    "x": 62,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "68",
+                    "code": 68,
+                    "label": "D",
+                    "x": 124,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "160",
+                    "code": 160,
+                    "label": "SHIFT",
+                    "x": 0,
+                    "y": 124,
+                    "w": 84,
+                    "h": 54
+                  },
+                  {
+                    "id": "162",
+                    "code": 162,
+                    "label": "CTRL",
+                    "x": 0,
+                    "y": 186,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "32",
+                    "code": 32,
+                    "label": "SPACE",
+                    "x": 62,
+                    "y": 186,
+                    "w": 116,
+                    "h": 54
+                  }
+                ],
+                "layout": "WASD + modifiers",
+                "gap": 8,
+                "mouseMode": "Compact Buttons",
+                "buttons": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ],
+                "buttonLabels": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "M4",
+                  "M5",
+                  "↑",
+                  "↓"
+                ],
+                "trailStyle": "Clean Line",
+                "position": "Fixed Field",
+                "scaleMode": "DPI Normalized Scale",
+                "scale": 0.65,
+                "duration": 1200,
+                "thickness": 2,
+                "glow": 10,
+                "grid": true,
+                "center": true,
+                "marker": "Dot",
+                "clickEffects": "Ripple",
+                "originX": 0.5,
+                "originY": 0.5,
+                "unit": "Auto",
+                "decimals": 1,
+                "caption": "距離 · Distance",
+                "sensitivityStyle": "Detailed",
+                "showGame": true,
+                "showDpi": true,
+                "showSens": true,
+                "showEdpi": true,
+                "showCm": true
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              }
+            },
+            {
+              "id": "migration-unknown",
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 500,
+                "h": 380,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "current": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "type": "overlay.trail",
+              "schemaVersion": 2,
+              "enabled": true,
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "shapeId": "migration-shape",
+                  "backgroundOpacity": 1,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 1,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22
+                },
+                "textLayout": "Horizontal",
+                "trailAppearance": {
+                  "gridColor": "#ffffff",
+                  "gridOpacity": 0.05,
+                  "gridSpacing": 36,
+                  "centerColor": "#ffffff",
+                  "centerSize": 6,
+                  "markerColor": "#a5ef6b",
+                  "markerSize": 4,
+                  "slowColor": "#55cfff",
+                  "fastColor": "#ff9055",
+                  "speedRange": 10,
+                  "leftClickColor": "#a5ef6b",
+                  "rightClickColor": "#ff9cbd",
+                  "clickDuration": 500,
+                  "clickSize": 24,
+                  "followMs": 240
+                },
+                "trailStyle": "Clean Line",
+                "position": "Fixed Field",
+                "scaleMode": "DPI Normalized Scale",
+                "scale": 0.65,
+                "duration": 1200,
+                "thickness": 2,
+                "glow": 10,
+                "grid": true,
+                "center": true,
+                "marker": "Dot",
+                "clickEffects": "Ripple",
+                "originX": 0.5,
+                "originY": 0.5
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-trail",
+              "common": {
+                "name": "Mouse Trail",
+                "x": 80,
+                "y": 60,
+                "w": 500,
+                "h": 380,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            },
+            {
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-unknown",
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 500,
+                "h": 380,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "model": {
+      "version": 4,
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-trail",
+              "type": "trail",
+              "name": "Mouse Trail",
+              "x": 80,
+              "y": 60,
+              "w": 500,
+              "h": 380,
+              "appearance": {
+                "backgroundOpacity": 1,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 1,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22,
+                "shapeId": "migration-shape"
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "migration-paint",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": true,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Instant",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54,
+                  "style": {
+                    "shapeId": "retained-shape"
+                  }
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Clean Line",
+              "position": "Fixed Field",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "距離 · Distance",
+              "sensitivityStyle": "Detailed",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "mouseBodyShapeId": "retained-shape"
+            },
+            {
+              "id": "migration-unknown",
+              "type": "distance",
+              "name": "Opaque resources",
+              "x": 80,
+              "y": 60,
+              "w": 500,
+              "h": 380,
+              "appearance": {
+                "backgroundOpacity": 0,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 0,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": false,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Soft Press",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Fade Trail",
+              "position": "Follow / Recenter",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "DISTANCE",
+              "sensitivityStyle": "Standard",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "extension": {
+                "type": "future.retained",
+                "schemaVersion": 7,
+                "enabled": false,
+                "config": {
+                  "caption": "日本語 العربية",
+                  "unknown": {
+                    "retain": [
+                      1,
+                      true,
+                      "value"
+                    ]
+                  }
+                },
+                "resources": {
+                  "assets": [
+                    "migration-paint"
+                  ],
+                  "shapes": [
+                    "retained-shape"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    }
+  },
+  {
+    "type": "mouse",
+    "legacy": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-mouse",
+              "type": "overlay.mouse",
+              "schemaVersion": 1,
+              "enabled": true,
+              "common": {
+                "name": "Mouse Buttons",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "backgroundOpacity": 1,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 1,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22,
+                  "shapeId": "migration-shape"
+                },
+                "image": {
+                  "enabled": true,
+                  "assetId": "migration-paint",
+                  "fit": "Cover",
+                  "scale": 1,
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "opacity": 0.75,
+                  "blend": "normal",
+                  "brightness": 1,
+                  "contrast": 1,
+                  "saturation": 1,
+                  "tint": "#ffffff",
+                  "tintOpacity": 0,
+                  "press": "Tint",
+                  "pressTint": 0.55
+                },
+                "buttonStyles": {},
+                "buttonGeometry": {},
+                "buttonImages": {},
+                "trailAppearance": {
+                  "gridColor": "#ffffff",
+                  "gridOpacity": 0.05,
+                  "gridSpacing": 36,
+                  "centerColor": "#ffffff",
+                  "centerSize": 6,
+                  "markerColor": "#a5ef6b",
+                  "markerSize": 4,
+                  "slowColor": "#55cfff",
+                  "fastColor": "#ff9055",
+                  "speedRange": 10,
+                  "leftClickColor": "#a5ef6b",
+                  "rightClickColor": "#ff9cbd",
+                  "clickDuration": 500,
+                  "clickSize": 24,
+                  "followMs": 240
+                },
+                "wheelDuration": 110,
+                "mouseBodyShapeId": "migration-shape",
+                "textLayout": "Horizontal",
+                "keys": [
+                  {
+                    "id": "87",
+                    "code": 87,
+                    "label": "W",
+                    "x": 62,
+                    "y": 0,
+                    "w": 54,
+                    "h": 54,
+                    "style": {
+                      "shapeId": "retained-shape"
+                    }
+                  },
+                  {
+                    "id": "65",
+                    "code": 65,
+                    "label": "A",
+                    "x": 0,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "83",
+                    "code": 83,
+                    "label": "S",
+                    "x": 62,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "68",
+                    "code": 68,
+                    "label": "D",
+                    "x": 124,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "160",
+                    "code": 160,
+                    "label": "SHIFT",
+                    "x": 0,
+                    "y": 124,
+                    "w": 84,
+                    "h": 54
+                  },
+                  {
+                    "id": "162",
+                    "code": 162,
+                    "label": "CTRL",
+                    "x": 0,
+                    "y": 186,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "32",
+                    "code": 32,
+                    "label": "SPACE",
+                    "x": 62,
+                    "y": 186,
+                    "w": 116,
+                    "h": 54
+                  }
+                ],
+                "layout": "WASD + modifiers",
+                "gap": 8,
+                "mouseMode": "Compact Buttons",
+                "buttons": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ],
+                "buttonLabels": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "M4",
+                  "M5",
+                  "↑",
+                  "↓"
+                ],
+                "trailStyle": "Clean Line",
+                "position": "Fixed Field",
+                "scaleMode": "DPI Normalized Scale",
+                "scale": 0.65,
+                "duration": 1200,
+                "thickness": 2,
+                "glow": 10,
+                "grid": true,
+                "center": true,
+                "marker": "Dot",
+                "clickEffects": "Ripple",
+                "originX": 0.5,
+                "originY": 0.5,
+                "unit": "Auto",
+                "decimals": 1,
+                "caption": "距離 · Distance",
+                "sensitivityStyle": "Detailed",
+                "showGame": true,
+                "showDpi": true,
+                "showSens": true,
+                "showEdpi": true,
+                "showCm": true
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              }
+            },
+            {
+              "id": "migration-unknown",
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "current": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "type": "overlay.mouse",
+              "schemaVersion": 2,
+              "enabled": true,
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "shapeId": "migration-shape",
+                  "backgroundOpacity": 1,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 1,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22
+                },
+                "textLayout": "Horizontal",
+                "image": {
+                  "enabled": true,
+                  "assetId": "migration-paint",
+                  "fit": "Cover",
+                  "scale": 1,
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "opacity": 0.75,
+                  "blend": "normal",
+                  "brightness": 1,
+                  "contrast": 1,
+                  "saturation": 1,
+                  "tint": "#ffffff",
+                  "tintOpacity": 0,
+                  "press": "Tint",
+                  "pressTint": 0.55
+                },
+                "gap": 8,
+                "mouseMode": "Compact Buttons",
+                "buttons": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ],
+                "buttonLabels": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "M4",
+                  "M5",
+                  "↑",
+                  "↓"
+                ],
+                "buttonStyles": {},
+                "buttonGeometry": {},
+                "buttonImages": {},
+                "wheelDuration": 110,
+                "mouseBodyShapeId": "migration-shape"
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-mouse",
+              "common": {
+                "name": "Mouse Buttons",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            },
+            {
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-unknown",
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "model": {
+      "version": 4,
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-mouse",
+              "type": "mouse",
+              "name": "Mouse Buttons",
+              "x": 80,
+              "y": 60,
+              "w": 400,
+              "h": 360,
+              "appearance": {
+                "backgroundOpacity": 1,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 1,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22,
+                "shapeId": "migration-shape"
+              },
+              "image": {
+                "enabled": true,
+                "assetId": "migration-paint",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": true,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Instant",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54,
+                  "style": {
+                    "shapeId": "retained-shape"
+                  }
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Clean Line",
+              "position": "Fixed Field",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "距離 · Distance",
+              "sensitivityStyle": "Detailed",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "mouseBodyShapeId": "migration-shape"
+            },
+            {
+              "id": "migration-unknown",
+              "type": "distance",
+              "name": "Opaque resources",
+              "x": 80,
+              "y": 60,
+              "w": 400,
+              "h": 360,
+              "appearance": {
+                "backgroundOpacity": 0,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 0,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": false,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Soft Press",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Fade Trail",
+              "position": "Follow / Recenter",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "DISTANCE",
+              "sensitivityStyle": "Standard",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "extension": {
+                "type": "future.retained",
+                "schemaVersion": 7,
+                "enabled": false,
+                "config": {
+                  "caption": "日本語 العربية",
+                  "unknown": {
+                    "retain": [
+                      1,
+                      true,
+                      "value"
+                    ]
+                  }
+                },
+                "resources": {
+                  "assets": [
+                    "migration-paint"
+                  ],
+                  "shapes": [
+                    "retained-shape"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    }
+  },
+  {
+    "type": "keyboard",
+    "legacy": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-keyboard",
+              "type": "overlay.keyboard",
+              "schemaVersion": 1,
+              "enabled": true,
+              "common": {
+                "name": "Keyboard",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "backgroundOpacity": 1,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 1,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22,
+                  "shapeId": "migration-shape"
+                },
+                "image": {
+                  "enabled": true,
+                  "assetId": "migration-paint",
+                  "fit": "Cover",
+                  "scale": 1,
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "opacity": 0.75,
+                  "blend": "normal",
+                  "brightness": 1,
+                  "contrast": 1,
+                  "saturation": 1,
+                  "tint": "#ffffff",
+                  "tintOpacity": 0,
+                  "press": "Tint",
+                  "pressTint": 0.55
+                },
+                "buttonStyles": {},
+                "buttonGeometry": {},
+                "buttonImages": {},
+                "trailAppearance": {
+                  "gridColor": "#ffffff",
+                  "gridOpacity": 0.05,
+                  "gridSpacing": 36,
+                  "centerColor": "#ffffff",
+                  "centerSize": 6,
+                  "markerColor": "#a5ef6b",
+                  "markerSize": 4,
+                  "slowColor": "#55cfff",
+                  "fastColor": "#ff9055",
+                  "speedRange": 10,
+                  "leftClickColor": "#a5ef6b",
+                  "rightClickColor": "#ff9cbd",
+                  "clickDuration": 500,
+                  "clickSize": 24,
+                  "followMs": 240
+                },
+                "wheelDuration": 110,
+                "mouseBodyShapeId": "retained-shape",
+                "textLayout": "Horizontal",
+                "keys": [
+                  {
+                    "id": "87",
+                    "code": 87,
+                    "label": "W",
+                    "x": 62,
+                    "y": 0,
+                    "w": 54,
+                    "h": 54,
+                    "style": {
+                      "shapeId": "migration-shape"
+                    }
+                  },
+                  {
+                    "id": "65",
+                    "code": 65,
+                    "label": "A",
+                    "x": 0,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "83",
+                    "code": 83,
+                    "label": "S",
+                    "x": 62,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "68",
+                    "code": 68,
+                    "label": "D",
+                    "x": 124,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "160",
+                    "code": 160,
+                    "label": "SHIFT",
+                    "x": 0,
+                    "y": 124,
+                    "w": 84,
+                    "h": 54
+                  },
+                  {
+                    "id": "162",
+                    "code": 162,
+                    "label": "CTRL",
+                    "x": 0,
+                    "y": 186,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "32",
+                    "code": 32,
+                    "label": "SPACE",
+                    "x": 62,
+                    "y": 186,
+                    "w": 116,
+                    "h": 54
+                  }
+                ],
+                "layout": "WASD + modifiers",
+                "gap": 8,
+                "mouseMode": "Compact Buttons",
+                "buttons": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ],
+                "buttonLabels": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "M4",
+                  "M5",
+                  "↑",
+                  "↓"
+                ],
+                "trailStyle": "Clean Line",
+                "position": "Fixed Field",
+                "scaleMode": "DPI Normalized Scale",
+                "scale": 0.65,
+                "duration": 1200,
+                "thickness": 2,
+                "glow": 10,
+                "grid": true,
+                "center": true,
+                "marker": "Dot",
+                "clickEffects": "Ripple",
+                "originX": 0.5,
+                "originY": 0.5,
+                "unit": "Auto",
+                "decimals": 1,
+                "caption": "距離 · Distance",
+                "sensitivityStyle": "Detailed",
+                "showGame": true,
+                "showDpi": true,
+                "showSens": true,
+                "showEdpi": true,
+                "showCm": true
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              }
+            },
+            {
+              "id": "migration-unknown",
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              },
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "current": {
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "version": 4,
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "type": "overlay.keyboard",
+              "schemaVersion": 2,
+              "enabled": true,
+              "config": {
+                "accent": "#a5ef6b",
+                "background": "#161b20",
+                "radius": 12,
+                "effect": "Instant",
+                "appearance": {
+                  "shapeId": "migration-shape",
+                  "backgroundOpacity": 1,
+                  "textColor": "#d9e0e7",
+                  "activeTextColor": "#10150e",
+                  "borderColor": "#ffffff",
+                  "activeBorderColor": "#a5ef6b",
+                  "borderOpacity": 0.16,
+                  "borderWidth": 1,
+                  "autoFitText": true,
+                  "fontFamily": "Segoe UI",
+                  "fontSize": 16,
+                  "fontWeight": 600,
+                  "letterSpacing": 1,
+                  "textOutline": 0,
+                  "textShadow": 0,
+                  "pressDuration": 90,
+                  "releaseDuration": 140,
+                  "pressTravel": 2,
+                  "glowStrength": 22
+                },
+                "textLayout": "Horizontal",
+                "image": {
+                  "enabled": true,
+                  "assetId": "migration-paint",
+                  "fit": "Cover",
+                  "scale": 1,
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "opacity": 0.75,
+                  "blend": "normal",
+                  "brightness": 1,
+                  "contrast": 1,
+                  "saturation": 1,
+                  "tint": "#ffffff",
+                  "tintOpacity": 0,
+                  "press": "Tint",
+                  "pressTint": 0.55
+                },
+                "gap": 8,
+                "keys": [
+                  {
+                    "id": "87",
+                    "code": 87,
+                    "label": "W",
+                    "x": 62,
+                    "y": 0,
+                    "w": 54,
+                    "h": 54,
+                    "style": {
+                      "shapeId": "migration-shape"
+                    }
+                  },
+                  {
+                    "id": "65",
+                    "code": 65,
+                    "label": "A",
+                    "x": 0,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "83",
+                    "code": 83,
+                    "label": "S",
+                    "x": 62,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "68",
+                    "code": 68,
+                    "label": "D",
+                    "x": 124,
+                    "y": 62,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "160",
+                    "code": 160,
+                    "label": "SHIFT",
+                    "x": 0,
+                    "y": 124,
+                    "w": 84,
+                    "h": 54
+                  },
+                  {
+                    "id": "162",
+                    "code": 162,
+                    "label": "CTRL",
+                    "x": 0,
+                    "y": 186,
+                    "w": 54,
+                    "h": 54
+                  },
+                  {
+                    "id": "32",
+                    "code": 32,
+                    "label": "SPACE",
+                    "x": 62,
+                    "y": 186,
+                    "w": 116,
+                    "h": 54
+                  }
+                ],
+                "layout": "WASD + modifiers"
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "migration-shape",
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-keyboard",
+              "common": {
+                "name": "Keyboard",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": true,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            },
+            {
+              "type": "future.retained",
+              "schemaVersion": 7,
+              "enabled": false,
+              "config": {
+                "caption": "日本語 العربية",
+                "unknown": {
+                  "retain": [
+                    1,
+                    true,
+                    "value"
+                  ]
+                }
+              },
+              "resources": {
+                "assets": [
+                  "migration-paint"
+                ],
+                "shapes": [
+                  "retained-shape"
+                ]
+              },
+              "id": "migration-unknown",
+              "common": {
+                "name": "Opaque resources",
+                "x": 80,
+                "y": 60,
+                "w": 400,
+                "h": 360,
+                "visible": false,
+                "locked": false,
+                "z": 0,
+                "opacity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    },
+    "model": {
+      "version": 4,
+      "languagePacks": [],
+      "shapes": {
+        "migration-shape": {
+          "name": "Migration contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        },
+        "retained-shape": {
+          "name": "Retained contour",
+          "viewBox": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "paths": [
+            {
+              "d": "M0 0L10 10H0Z",
+              "matrix": [
+                1,
+                0,
+                0,
+                1,
+                0,
+                0
+              ],
+              "fill": true,
+              "fillRule": "nonzero",
+              "strokeWidth": 0,
+              "linecap": "butt",
+              "linejoin": "miter",
+              "opacity": 1
+            }
+          ]
+        }
+      },
+      "assets": {
+        "migration-paint": {
+          "name": "sample.png",
+          "width": 100,
+          "height": 200,
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAADICAYAAAAePETBAAAB4ElEQVR4nO3RMQ0AMAzAsEIbtDHvYCyHD/+RMufu0jG/AzAkzZAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpAYQ2IMiTEkxpCYB2JcSEucIrTpAAAAAElFTkSuQmCC"
+        }
+      },
+      "activeProfileId": "migration-profile",
+      "gameProfiles": [
+        {
+          "id": "migration-game",
+          "name": "Counter-Strike 2",
+          "game": "Counter-Strike 2",
+          "dpi": 800,
+          "sensitivity": 1.3,
+          "yaw": 0.022,
+          "scale": "Source",
+          "manualCm": 40
+        }
+      ],
+      "profiles": [
+        {
+          "id": "migration-profile",
+          "name": "CS2 · Main",
+          "gameProfileId": "migration-game",
+          "locale": "en",
+          "caption": "",
+          "theme": "Obsidian",
+          "modules": [
+            {
+              "id": "migration-keyboard",
+              "type": "keyboard",
+              "name": "Keyboard",
+              "x": 80,
+              "y": 60,
+              "w": 400,
+              "h": 360,
+              "appearance": {
+                "backgroundOpacity": 1,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 1,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22,
+                "shapeId": "migration-shape"
+              },
+              "image": {
+                "enabled": true,
+                "assetId": "migration-paint",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": true,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Instant",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54,
+                  "style": {
+                    "shapeId": "migration-shape"
+                  }
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Clean Line",
+              "position": "Fixed Field",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "距離 · Distance",
+              "sensitivityStyle": "Detailed",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "mouseBodyShapeId": "retained-shape"
+            },
+            {
+              "id": "migration-unknown",
+              "type": "distance",
+              "name": "Opaque resources",
+              "x": 80,
+              "y": 60,
+              "w": 400,
+              "h": 360,
+              "appearance": {
+                "backgroundOpacity": 0,
+                "textColor": "#d9e0e7",
+                "activeTextColor": "#10150e",
+                "borderColor": "#ffffff",
+                "activeBorderColor": "#a5ef6b",
+                "borderOpacity": 0.16,
+                "borderWidth": 0,
+                "autoFitText": true,
+                "fontFamily": "Segoe UI",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "letterSpacing": 1,
+                "textOutline": 0,
+                "textShadow": 0,
+                "pressDuration": 90,
+                "releaseDuration": 140,
+                "pressTravel": 2,
+                "glowStrength": 22
+              },
+              "image": {
+                "enabled": false,
+                "assetId": "",
+                "fit": "Cover",
+                "scale": 1,
+                "x": 0,
+                "y": 0,
+                "rotation": 0,
+                "opacity": 0.75,
+                "blend": "normal",
+                "brightness": 1,
+                "contrast": 1,
+                "saturation": 1,
+                "tint": "#ffffff",
+                "tintOpacity": 0,
+                "press": "Tint",
+                "pressTint": 0.55
+              },
+              "buttonStyles": {},
+              "buttonGeometry": {},
+              "buttonImages": {},
+              "trailAppearance": {
+                "gridColor": "#ffffff",
+                "gridOpacity": 0.05,
+                "gridSpacing": 36,
+                "centerColor": "#ffffff",
+                "centerSize": 6,
+                "markerColor": "#a5ef6b",
+                "markerSize": 4,
+                "slowColor": "#55cfff",
+                "fastColor": "#ff9055",
+                "speedRange": 10,
+                "leftClickColor": "#a5ef6b",
+                "rightClickColor": "#ff9cbd",
+                "clickDuration": 500,
+                "clickSize": 24,
+                "followMs": 240
+              },
+              "wheelDuration": 110,
+              "textLayout": "Horizontal",
+              "visible": false,
+              "locked": false,
+              "z": 0,
+              "accent": "#a5ef6b",
+              "background": "#161b20",
+              "opacity": 1,
+              "radius": 12,
+              "effect": "Soft Press",
+              "keys": [
+                {
+                  "id": "87",
+                  "code": 87,
+                  "label": "W",
+                  "x": 62,
+                  "y": 0,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "65",
+                  "code": 65,
+                  "label": "A",
+                  "x": 0,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "83",
+                  "code": 83,
+                  "label": "S",
+                  "x": 62,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "68",
+                  "code": 68,
+                  "label": "D",
+                  "x": 124,
+                  "y": 62,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "160",
+                  "code": 160,
+                  "label": "SHIFT",
+                  "x": 0,
+                  "y": 124,
+                  "w": 84,
+                  "h": 54
+                },
+                {
+                  "id": "162",
+                  "code": 162,
+                  "label": "CTRL",
+                  "x": 0,
+                  "y": 186,
+                  "w": 54,
+                  "h": 54
+                },
+                {
+                  "id": "32",
+                  "code": 32,
+                  "label": "SPACE",
+                  "x": 62,
+                  "y": 186,
+                  "w": 116,
+                  "h": 54
+                }
+              ],
+              "layout": "WASD + modifiers",
+              "gap": 8,
+              "mouseMode": "Compact Buttons",
+              "buttons": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "buttonLabels": [
+                "M1",
+                "M2",
+                "M3",
+                "M4",
+                "M5",
+                "↑",
+                "↓"
+              ],
+              "trailStyle": "Fade Trail",
+              "position": "Follow / Recenter",
+              "scaleMode": "DPI Normalized Scale",
+              "scale": 0.65,
+              "duration": 1200,
+              "thickness": 2,
+              "glow": 10,
+              "grid": true,
+              "center": true,
+              "marker": "Dot",
+              "clickEffects": "Ripple",
+              "originX": 0.5,
+              "originY": 0.5,
+              "unit": "Auto",
+              "decimals": 1,
+              "caption": "DISTANCE",
+              "sensitivityStyle": "Standard",
+              "showGame": true,
+              "showDpi": true,
+              "showSens": true,
+              "showEdpi": true,
+              "showCm": true,
+              "extension": {
+                "type": "future.retained",
+                "schemaVersion": 7,
+                "enabled": false,
+                "config": {
+                  "caption": "日本語 العربية",
+                  "unknown": {
+                    "retain": [
+                      1,
+                      true,
+                      "value"
+                    ]
+                  }
+                },
+                "resources": {
+                  "assets": [
+                    "migration-paint"
+                  ],
+                  "shapes": [
+                    "retained-shape"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "presets": [],
+      "performance": {
+        "fps": "30",
+        "quality": "High",
+        "glowQuality": "Low",
+        "reducedMotion": true
+      },
+      "distance": {
+        "persist": false,
+        "resetOnStart": true
+      }
+    }
+  }
+]

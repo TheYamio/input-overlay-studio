@@ -1,0 +1,822 @@
+[
+  {
+    "name": "default full snapshot",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "empty token",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "whitespace token",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "  ",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "token with whitespace",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "bad token",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "token control",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "bad\u0000token",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "zero port",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 0,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "fractional port",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 1.5,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "excessive port",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 65536,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "same enabled ports",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4455,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "negative mouse delta",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": -1,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "excessive mouse delta",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 10001,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "unknown analog mode",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "future-device",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "wrong bool type",
+    "valid": false,
+    "config": {
+      "capture_enabled": 1,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "invalid affinity",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [
+        64
+      ],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "duplicate affinity",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [
+        1,
+        1
+      ],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "invalid whitelist",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [
+        "key w"
+      ],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "duplicate whitelist",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [
+        "key_w",
+        "key_w"
+      ],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "empty whitelist item",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [
+        ""
+      ],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "protocol in host",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "ws://localhost",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "path in host",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "localhost/path",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "invalid hostname label",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "bad..host",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "invalid IPv4",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "999.1.2.3",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "invalid IPv6",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "::xyz",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "host with port",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "localhost:4455",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "relative device",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": "input/event0"
+    }
+  },
+  {
+    "name": "device traversal",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": "/dev/input/../other"
+    }
+  },
+  {
+    "name": "unsafe opaque key",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": "",
+      "future": {
+        "__proto__": {}
+      }
+    }
+  },
+  {
+    "name": "partial IPC snapshot rejected",
+    "valid": false,
+    "config": {
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host localhost",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "localhost",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host capture.local",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "capture.local",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host capture.local.",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "capture.local.",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host 0.0.0.0",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "0.0.0.0",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host ::1",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "::1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host [::1]",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "[::1]",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host ::",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "::",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "valid host ::ffff:192.0.2.128",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "::ffff:192.0.2.128",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "disabled HTTP may share port",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": false,
+      "http_port": 4455,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "safe future fields survive",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": "",
+      "future": {
+        "data": [
+          "keep",
+          1,
+          true,
+          null
+        ]
+      }
+    }
+  },
+  {
+    "name": "unavailable Linux device is retained",
+    "valid": true,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": "/dev/input/by-id/usb-mouse-event-mouse"
+    }
+  },
+  {
+    "name": "Unicode whitespace token",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "﻿",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "bracketed IPv4",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "[127.0.0.1]",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": ""
+    }
+  },
+  {
+    "name": "control character in device path",
+    "valid": false,
+    "config": {
+      "capture_enabled": false,
+      "host": "127.0.0.1",
+      "port": 4455,
+      "auth_token": "capture-contract-test",
+      "key_whitelist": [],
+      "raw_mouse_min_delta": 0,
+      "send_mouse_move": true,
+      "cpu_affinity": [],
+      "analog_keyboard": "",
+      "http_enabled": true,
+      "http_port": 4456,
+      "linux_evdev_keyboard_device": "",
+      "linux_raw_mouse_device": "/dev/input/bad\n"
+    }
+  }
+]

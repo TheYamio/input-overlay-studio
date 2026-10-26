@@ -1,4 +1,4 @@
-import {tr} from './core/localization/messages.ts';
+import {tr,trText} from './core/localization/messages.ts';
 import { NativeList as ListField, NativeDevices } from './native-controls';
 import { RegisteredField } from './registered-field';
 import { registerSettingsView } from './settings-views';
@@ -23,7 +23,7 @@ function LegacyNativeAdvanced({ config, change, settings }: { config: NativeConf
     <RegisteredField id="capture.server.allowed-inputs" label={tr('ui:s-eacf81f184f3',"Allowed input names")} fallback={<ListField label={tr('ui:s-eacf81f184f3',"Allowed input names")} values={config.key_whitelist} validToken={token => /^[a-z0-9_]+$/.test(token)} change={key_whitelist => change({ ...config, key_whitelist })} hint={tr('ui:s-a9781b37ddd2',"Comma-separated names, for example key_w, key_space, mouse_left. Empty allows all inputs.")}/>}/>
     <RegisteredField id="capture.server.cpu-affinity" label={tr('ui:s-65c038c231e1',"CPU affinity cores")} fallback={<ListField label={tr('ui:s-65c038c231e1',"CPU affinity cores")} values={config.cpu_affinity.map(String)} validToken={token => /^\d+$/.test(token) && Number(token) <= 63} change={cores => change({ ...config, cpu_affinity: cores.map(Number) })} hint={tr('ui:s-27521e434db2',"Windows: core numbers 0–63. Empty lets Windows choose. Takes effect after restarting capture.")}/>}/>
     <RegisteredField id="capture.server.token" label={tr('ui:s-4e024957e006',"Capture server token")} fallback={<label className="field"><span>{tr('ui:s-4e024957e006',"Capture server token")}</span><input type="password" autoComplete="off" maxLength={256} value={config.auth_token} onChange={e => change({ ...config, auth_token: e.target.value })}/></label>}/>
-    {linux && <NativeDevices.Provider value={linux}><h4>{tr('ui:s-1e247fa5b061',"Linux input devices")}</h4>{([['linux_evdev_keyboard_device','Keyboard device','capture.server.linux-keyboard',linux.keyboards],['linux_raw_mouse_device','Mouse device','capture.server.linux-mouse',linux.mice]] as const).map(([key,label,id,devices])=><RegisteredField key={id} id={id} label={label} fallback={<label className="field"><span>{label}</span><select aria-label={label} value={config[key]} onChange={event=>change({...config,[key]:event.target.value})}><option value="">{tr('ui:s-d461a493a375',"Automatic")}</option>{config[key]&&!devices.some(([path])=>path===config[key])&&<option value={config[key]}>{config[key]}{tr('ui:s-db4a103d0d02',"(unavailable)")}</option>}{devices.map(([path,name])=><option key={path} value={path}>{name} · {path}</option>)}</select></label>}/>)}{linux.permissions.map((message,index)=><p key={index} className="hint">{message}</p>)}</NativeDevices.Provider>}
+    {linux && <NativeDevices.Provider value={linux}><h4>{tr('ui:s-1e247fa5b061',"Linux input devices")}</h4>{([['linux_evdev_keyboard_device','Keyboard device','capture.server.linux-keyboard',linux.keyboards],['linux_raw_mouse_device','Mouse device','capture.server.linux-mouse',linux.mice]] as const).map(([key,label,id,devices])=><RegisteredField key={id} id={id} label={trText(label)} fallback={<label className="field"><span>{trText(label)}</span><select aria-label={trText(label)} value={config[key]} onChange={event=>change({...config,[key]:event.target.value})}><option value="">{tr('ui:s-d461a493a375',"Automatic")}</option>{config[key]&&!devices.some(([path])=>path===config[key])&&<option value={config[key]}>{config[key]}{tr('ui:s-db4a103d0d02',"(unavailable)")}</option>}{devices.map(([path,name])=><option key={path} value={path}>{name} · {path}</option>)}</select></label>}/>)}{linux.permissions.map((message,index)=><p key={index} className="hint">{trText(message)}</p>)}</NativeDevices.Provider>}
     <p className="hint">{tr('ui:s-54c99f509ddb',"Use Apply server settings below to activate the capture changes.")}</p>
     {autostart !== null && <AutostartControl value={autostart} busy={busy} change={async enabled=>{
       setBusy(true);setError('');
@@ -31,7 +31,7 @@ function LegacyNativeAdvanced({ config, change, settings }: { config: NativeConf
       catch { setError('Startup preference could not be changed. Check application permissions.'); }
       finally { setBusy(false); }
     }}/>}
-    {error && <p role="alert" className="hint">{error}</p>}
+    {error && <p role="alert" className="hint">{trText(error)}</p>}
   </details>;
 }
 

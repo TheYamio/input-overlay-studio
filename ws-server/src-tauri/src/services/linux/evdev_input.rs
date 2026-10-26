@@ -1,5 +1,5 @@
 use std::os::unix::io::AsRawFd;
-use std::sync::atomic::{AtomicBool, Ordering};
+use crate::services::stop_signal::StopSignal;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -190,7 +190,7 @@ fn is_in_input_group() -> bool {
 }
 
 pub struct EvdevInputThread {
-    stop: Arc<AtomicBool>,
+    stop: Arc<StopSignal>,
     handles: Vec<thread::JoinHandle<()>>,
 }
 
@@ -201,7 +201,7 @@ impl EvdevInputThread {
         mouse_path: &str,
         min_delta: i32,
     ) -> Self {
-        let stop = Arc::new(AtomicBool::new(false));
+        let stop = Arc::new(StopSignal::default());
         let mut handles = Vec::new();
 
         if !kbd_path.is_empty() {
@@ -248,14 +248,14 @@ impl EvdevInputThread {
 
 impl Drop for EvdevInputThread {
     fn drop(&mut self) {
-        self.stop.store(true, Ordering::Relaxed);
+        self.stop.cancel();
         for h in self.handles.drain(..) {
             let _ = h.join();
         }
     }
 }
 
-fn run_keyboard(mut dev: Device, tx: InputSender, stop: Arc<AtomicBool>) {
+fn run_keyboard(mut dev: Device, tx: InputSender, stop: Arc<StopSignal>) {
     unsafe {
         let fd = dev.as_raw_fd();
         let flags = libc::fcntl(fd, libc::F_GETFL, 0);
@@ -266,7 +266,7 @@ fn run_keyboard(mut dev: Device, tx: InputSender, stop: Arc<AtomicBool>) {
         dev.name().unwrap_or("?")
     );
 
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         match dev.fetch_events() {
             Ok(events) => {
                 for event in events {
@@ -319,7 +319,7 @@ fn run_keyboard(mut dev: Device, tx: InputSender, stop: Arc<AtomicBool>) {
                 }
             }
             Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                thread::sleep(Duration::from_millis(4));
+                if stop.wait(Duration::from_millis(4)){break;}
             }
             Err(e) => {
                 tracing::error!("evdev: keyboard error: {e}");
@@ -334,7 +334,7 @@ fn run_keyboard(mut dev: Device, tx: InputSender, stop: Arc<AtomicBool>) {
 fn run_mouse(
     mut dev: Device,
     tx: InputSender,
-    stop: Arc<AtomicBool>,
+    stop: Arc<StopSignal>,
     min_delta: i32,
 ) {
     unsafe {
@@ -360,7 +360,7 @@ fn run_mouse(
             .spawn(move || {
                 let interval = Duration::from_micros(1_000_000 / RAW_MOUSE_FLUSH_HZ as u64);
                 while !stop2.load(Ordering::Relaxed) {
-                    thread::sleep(interval);
+                    if stop.wait(interval){break;}
                     let dx = std::mem::take(&mut *adx.lock().unwrap());
                     let dy = std::mem::take(&mut *ady.lock().unwrap());
                     if dx != 0 || dy != 0 {
@@ -371,7 +371,7 @@ fn run_mouse(
             .ok();
     }
 
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         match dev.fetch_events() {
             Ok(events) => {
                 for event in events {
@@ -422,7 +422,7 @@ fn run_mouse(
                 }
             }
             Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                thread::sleep(Duration::from_millis(4));
+                if stop.wait(Duration::from_millis(4)){break;}
             }
             Err(e) => {
                 tracing::error!("evdev: mouse error: {e}");

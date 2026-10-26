@@ -1,7 +1,7 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Production Chromium benchmark. CPU means renderer-main-thread TaskDuration / wall time,
 // not whole-machine CPU or GPU utilization. The WS source emulates native coalescing at 125 Hz.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { preview } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -67,7 +67,7 @@ async function open(editor = false) {
     if (!css) throw Error('Unknown CSS experiment'); await page.addStyleTag({ content: css });
   }
   await expect(page.locator(editor ? '.preview-viewport .overlay-key' : '#overlay .overlay-key').first()).toBeVisible();
-  if (editor) await expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+  if (editor) await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
 }
 const metrics = async cdp => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(v => [v.name, v.value]));
 async function sample(name, active, duration = seconds) {

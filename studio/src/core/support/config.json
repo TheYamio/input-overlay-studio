@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "providers": [
+    { "id": "boosty", "name": "Boosty", "url": "https://boosty.to/spicytea" },
+    { "id": "ko-fi", "name": "Ko-fi", "url": "https://ko-fi.com/the_yamio" }
+  ],
+  "prompt": { "enabled": true },
+  "projectUrl": "https://github.com/TheYamio/input-overlay-studio",
+  "roadmap": ["editor", "languages", "performance"]
+}

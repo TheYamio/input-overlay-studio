@@ -147,7 +147,7 @@
   "s-835ff4bcf601": "Copy OBS URL",
   "s-5493ff8e9397": "WORKSPACE",
   "s-87bb59ba2f92": "Workspace",
-  "s-db7d7c03a8f5": "Capture connected",
+  "s-db7d7c03a8f5": "Capture server connected",
   "s-d598026a9cbc": "Windows",
   "s-5f5169e1e47c": "Made for your stream",
   "s-64f4f8bb2fd9": "LOCAL · PRIVATE · OFFLINE",
@@ -176,7 +176,7 @@
   "s-b1995ae992a1": "Show {{p0}}",
   "s-193119ecc65c": "Unlock {{p0}}",
   "s-b1935e2e20fb": "Lock {{p0}}",
-  "s-954f805af128": "Ready for OBS",
+  "s-954f805af128": "OBS overlay",
   "s-e23d70d80f77": "Your overlay runs independently. Close Studio and keep playing.",
   "s-7656e76e0336": "Toggle layers",
   "s-3a22ef4d2495": "CS",
@@ -1097,7 +1097,7 @@
   "s-a81c3ca5d964": "Storage is full or unavailable. Export your configuration to keep a copy.",
   "s-23e39291d613": "Saving…",
   "s-86a9e9406a81": "Local storage is unavailable. Server settings remain available.",
-  "s-1c8b39a24afc": "Synced to OBS",
+  "s-1c8b39a24afc": "Saved to capture server",
   "s-949f6a2731e8": "Save failed · draft kept",
   "s-696868dc190f": "The server configuration is damaged. The original file is preserved. Restore a backup or explicitly save your current defaults.",
   "s-1fae8ab599c1": "Server saved the profile, but local storage is unavailable. Export a copy.",
@@ -1134,5 +1134,9 @@
   "key-assigned": "Assigned {{p0}} · VK {{p1}}",
   "shortcut-conflict": "Already assigned to {{p0}}. Reassigning removes it from those commands.",
   "capture-running": "running",
-  "capture-stopped": "stopped"
+  "capture-stopped": "stopped",
+  "s-30f22108cc88": "Imported {{p0}}. Shape and holes scale with the button.",
+  "s-3732607b3442": "HTTP server running · port {{p0}}",
+  "s-26a4d3d897de": "{{p0}} overridden fields. Reset a field to follow the module again.",
+  "s-8f735b753b65": "Available on {{p0}}. The saved value is preserved."
 }

@@ -6,13 +6,15 @@ import type { VectorShape } from '../shapes';
 import type { PreservedConfiguration } from '../compatibility/preserved';
 import { SettingsEvents, type SettingsChange } from './events';
 import { SettingsService, type DocumentStorage, type SettingsTransport } from './service';
+import {bindDocumentLifecycle} from './lifecycle';
 
 const endpoint='ws://local';
 const services:SettingsService[]=[];
 function fixture(options:{warning?:string;pending?:boolean;revision?:string;storedEndpoint?:string;unsupported?:PreservedConfiguration}={}) {
   const original=initialDocument();
   const writes:{document:StudioDocument;metadata:SyncMetadata}[]=[];
-  const storage:DocumentStorage={load:()=>({document:original,warning:options.warning||'',unsupported:options.unsupported,sync:{pending:options.pending||false,baseRevision:options.revision||'r1',endpoint:options.storedEndpoint||endpoint}}),save:vi.fn((document,metadata)=>writes.push(structuredClone({document,metadata}))),backup:vi.fn(()=>structuredClone(original))};
+  const drafts:{document:StudioDocument;metadata:SyncMetadata}[]=[];
+  const storage:DocumentStorage={load:()=>({document:original,warning:options.warning||'',unsupported:options.unsupported,sync:{pending:options.pending||false,baseRevision:options.revision||'r1',endpoint:options.storedEndpoint||endpoint}}),saveDraft:vi.fn((document,metadata)=>drafts.push(structuredClone({document,metadata}))),save:vi.fn((document,metadata)=>writes.push(structuredClone({document,metadata}))),backup:vi.fn(()=>structuredClone(original))};
   const transport:SettingsTransport={onStatus:()=>{},onError:()=>{},onDocument:()=>{},onConflict:()=>{},onRecovery:()=>{},onSaved:()=>{},connect:vi.fn(),stop:vi.fn(),publish:vi.fn(()=>true)};
   const events=new SettingsEvents(), service=new SettingsService(storage,transport,endpoint,events);
   services.push(service);
@@ -20,12 +22,62 @@ function fixture(options:{warning?:string;pending?:boolean;revision?:string;stor
   const ready=()=>{connect();transport.onDocument(original,'r1');};
   const edit=(name:string)=>service.transaction(d=>{d.profiles[0].name=name;});
   const address:SettingsAddress={scope:'module',profileId:original.profiles[0].id,moduleId:original.profiles[0].modules[0].id};
-  return {service,storage,transport,events,original,writes,connect,ready,edit,address};
+  return {service,storage,transport,events,original,writes,drafts,connect,ready,edit,address};
 }
 beforeEach(()=>vi.useFakeTimers());
 afterEach(()=>{for(const service of services.splice(0))service.dispose();vi.useRealTimers();});
 
+describe('durable gesture checkpoints',()=>{
+  it('retains immediate full durability for adapters without a journal capability',()=>{
+    const f=fixture();delete f.storage.saveDraft;f.service.beginGesture('custom adapter');f.edit('One');f.edit('Two');expect(f.writes).toHaveLength(2);f.service.endGesture();expect(f.writes).toHaveLength(2);
+  });
+  it('keeps a live draft and one Undo while committing a short gesture once',()=>{
+    const f=fixture();f.service.beginGesture('drag');for(let i=0;i<25;i++)f.edit(`Step ${i}`);
+    expect(f.writes).toHaveLength(0);expect(f.drafts).toHaveLength(25);expect(f.service.getSnapshot().saveStatus).toBe('Saved locally');expect(f.service.document.profiles[0].name).toBe('Step 24');
+    f.service.endGesture();expect(f.writes).toHaveLength(1);expect(f.writes[0].document.profiles[0].name).toBe('Step 24');
+    f.service.undo();expect(f.service.document).toEqual(f.original);expect(f.service.getSnapshot().canUndo).toBe(false);f.service.redo();expect(f.service.document.profiles[0].name).toBe('Step 24');
+  });
+  it('checkpoints continuous gestures every 250 ms without postponing the deadline',()=>{
+    const f=fixture();f.service.beginGesture('slider');f.edit('First');vi.advanceTimersByTime(200);f.edit('Latest');vi.advanceTimersByTime(49);expect(f.writes).toHaveLength(0);
+    vi.advanceTimersByTime(1);expect(f.writes).toHaveLength(1);expect(f.writes[0].document.profiles[0].name).toBe('Latest');
+    f.edit('Continued');vi.advanceTimersByTime(250);expect(f.writes).toHaveLength(2);f.service.endGesture();expect(f.writes).toHaveLength(2);
+  });
+  it('persists ordinary operations and an explicit Save synchronously',()=>{
+    const f=fixture();f.edit('Ordinary');expect(f.writes).toHaveLength(1);f.service.beginGesture('text');f.edit('Typing');expect(f.writes).toHaveLength(1);
+    expect(f.service.save()).toBe(true);expect(f.writes).toHaveLength(2);expect(f.writes[1].metadata).toMatchObject({pending:true,baseRevision:'r1',endpoint});
+  });
+  it('persists the Undo target directly instead of committing an abandoned intermediate draft',()=>{
+    const f=fixture();f.service.beginGesture('drag');f.edit('Abandoned');f.service.undo();expect(f.writes).toHaveLength(1);expect(f.writes[0].document).toEqual(f.original);
+    vi.advanceTimersByTime(1000);expect(f.writes).toHaveLength(1);f.service.redo();expect(f.writes[1].document.profiles[0].name).toBe('Abandoned');
+  });
+  it('flushes the local draft before a server publish and retains its CAS base',()=>{
+    const f=fixture();f.ready();f.writes.length=0;f.service.beginGesture('drag');f.edit('Pending');f.service.flush();
+    expect(f.writes).toHaveLength(1);expect(f.writes[0].metadata).toMatchObject({pending:true,baseRevision:'r1'});expect(f.transport.publish).toHaveBeenCalledWith(f.service.document,'r1');
+  });
+  it('keeps conflict checkpoints paired with the old base until explicit resolution',()=>{
+    const f=fixture();f.ready();f.writes.length=0;f.service.beginGesture('drag');f.edit('Local');const other=structuredClone(f.original);other.profiles[0].name='Other';f.transport.onDocument(other,'r2');
+    vi.advanceTimersByTime(250);expect(f.writes[0].metadata.baseRevision).toBe('r1');expect(f.service.getSnapshot().conflict).toBe(true);expect(f.transport.publish).not.toHaveBeenCalled();
+    f.service.resolveConflict('local');expect(f.writes.at(-1)?.metadata.baseRevision).toBe('r2');expect(f.service.document.profiles[0].name).toBe('Local');
+  });
+  it('keeps a failed checkpoint in memory and supports a synchronous explicit retry',()=>{
+    const f=fixture();f.service.beginGesture('drag');f.edit('Keep me');vi.mocked(f.storage.save).mockImplementationOnce(()=>{throw Error('quota');});
+    vi.advanceTimersByTime(250);expect(f.service.getSnapshot().saveStatus).toBe('Local save failed');expect(f.writes).toHaveLength(0);expect(f.service.document.profiles[0].name).toBe('Keep me');
+    expect(f.service.save()).toBe(true);expect(f.writes).toHaveLength(1);expect(f.service.getSnapshot().warning).toBe('');
+  });
+  it('flushes page lifecycle events once and removes listeners on teardown',()=>{
+    const f=fixture(),page=new EventTarget(),visibility=Object.assign(new EventTarget(),{visibilityState:'hidden'});const unbind=bindDocumentLifecycle(f.service,page,visibility as unknown as Document);
+    f.service.beginGesture('drag');f.edit('Hidden');visibility.dispatchEvent(new Event('visibilitychange'));page.dispatchEvent(new Event('pagehide'));page.dispatchEvent(new Event('beforeunload'));expect(f.writes).toHaveLength(1);
+    unbind();f.edit('Later');page.dispatchEvent(new Event('pagehide'));expect(f.writes).toHaveLength(1);f.service.dispose();expect(f.writes).toHaveLength(2);vi.advanceTimersByTime(1000);expect(f.writes).toHaveLength(2);
+  });
+});
+
 describe('atomic settings operations and history',()=>{
+  it('keeps connection reports ephemeral and ignores stale callbacks after a connection switch',()=>{
+    const f=fixture();f.ready();const writes=f.writes.length,before=f.service.document;
+    const packet={sequence:1,captureEnabled:false,captureRunning:false,runtimes:{connected:1,ready:1,failed:0,unresponsive:0}};
+    f.transport.onConnectionStatus?.(packet);expect(f.service.getSnapshot().connectionStatus).toEqual(packet);expect(f.service.document).toBe(before);expect(f.writes).toHaveLength(writes);expect(f.service.getSnapshot().canUndo).toBe(false);
+    const old=f.transport.onConnectionStatus;f.service.connect({url:'ws://other',token:'test'});old?.(packet);expect(f.service.getSnapshot().connectionStatus).toBeNull();f.transport.onStatus('Connected');f.transport.onConnectionStatus?.(packet);f.service.pause();expect(f.service.getSnapshot().connectionStatus).toBeNull();
+  });
   it('validates, persists and notifies a whole operation once',()=>{
     const f=fixture(), changes:SettingsChange[]=[];f.service.subscribeChanges('game-profile',e=>changes.push(e));
     f.service.transaction(d=>{d.profiles[0].name='One operation';d.gameProfiles[0].dpi=800;},{source:'preset'});
@@ -161,7 +213,7 @@ describe('safe persistence and synchronization',()=>{
     f.transport.onSaved(sent,'r2');expect(f.service.document.profiles[0].name).toBe('Newer');expect(f.service.getSnapshot().pending).toBe(true);
     expect(f.writes.at(-1)).toMatchObject({document:{profiles:[{name:'Newer'}]},metadata:{pending:true,baseRevision:'r2'}});
     expect(f.transport.publish).toHaveBeenLastCalledWith(f.service.document,'r2');
-    f.transport.onSaved(JSON.stringify(f.service.document),'r3');expect(f.service.getSnapshot()).toMatchObject({pending:false,saveStatus:'Synced to OBS'});
+    f.transport.onSaved(JSON.stringify(f.service.document),'r3');expect(f.service.getSnapshot()).toMatchObject({pending:false,saveStatus:'Saved to capture server'});
   });
   it('restores a durable offline draft and detects a stale revision on reconnect',()=>{
     const f=fixture({pending:true});f.connect();const remote=structuredClone(f.original);remote.profiles[0].name='Other editor';f.transport.onDocument(remote,'r2');

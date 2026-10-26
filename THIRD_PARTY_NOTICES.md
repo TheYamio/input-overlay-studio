@@ -14,7 +14,7 @@ Noto Sans and script families, Noto Sans CJK and Noto Emoji by the Noto Project 
 
 ## Tengwar offline font
 
-Alcarin Tengwar by Toshi Omagari, SIL Open Font License 1.1. Source and SHA-256: `studio/public/fonts/manifest.json`; full license: `studio/public/fonts/alcarintengwar-OFL.txt`. The font is embedded and loaded locally. The partial artistic Sindarin glossary uses the Beleriand writing mode and keeps English hints; it is not a complete or certified translation.
+Alcarin Tengwar by Toshi Omagari, SIL Open Font License 1.1. Source and SHA-256: `studio/public/fonts/manifest.json`; full license: `studio/public/fonts/alcarintengwar-OFL.txt`. The font is embedded and loaded locally. The font remains available for custom labels and language packages; the incomplete built-in artistic Sindarin glossary is no longer distributed.
 
 ## Experimental translation drafts
 

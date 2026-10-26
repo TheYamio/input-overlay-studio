@@ -1,4 +1,4 @@
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { preview } from 'vite';
 import { mkdir, writeFile } from 'node:fs/promises';
 const server = await preview({ build:{outDir:process.env.STUDIO_BENCH_DIST||'dist'},preview: { host: '127.0.0.1', port: 5174, strictPort: true } });

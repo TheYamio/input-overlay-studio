@@ -1,6 +1,6 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Isolated renderer and synthetic transport; never changes live capture settings.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir } from 'node:fs/promises';
@@ -120,18 +120,18 @@ try {
     await expect(fixture.locator('[data-button="6"]')).not.toHaveClass(/pressed/);
     expect(await fixture.evaluate(() => window.__animation.engine.buttons[6])).toBe(0);
   });
-  await page.goto('http://127.0.0.1:5220'); await expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+  await page.goto('http://127.0.0.1:5220'); await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
   await check('editor controls save independent animation fields and preview without publishing input or document changes', async () => {
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
     const details = page.locator('.properties-panel .animation-details').first(); await details.locator('summary').click();
     await page.getByLabel('Button motion', { exact: true }).selectOption('Scale'); await page.getByLabel('Lighting mode', { exact: true }).selectOption('Gradient');
     await page.getByLabel('Press delay', { exact: true }).fill('160'); await page.getByLabel('Release delay', { exact: true }).fill('240'); await page.getByLabel('Secondary light color', { exact: true }).fill('#ff00ff');
-    await expect.poll(() => document.profiles[0].modules[0].appearance.pressDelay).toBe(160); await expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+    await expect.poll(() => document.profiles[0].modules[0].appearance.pressDelay).toBe(160); await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
     const saved = JSON.stringify(document), beforeRevision = revision;
     await page.getByRole('button', { name: 'Play animation', exact: true }).click(); await expect(details.locator('.animation-sample .overlay-key')).toHaveClass(/pressed/); await expect(details.locator('.animation-sample .overlay-key')).not.toHaveClass(/pressed/);
     expect(JSON.stringify(document)).toBe(saved); expect(revision).toBe(beforeRevision);
     await page.screenshot({ path: fileURLToPath(new URL('animation-controls.png', artifacts)) });
-    await page.reload(); await expect(page.locator('.statusbar')).toContainText('Synced to OBS'); expect(document.profiles[0].modules[0].appearance).toMatchObject({ motion: 'Scale', lighting: 'Gradient', pressDelay: 160, releaseDelay: 240, secondaryColor: '#ff00ff' });
+    await page.reload(); await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); expect(document.profiles[0].modules[0].appearance).toMatchObject({ motion: 'Scale', lighting: 'Gradient', pressDelay: 160, releaseDelay: 240, secondaryColor: '#ff00ff' });
   });
   await check('individual keys inherit timing and can override and reset a single field', async () => {
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click(); await page.getByRole('button', { name: 'Keys', exact: true }).click(); await page.getByLabel('Customize this key', { exact: true }).check();

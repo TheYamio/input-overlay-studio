@@ -1,5 +1,5 @@
 // Isolated synthetic storage and test-only React mount. Never loads user files.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { mkdir,writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';

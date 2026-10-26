@@ -2,7 +2,7 @@ import contract from '../src/core/compatibility/contract.json' with {type:'json'
 // End-to-end renderer/editor tests use an explicitly synthetic, authenticated server.
 // This never substitutes for validating Windows Raw Input or OBS.
 import { initialDocument , parseDocument} from '../src/core/config.ts';
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'vite';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -49,7 +49,7 @@ const results = [];
 async function check(name, fn) { await fn(); results.push({ name, passed: true }); console.log(`PASS ${name}`); }
 try {
   await page.goto('http://127.0.0.1:5173');
-  await check('authenticated Studio and automatic configuration synchronization', async () => { await expect(page.getByText('Capture connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(4); });
+  await check('authenticated Studio and automatic configuration synchronization', async () => { await expect(page.getByText('Capture server connected')).toBeVisible(); await expect.poll(() => document?.version).toBe(4); });
   await check('live simultaneous keys, modifiers, mouse and wheel', async () => {
     for (const rawcode of [87, 65, 160, 162, 32]) broadcast({ event_type: 'key_pressed', rawcode });
     for (const button of [1, 2, 4, 5]) broadcast({ event_type: 'mouse_pressed', button });
@@ -115,7 +115,7 @@ try {
   await check('module properties, appearance and persistence after reload', async () => {
     await page.getByLabel('Style', { exact: true }).selectOption('Neon Trail'); await page.getByLabel('Line color', { exact: true }).fill('#82c7ff');
     await expect.poll(() => document.profiles[0].modules.find(m => m.type === 'trail').accent).toBe('#82c7ff');
-    await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); await page.getByRole('button', { name: 'Select Mouse Trail', exact: true }).click(); await expect(page.getByLabel('Style', { exact: true })).toHaveValue('Neon Trail');
+    await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); await page.getByRole('button', { name: 'Select Mouse Trail', exact: true }).click(); await expect(page.getByLabel('Style', { exact: true })).toHaveValue('Neon Trail');
   });
   await check('factory themes and saved preset actions', async () => {
     await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: /Colors on my layout/ }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Apply colors', exact: true }).click();
@@ -153,7 +153,7 @@ try {
     await expect(overlay.locator('[data-button="1"]')).toHaveClass(/pressed/);
     for (const ws of wss.clients) ws.close();
     await expect(overlay.locator('.overlay-key.pressed')).toHaveCount(0);
-    await expect(page.getByText('Capture connected')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByText('Capture server connected')).toBeVisible({ timeout: 8000 });
     await expect.poll(() => [...wss.clients].filter(ws => ws.authed && ws.gotConfig).length).toBe(2);
     await expect(overlay.locator('[data-key="87"]')).toHaveClass(/pressed/); await expect(overlay.locator('[data-button="1"]')).toHaveClass(/pressed/);
     for (const ws of wss.clients) if (ws.authed) ws.send(JSON.stringify({ event_type: 'key_released', rawcode: 87, sequence: sequence - 1 }));
@@ -165,7 +165,7 @@ try {
     broadcast({ event_type: 'key_pressed', rawcode: 87 });
     for (const ws of wss.clients) ws.close();
     broadcast({ event_type: 'key_released', rawcode: 87 });
-    await expect(page.getByText('Capture connected')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByText('Capture server connected')).toBeVisible({ timeout: 8000 });
     await expect.poll(() => [...wss.clients].filter(ws => ws.authed && ws.gotConfig).length).toBe(2);
     await expect(overlay.locator('.overlay-key.pressed')).toHaveCount(0);
   });

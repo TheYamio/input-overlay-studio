@@ -10,14 +10,15 @@
     ]
   },
   "moduleSchemas": {
-    "overlay.keyboard": 1,
-    "overlay.mouse": 1,
-    "overlay.trail": 1,
-    "overlay.distance": 1,
-    "overlay.sensitivity": 1
+    "overlay.keyboard": 2,
+    "overlay.mouse": 2,
+    "overlay.trail": 2,
+    "overlay.distance": 2,
+    "overlay.sensitivity": 2
   },
   "features": {
     "config.revisions": 1,
+    "runtime.status": 1,
     "input.snapshot": 1,
     "input.heartbeat": 1,
     "visual.artwork": 1,

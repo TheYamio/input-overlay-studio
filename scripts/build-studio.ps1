@@ -25,7 +25,7 @@ try {
     $binary = Join-Path $taskRoot 'ws-server/src-tauri/target/release/input-overlay-ws.exe'
     if (-not (Test-Path -LiteralPath $binary)) { throw 'Release binary does not exist' }
     if ((Get-Item -LiteralPath $binary).VersionInfo.ProductVersion -ne $version) { throw 'Binary version does not match package.json' }
-    if (& git status --porcelain) { throw 'Commit the release sources before packaging the corresponding source archive' }
+    if (& git status --porcelain) { throw 'Commit the release sources before packaging' }
     $package = Join-Path $taskRoot "release/Input Overlay Studio $version"
     if (Test-Path -LiteralPath $package) { throw "Package already exists: $package. Use a fresh release version or move the existing package first." }
     New-Item -ItemType Directory -Path $package -Force | Out-Null
@@ -40,18 +40,12 @@ try {
     }
     if (Test-Path -LiteralPath $unwind) { Copy-Item -LiteralPath $unwind -Destination $package }
     # Keep the portable directory limited to runtime files. Guides, attribution
-    # and dependency licenses accompany it in the source archive below.
+    # and dependency licenses remain available in the corresponding tagged sources.
     foreach ($requiredNotice in @('LICENSE', 'THIRD_PARTY_NOTICES.md', 'docs/LLVM-RUNTIME-LICENSE.txt', 'docs/WEBVIEW2-SDK-LICENSE.txt', 'docs/WEBVIEW2-SDK-NOTICE.txt')) {
         & git cat-file -e "HEAD:$requiredNotice"
-        if ($LASTEXITCODE -ne 0) { throw "Source archive is missing required notice: $requiredNotice" }
+        if ($LASTEXITCODE -ne 0) { throw "Release sources are missing required notice: $requiredNotice" }
     }
     $archive = Join-Path $taskRoot "release/Input-Overlay-Studio-$version-Windows-x64.zip"
     Compress-Archive -LiteralPath $package -DestinationPath $archive -Force
-    # A release source archive must correspond to the committed release, not ignored build state.
-    $source = Join-Path $taskRoot "release/Input-Overlay-Studio-$version-Source.zip"
-    & git archive --format=zip "--prefix=Input-Overlay-Studio-$version-Source/" "--output=$source" HEAD
-    if ($LASTEXITCODE -ne 0) { throw 'Source archive failed' }
-    $sums = @($archive, $source) | ForEach-Object { ((Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash.ToLowerInvariant()) + '  ' + (Split-Path -Leaf $_) }
-    $sums | Set-Content -LiteralPath (Join-Path $taskRoot "release/SHA256SUMS-$version.txt") -Encoding utf8NoBOM
     Write-Output "Packaged: $package"
 } finally { Pop-Location }

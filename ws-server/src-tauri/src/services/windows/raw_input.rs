@@ -1,7 +1,7 @@
 #![cfg(windows)]
 
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use crate::services::stop_signal::StopSignal;
 use crate::motion::Motion;
 use std::thread;
 use std::time::Duration;
@@ -52,13 +52,13 @@ const BTN_MAP: &[(u16, u16, u8)] = &[
 ];
 
 pub struct RawInputThread {
-    stop: Arc<AtomicBool>,
+    stop: Arc<StopSignal>,
     handle: Option<thread::JoinHandle<()>>,
 }
 
 impl RawInputThread {
     pub fn start(tx: InputSender, min_delta: i32) -> Self {
-        let stop = Arc::new(AtomicBool::new(false));
+        let stop = Arc::new(StopSignal::default());
         let stop_clone = Arc::clone(&stop);
         let handle = thread::Builder::new()
             .name("RawInputBuffer".into())
@@ -71,7 +71,7 @@ impl RawInputThread {
     }
 
     pub fn stop(&mut self) {
-        self.stop.store(true, Ordering::Relaxed);
+        self.stop.cancel();
         if let Some(h) = self.handle.take() {
             let _ = h.join();
         }
@@ -92,7 +92,7 @@ impl Drop for RawInputThread {
 fn run_raw_input(
     tx: InputSender,
     min_delta: i32,
-    stop: Arc<AtomicBool>,
+    stop: Arc<StopSignal>,
 ) {
     unsafe {
         set_background_priority();
@@ -127,8 +127,8 @@ fn run_raw_input(
             Duration::from_micros(1_000_000 / crate::services::consts::RAW_MOUSE_FLUSH_HZ as u64);
         let mut msg = MSG::default();
 
-        while !stop.load(Ordering::Relaxed) {
-            thread::sleep(interval);
+        while !stop.is_cancelled() {
+            if stop.wait(interval){break;}
             drain_buffer(&tx, us_layout, min_delta, &mut motion, &mut buffer);
             let batch = motion.take();
             if batch.distance_counts > 0.0 {

@@ -25,6 +25,25 @@ function setup() {
   return { connection, socket };
 }
 describe('revision-aware connection', () => {
+  it('only Studio sends global distance reset commands',()=>{
+    const {connection,socket}=setup();connection.resetDistance();expect(socket.sent.at(-1)).toEqual({type:'distance_reset'});connection.stop();
+    const runtime=new InputConnection(new InputEngine(),'runtime');runtime.connect({url:'ws://test',token:'test'});const observer=Socket.latest;observer.onopen?.();observer.receive({type:'auth_response',status:'success',protocol:5,studio_capabilities:{...structuredClone(contract),role:'capture'}});const before=observer.sent.length;runtime.resetDistance();expect(observer.sent).toHaveLength(before);runtime.stop();
+  });
+  it('accepts only authenticated negotiated status reports in sequence and clears them on loss',()=>{
+    const {connection,socket}=setup(),status=vi.fn();connection.onConnectionStatus=status;
+    const packet={type:'connection_status',sequence:3,capture_enabled:true,capture_running:true,runtimes:{connected:1,ready:1,failed:0,unresponsive:0}};
+    socket.receive(packet);socket.receive({...packet,sequence:2});socket.receive({...packet,sequence:4,runtimes:{connected:0,ready:1,failed:0,unresponsive:0}});expect(status).toHaveBeenCalledTimes(1);
+    socket.receive({...packet,capture_enabled:false});expect(status).toHaveBeenLastCalledWith(expect.objectContaining({captureEnabled:false}));socket.close();expect(status).toHaveBeenLastCalledWith(null);connection.stop();
+  });
+  it('requires the runtime role and applied revision for readiness and renews it on heartbeat',()=>{
+    vi.useFakeTimers();vi.stubGlobal('WebSocket',Socket);const connection=new InputConnection(new InputEngine(),'runtime');connection.connect({url:'ws://test',token:'test'});const socket=Socket.latest;socket.onopen?.();socket.receive({type:'auth_response',status:'success',protocol:5,studio_capabilities:{...structuredClone(contract),role:'capture'}});
+    socket.receive({type:'studio_config',document:initialDocument(),revision:'r1'});expect(socket.sent.some(p=>p.type==='runtime_ready')).toBe(false);expect(connection.acknowledgeRuntime('wrong','ready')).toBe(false);expect(connection.acknowledgeRuntime('r1','ready')).toBe(true);
+    const n=socket.sent.length;connection.acknowledgeRuntime('r1','ready');expect(socket.sent).toHaveLength(n);socket.receive({type:'heartbeat'});expect(socket.sent.at(-1)).toEqual({type:'runtime_ready',revision:'r1',state:'ready'});
+    socket.receive({type:'studio_config',document:initialDocument(),revision:'r2'});const before=socket.sent.length;socket.receive({type:'heartbeat'});expect(socket.sent).toHaveLength(before);expect(connection.acknowledgeRuntime('r1','ready')).toBe(false);connection.acknowledgeRuntime('r2','error');expect(socket.sent.at(-1)).toMatchObject({state:'error',revision:'r2'});connection.stop();
+  });
+  it('does not accept status features missing from the server contract',()=>{
+    const {connection,socket}=setup(),status=vi.fn();connection.onConnectionStatus=status;const capabilities=structuredClone(contract);delete (capabilities.features as Record<string,number>)['runtime.status'];socket.receive({type:'auth_response',status:'success',protocol:5,studio_capabilities:{...capabilities,role:'capture'}});socket.receive({type:'connection_status',sequence:0,capture_enabled:true,capture_running:true,runtimes:{connected:1,ready:1,failed:0,unresponsive:0}});expect(status).not.toHaveBeenCalled();expect(connection.acknowledgeRuntime('r1','ready')).toBe(false);connection.stop();
+  });
 
   it('advertises Studio capabilities separately from the auth token',()=>{
     const {connection,socket}=setup();expect(socket.sent[0]).toMatchObject({type:'auth',token:'test',studio_client:{role:'studio',contractVersion:1,protocolVersion:5,document:{read:[4],write:[4]}}});connection.stop();

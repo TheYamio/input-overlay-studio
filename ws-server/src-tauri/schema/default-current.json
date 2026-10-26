@@ -3,10 +3,10 @@
   "shapes": {},
   "version": 4,
   "assets": {},
-  "activeProfileId": "a2e0deed-2d2d-4485-a8b0-82337625be94",
+  "activeProfileId": "1aee2f8a-e52b-464b-bf84-0b67cafba23a",
   "gameProfiles": [
     {
-      "id": "380d4722-f907-4017-aa6c-599da491829a",
+      "id": "8814b3da-3b85-453f-81b9-16fa1fd94e90",
       "name": "Counter-Strike 2",
       "game": "Counter-Strike 2",
       "dpi": 800,
@@ -18,16 +18,16 @@
   ],
   "profiles": [
     {
-      "id": "a2e0deed-2d2d-4485-a8b0-82337625be94",
+      "id": "1aee2f8a-e52b-464b-bf84-0b67cafba23a",
       "name": "CS2 · Main",
-      "gameProfileId": "380d4722-f907-4017-aa6c-599da491829a",
+      "gameProfileId": "8814b3da-3b85-453f-81b9-16fa1fd94e90",
       "locale": "en",
       "caption": "",
       "theme": "Obsidian",
       "modules": [
         {
           "type": "overlay.keyboard",
-          "schemaVersion": 1,
+          "schemaVersion": 2,
           "enabled": true,
           "config": {
             "accent": "#b4a7dd",
@@ -54,6 +54,7 @@
               "pressTravel": 2,
               "glowStrength": 22
             },
+            "textLayout": "Horizontal",
             "image": {
               "enabled": false,
               "assetId": "",
@@ -72,28 +73,7 @@
               "press": "Tint",
               "pressTint": 0.55
             },
-            "buttonStyles": {},
-            "buttonGeometry": {},
-            "buttonImages": {},
-            "trailAppearance": {
-              "gridColor": "#ffffff",
-              "gridOpacity": 0.05,
-              "gridSpacing": 36,
-              "centerColor": "#ffffff",
-              "centerSize": 6,
-              "markerColor": "#b4a7dd",
-              "markerSize": 4,
-              "slowColor": "#e4e4ed",
-              "fastColor": "#b4a7dd",
-              "speedRange": 10,
-              "leftClickColor": "#b4a7dd",
-              "rightClickColor": "#e4e4ed",
-              "clickDuration": 500,
-              "clickSize": 24,
-              "followMs": 240
-            },
-            "wheelDuration": 110,
-            "textLayout": "Horizontal",
+            "gap": 8,
             "keys": [
               {
                 "id": "87",
@@ -177,55 +157,13 @@
                 }
               }
             ],
-            "layout": "WASD + modifiers",
-            "gap": 8,
-            "mouseMode": "Compact Buttons",
-            "buttons": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7
-            ],
-            "buttonLabels": [
-              "M1",
-              "M2",
-              "M3",
-              "M4",
-              "M5",
-              "↑",
-              "↓"
-            ],
-            "trailStyle": "Fade Trail",
-            "position": "Follow / Recenter",
-            "scaleMode": "DPI Normalized Scale",
-            "scale": 0.65,
-            "duration": 1200,
-            "thickness": 2,
-            "glow": 10,
-            "grid": true,
-            "center": true,
-            "marker": "Dot",
-            "clickEffects": "Ripple",
-            "originX": 0.5,
-            "originY": 0.5,
-            "unit": "Auto",
-            "decimals": 1,
-            "caption": "DISTANCE",
-            "sensitivityStyle": "Standard",
-            "showGame": true,
-            "showDpi": true,
-            "showSens": true,
-            "showEdpi": true,
-            "showCm": true
+            "layout": "WASD + modifiers"
           },
           "resources": {
             "assets": [],
             "shapes": []
           },
-          "id": "bfb0b7f4-2097-4c78-a6c1-06f9ea8f170b",
+          "id": "9b14c4ab-15bd-4ff9-a9e9-8342643eca4b",
           "common": {
             "name": "Keyboard",
             "x": 180,
@@ -240,7 +178,7 @@
         },
         {
           "type": "overlay.mouse",
-          "schemaVersion": 1,
+          "schemaVersion": 2,
           "enabled": true,
           "config": {
             "accent": "#b4a7dd",
@@ -267,6 +205,7 @@
               "pressTravel": 2,
               "glowStrength": 22
             },
+            "textLayout": "Horizontal",
             "image": {
               "enabled": false,
               "assetId": "",
@@ -285,94 +224,6 @@
               "press": "Tint",
               "pressTint": 0.55
             },
-            "buttonStyles": {},
-            "buttonGeometry": {},
-            "buttonImages": {},
-            "trailAppearance": {
-              "gridColor": "#ffffff",
-              "gridOpacity": 0.05,
-              "gridSpacing": 36,
-              "centerColor": "#ffffff",
-              "centerSize": 6,
-              "markerColor": "#b4a7dd",
-              "markerSize": 4,
-              "slowColor": "#e4e4ed",
-              "fastColor": "#b4a7dd",
-              "speedRange": 10,
-              "leftClickColor": "#b4a7dd",
-              "rightClickColor": "#e4e4ed",
-              "clickDuration": 500,
-              "clickSize": 24,
-              "followMs": 240
-            },
-            "wheelDuration": 110,
-            "textLayout": "Horizontal",
-            "keys": [
-              {
-                "id": "87",
-                "code": 87,
-                "label": "W",
-                "x": 62,
-                "y": 0,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "65",
-                "code": 65,
-                "label": "A",
-                "x": 0,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "83",
-                "code": 83,
-                "label": "S",
-                "x": 62,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "68",
-                "code": 68,
-                "label": "D",
-                "x": 124,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "160",
-                "code": 160,
-                "label": "SHIFT",
-                "x": 0,
-                "y": 124,
-                "w": 84,
-                "h": 54
-              },
-              {
-                "id": "162",
-                "code": 162,
-                "label": "CTRL",
-                "x": 0,
-                "y": 186,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "32",
-                "code": 32,
-                "label": "SPACE",
-                "x": 62,
-                "y": 186,
-                "w": 116,
-                "h": 54
-              }
-            ],
-            "layout": "WASD + modifiers",
             "gap": 8,
             "mouseMode": "Compact Buttons",
             "buttons": [
@@ -393,34 +244,16 @@
               "↑",
               "↓"
             ],
-            "trailStyle": "Fade Trail",
-            "position": "Follow / Recenter",
-            "scaleMode": "DPI Normalized Scale",
-            "scale": 0.65,
-            "duration": 1200,
-            "thickness": 2,
-            "glow": 10,
-            "grid": true,
-            "center": true,
-            "marker": "Dot",
-            "clickEffects": "Ripple",
-            "originX": 0.5,
-            "originY": 0.5,
-            "unit": "Auto",
-            "decimals": 1,
-            "caption": "DISTANCE",
-            "sensitivityStyle": "Standard",
-            "showGame": true,
-            "showDpi": true,
-            "showSens": true,
-            "showEdpi": true,
-            "showCm": true
+            "buttonStyles": {},
+            "buttonGeometry": {},
+            "buttonImages": {},
+            "wheelDuration": 110
           },
           "resources": {
             "assets": [],
             "shapes": []
           },
-          "id": "48a32624-01a7-4fef-b499-87fe878a1c62",
+          "id": "b9f20574-5c9b-48a0-afe0-64f456306d78",
           "common": {
             "name": "Mouse Buttons",
             "x": 520,
@@ -435,7 +268,7 @@
         },
         {
           "type": "overlay.trail",
-          "schemaVersion": 1,
+          "schemaVersion": 2,
           "enabled": true,
           "config": {
             "accent": "#b4a7dd",
@@ -462,27 +295,7 @@
               "pressTravel": 2,
               "glowStrength": 22
             },
-            "image": {
-              "enabled": false,
-              "assetId": "",
-              "fit": "Cover",
-              "scale": 1,
-              "x": 0,
-              "y": 0,
-              "rotation": 0,
-              "opacity": 0.75,
-              "blend": "normal",
-              "brightness": 1,
-              "contrast": 1,
-              "saturation": 1,
-              "tint": "#ffffff",
-              "tintOpacity": 0,
-              "press": "Tint",
-              "pressTint": 0.55
-            },
-            "buttonStyles": {},
-            "buttonGeometry": {},
-            "buttonImages": {},
+            "textLayout": "Horizontal",
             "trailAppearance": {
               "gridColor": "#ffffff",
               "gridOpacity": 0.05,
@@ -500,94 +313,6 @@
               "clickSize": 24,
               "followMs": 240
             },
-            "wheelDuration": 110,
-            "textLayout": "Horizontal",
-            "keys": [
-              {
-                "id": "87",
-                "code": 87,
-                "label": "W",
-                "x": 62,
-                "y": 0,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "65",
-                "code": 65,
-                "label": "A",
-                "x": 0,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "83",
-                "code": 83,
-                "label": "S",
-                "x": 62,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "68",
-                "code": 68,
-                "label": "D",
-                "x": 124,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "160",
-                "code": 160,
-                "label": "SHIFT",
-                "x": 0,
-                "y": 124,
-                "w": 84,
-                "h": 54
-              },
-              {
-                "id": "162",
-                "code": 162,
-                "label": "CTRL",
-                "x": 0,
-                "y": 186,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "32",
-                "code": 32,
-                "label": "SPACE",
-                "x": 62,
-                "y": 186,
-                "w": 116,
-                "h": 54
-              }
-            ],
-            "layout": "WASD + modifiers",
-            "gap": 8,
-            "mouseMode": "Compact Buttons",
-            "buttons": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7
-            ],
-            "buttonLabels": [
-              "M1",
-              "M2",
-              "M3",
-              "M4",
-              "M5",
-              "↑",
-              "↓"
-            ],
             "trailStyle": "Fade Trail",
             "position": "Follow / Recenter",
             "scaleMode": "DPI Normalized Scale",
@@ -600,22 +325,13 @@
             "marker": "Dot",
             "clickEffects": "Ripple",
             "originX": 0.5,
-            "originY": 0.5,
-            "unit": "Auto",
-            "decimals": 1,
-            "caption": "DISTANCE",
-            "sensitivityStyle": "Standard",
-            "showGame": true,
-            "showDpi": true,
-            "showSens": true,
-            "showEdpi": true,
-            "showCm": true
+            "originY": 0.5
           },
           "resources": {
             "assets": [],
             "shapes": []
           },
-          "id": "96434817-d076-4494-a0b1-ab54d1335f17",
+          "id": "a2005744-c239-4765-997a-6b724dd97a49",
           "common": {
             "name": "Mouse Trail",
             "x": 840,
@@ -630,7 +346,7 @@
         },
         {
           "type": "overlay.distance",
-          "schemaVersion": 1,
+          "schemaVersion": 2,
           "enabled": true,
           "config": {
             "accent": "#b4a7dd",
@@ -657,160 +373,16 @@
               "pressTravel": 2,
               "glowStrength": 22
             },
-            "image": {
-              "enabled": false,
-              "assetId": "",
-              "fit": "Cover",
-              "scale": 1,
-              "x": 0,
-              "y": 0,
-              "rotation": 0,
-              "opacity": 0.75,
-              "blend": "normal",
-              "brightness": 1,
-              "contrast": 1,
-              "saturation": 1,
-              "tint": "#ffffff",
-              "tintOpacity": 0,
-              "press": "Tint",
-              "pressTint": 0.55
-            },
-            "buttonStyles": {},
-            "buttonGeometry": {},
-            "buttonImages": {},
-            "trailAppearance": {
-              "gridColor": "#ffffff",
-              "gridOpacity": 0.05,
-              "gridSpacing": 36,
-              "centerColor": "#ffffff",
-              "centerSize": 6,
-              "markerColor": "#b4a7dd",
-              "markerSize": 4,
-              "slowColor": "#e4e4ed",
-              "fastColor": "#b4a7dd",
-              "speedRange": 10,
-              "leftClickColor": "#b4a7dd",
-              "rightClickColor": "#e4e4ed",
-              "clickDuration": 500,
-              "clickSize": 24,
-              "followMs": 240
-            },
-            "wheelDuration": 110,
             "textLayout": "Horizontal",
-            "keys": [
-              {
-                "id": "87",
-                "code": 87,
-                "label": "W",
-                "x": 62,
-                "y": 0,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "65",
-                "code": 65,
-                "label": "A",
-                "x": 0,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "83",
-                "code": 83,
-                "label": "S",
-                "x": 62,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "68",
-                "code": 68,
-                "label": "D",
-                "x": 124,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "160",
-                "code": 160,
-                "label": "SHIFT",
-                "x": 0,
-                "y": 124,
-                "w": 84,
-                "h": 54
-              },
-              {
-                "id": "162",
-                "code": 162,
-                "label": "CTRL",
-                "x": 0,
-                "y": 186,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "32",
-                "code": 32,
-                "label": "SPACE",
-                "x": 62,
-                "y": 186,
-                "w": 116,
-                "h": 54
-              }
-            ],
-            "layout": "WASD + modifiers",
-            "gap": 8,
-            "mouseMode": "Compact Buttons",
-            "buttons": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7
-            ],
-            "buttonLabels": [
-              "M1",
-              "M2",
-              "M3",
-              "M4",
-              "M5",
-              "↑",
-              "↓"
-            ],
-            "trailStyle": "Fade Trail",
-            "position": "Follow / Recenter",
-            "scaleMode": "DPI Normalized Scale",
-            "scale": 0.65,
-            "duration": 1200,
-            "thickness": 2,
-            "glow": 10,
-            "grid": true,
-            "center": true,
-            "marker": "Dot",
-            "clickEffects": "Ripple",
-            "originX": 0.5,
-            "originY": 0.5,
             "unit": "Auto",
             "decimals": 1,
-            "caption": "DISTANCE",
-            "sensitivityStyle": "Standard",
-            "showGame": true,
-            "showDpi": true,
-            "showSens": true,
-            "showEdpi": true,
-            "showCm": true
+            "caption": "DISTANCE"
           },
           "resources": {
             "assets": [],
             "shapes": []
           },
-          "id": "879a988a-dd59-4ee3-af4d-ff14e2d084df",
+          "id": "0e905f07-0488-4329-9491-08a60dd054ff",
           "common": {
             "name": "Distance",
             "x": 1540,
@@ -825,7 +397,7 @@
         },
         {
           "type": "overlay.sensitivity",
-          "schemaVersion": 1,
+          "schemaVersion": 2,
           "enabled": true,
           "config": {
             "accent": "#b4a7dd",
@@ -852,148 +424,7 @@
               "pressTravel": 2,
               "glowStrength": 22
             },
-            "image": {
-              "enabled": false,
-              "assetId": "",
-              "fit": "Cover",
-              "scale": 1,
-              "x": 0,
-              "y": 0,
-              "rotation": 0,
-              "opacity": 0.75,
-              "blend": "normal",
-              "brightness": 1,
-              "contrast": 1,
-              "saturation": 1,
-              "tint": "#ffffff",
-              "tintOpacity": 0,
-              "press": "Tint",
-              "pressTint": 0.55
-            },
-            "buttonStyles": {},
-            "buttonGeometry": {},
-            "buttonImages": {},
-            "trailAppearance": {
-              "gridColor": "#ffffff",
-              "gridOpacity": 0.05,
-              "gridSpacing": 36,
-              "centerColor": "#ffffff",
-              "centerSize": 6,
-              "markerColor": "#b4a7dd",
-              "markerSize": 4,
-              "slowColor": "#e4e4ed",
-              "fastColor": "#b4a7dd",
-              "speedRange": 10,
-              "leftClickColor": "#b4a7dd",
-              "rightClickColor": "#e4e4ed",
-              "clickDuration": 500,
-              "clickSize": 24,
-              "followMs": 240
-            },
-            "wheelDuration": 110,
             "textLayout": "Horizontal",
-            "keys": [
-              {
-                "id": "87",
-                "code": 87,
-                "label": "W",
-                "x": 62,
-                "y": 0,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "65",
-                "code": 65,
-                "label": "A",
-                "x": 0,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "83",
-                "code": 83,
-                "label": "S",
-                "x": 62,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "68",
-                "code": 68,
-                "label": "D",
-                "x": 124,
-                "y": 62,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "160",
-                "code": 160,
-                "label": "SHIFT",
-                "x": 0,
-                "y": 124,
-                "w": 84,
-                "h": 54
-              },
-              {
-                "id": "162",
-                "code": 162,
-                "label": "CTRL",
-                "x": 0,
-                "y": 186,
-                "w": 54,
-                "h": 54
-              },
-              {
-                "id": "32",
-                "code": 32,
-                "label": "SPACE",
-                "x": 62,
-                "y": 186,
-                "w": 116,
-                "h": 54
-              }
-            ],
-            "layout": "WASD + modifiers",
-            "gap": 8,
-            "mouseMode": "Compact Buttons",
-            "buttons": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7
-            ],
-            "buttonLabels": [
-              "M1",
-              "M2",
-              "M3",
-              "M4",
-              "M5",
-              "↑",
-              "↓"
-            ],
-            "trailStyle": "Fade Trail",
-            "position": "Follow / Recenter",
-            "scaleMode": "DPI Normalized Scale",
-            "scale": 0.65,
-            "duration": 1200,
-            "thickness": 2,
-            "glow": 10,
-            "grid": true,
-            "center": true,
-            "marker": "Dot",
-            "clickEffects": "Ripple",
-            "originX": 0.5,
-            "originY": 0.5,
-            "unit": "Auto",
-            "decimals": 1,
-            "caption": "DISTANCE",
             "sensitivityStyle": "Standard",
             "showGame": true,
             "showDpi": true,
@@ -1005,7 +436,7 @@
             "assets": [],
             "shapes": []
           },
-          "id": "730c6c4f-e7ea-4aee-9489-d4e404ba89ea",
+          "id": "9f4ea877-43d1-4cba-8070-5df90eea5c50",
           "common": {
             "name": "Sensitivity",
             "x": 180,

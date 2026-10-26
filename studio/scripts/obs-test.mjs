@@ -1,7 +1,7 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Actual OBS/CEF acceptance using a separate portable installation and test-only credentials.
 // No desktop/game/microphone sources, streams or recordings are created.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import WebSocket from 'ws';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
@@ -35,7 +35,7 @@ await writeFile(new URL('config.json', captureData), JSON.stringify({ host: '127
 const doc = initialDocument(); activeProfile(doc).modules=factoryModules('Obsidian');
 [[440,400,290,310],[440,735,290,100],[790,400,550,430],[1400,510,300,100],[440,890,980,65]].forEach(([x,y,w,h],index)=>Object.assign(activeProfile(doc).modules[index],{x,y,w,h}));
 await writeFile(new URL('studio.json', captureData), JSON.stringify(encodeDocument(doc)));
-let capture, obs, nativeSocket, obsSocket, browser;
+let capture, obs, nativeSocket, obsSocket, browser, nativeReport;
 const startCapture = () => { capture = spawn(process.env.STUDIO_NATIVE_EXE || fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe', root)), ['--tray'], { windowsHide: true, stdio: 'ignore', env: { ...process.env, RUST_LOG: 'info', INPUT_OVERLAY_STUDIO_DATA_DIR: fileURLToPath(captureData) } }); };
 const stop = async child => { if (child && child.exitCode === null) { const exited = new Promise(resolve => child.once('exit', resolve)); child.kill(); await exited; } };
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -75,7 +75,9 @@ async function connectOBS() {
   });
 }
 async function nativeObserver() {
+  nativeReport=undefined;
   nativeSocket = new WebSocket('ws://127.0.0.1:4485');
+  nativeSocket.on('message',raw=>{const message=JSON.parse(String(raw));if(message.type==='connection_status')nativeReport=message;});
   await new Promise((resolve, reject) => { nativeSocket.once('error', reject); nativeSocket.once('open', () => nativeSocket.send(JSON.stringify({ type: 'auth', token,studio_client:{...contract,role:'studio'} }))); nativeSocket.once('message', raw => { const auth = JSON.parse(raw.toString()); if (auth.status !== 'success') reject(Error('Capture auth failed')); else resolve(); }); });
 }
 async function saveNativeDocument(document, request_id) {
@@ -85,7 +87,9 @@ async function saveNativeDocument(document, request_id) {
     nativeSocket.on('message', handler);
   });
   const current = receive('studio_config'); nativeSocket.send(JSON.stringify({ type: 'studio_get' })); const { revision } = await current;
+  nativeReport=undefined;
   const saved = receive('studio_saved'); nativeSocket.send(JSON.stringify({ type: 'studio_set', document:encodeDocument(document), base_revision: revision, origin: 'obs-acceptance', request_id })); await saved;
+  await expect.poll(()=>nativeReport?.runtimes,{timeout:15000}).toEqual({connected:1,ready:1,failed:0,unresponsive:0});
 }
 async function logs() {
   const files = await readdir(new URL('logs/', captureData)); return readFile(new URL(`logs/${files.sort().at(-1)}`, captureData), 'utf8');
@@ -112,6 +116,7 @@ try {
     await request('CreateInput', { sceneName, inputName: sourceName, inputKind: 'browser_source', sceneItemEnabled: true, inputSettings: { url: url.toString(), width: 1920, height: 1080, is_local_file: false, shutdown: false, fps_custom: true, fps: 60, css: 'body { background: rgba(0,0,0,0); margin:0; overflow:hidden; }' } });
     await expect.poll(async () => (await logs()).match(/client authenticated/g)?.length || 0, { timeout: 25000 }).toBeGreaterThanOrEqual(2);
     expect((await request('GetInputList')).inputs.map(input => input.inputName)).toEqual([sourceName]);
+    await expect.poll(()=>nativeReport?.runtimes,{timeout:25000}).toEqual({connected:1,ready:1,failed:0,unresponsive:0});
   });
   if (process.env.STUDIO_OBS_RESOURCE_ONLY === '1') {
     // Avoid PNG readback/staging allocations from the acceptance screenshots in this run.
@@ -185,6 +190,7 @@ try {
         return latest !== previousLog && (await logs()).includes('client authenticated');
       } catch { return false; }
     }, { timeout: 20000 }).toBe(true);
+    await nativeObserver();await expect.poll(()=>nativeReport?.runtimes,{timeout:15000}).toEqual({connected:1,ready:1,failed:0,unresponsive:0});
     const restored = await screenshot(2560, 1440, 'obs-reconnected.png'); expect(restored.visible).toBeGreaterThan(1000); expect(restored.keycapSamples[0][0]).toBeGreaterThan(restored.keycapSamples[2][0] + 50); expect(restored.keycapSamples[3][3]).toBe(0);
   });
   const stats = await request('GetStats');

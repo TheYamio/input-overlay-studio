@@ -5,6 +5,9 @@ import type { OverlayModule } from '../config';
 import type { ModuleEditorProps } from '../../module-editor-contracts';
 import type { KeyCanvas } from '../../key-canvas';
 import { externalDefinition } from './external';
+import type {ModuleConfigurationRegistry} from '../module-envelope';
+import {encodeModule,decodeModule} from '../module-format';
+import type {VisualRuntimeRegistry} from '../../renderer/modules/registry';
 
 export interface ModulePanel {readonly id:string;readonly label:string;readonly component:ComponentType<ModuleEditorProps>;readonly placement?:'before-common';readonly order?:number}
 export interface ModuleUI {
@@ -16,10 +19,11 @@ export interface ModuleUI {
 export type ModuleUIRegistration=ModuleUI&{readonly definition:ModuleDefinition};
 export class ModuleUIRegistry {
  private entries=new Map<DefinitionId,ModuleUIRegistration>();private types=new Map<string,DefinitionId>();private revision=0;private listeners=new Set<()=>void>();
- constructor(readonly catalog:Catalog){}
- getSnapshot=()=>this.revision;
- subscribe=(listener:()=>void)=>{this.listeners.add(listener);return ()=>{this.listeners.delete(listener);};};
+ constructor(readonly catalog:Catalog,private readonly available:(id:DefinitionId)=>boolean=()=>true,readonly configurations?:ModuleConfigurationRegistry,readonly runtime?:VisualRuntimeRegistry){}
+ getSnapshot=()=>this.revision+(this.configurations?.getSnapshot()??0);
+ subscribe=(listener:()=>void)=>{this.listeners.add(listener);const off=this.configurations?.subscribe(listener);return ()=>{this.listeners.delete(listener);off?.();};};
  private notify(){this.revision++;for(const listener of [...this.listeners]){try{listener();}catch{/* Isolate editors. */}}}
+ refresh(){this.notify();}
  register(id:DefinitionId,ui:ModuleUI){
   const definition=this.catalog.modules.get(id);
   if(!definition||definition.kind!=='visual'||typeof ui.create!=='function'||!ui.icon)throw Error(`Invalid module UI: ${id}`);
@@ -29,7 +33,7 @@ export class ModuleUIRegistry {
   this.entries.set(id,Object.freeze({...ui,definition,sections:Object.freeze(ui.sections.map(panel=>Object.freeze({...panel})))}));if(definition.builtinType)this.types.set(definition.builtinType,id);this.notify();let active=true;
   return ()=>{if(!active)return;active=false;this.entries.delete(id);if(definition.builtinType)this.types.delete(definition.builtinType);this.notify();};
  }
- resolve(type:string){const id=this.types.get(type)??(this.entries.has(type as DefinitionId)?type as DefinitionId:undefined);return id?this.entries.get(id):undefined;}
- all(){return Object.freeze(this.catalog.modules.all().flatMap(definition=>this.entries.get(definition.id)??[]));}
- create(id:DefinitionId,index=0){const registration=this.entries.get(id);if(!registration)throw Error(`Unknown module UI: ${id}`);const result=registration.create(index);if(moduleKind(result)!==registration.definition.builtinType&&moduleKind(result)!==registration.definition.id||result.extension&&result.extension.schemaVersion!==registration.definition.schemaVersion||!registration.definition.configuration?.safeParse(result.extension?result.extension.config:result).success)throw Error('Module factory returned an incompatible configuration.');return result;}
+ resolve(type:string){const id=this.types.get(type)??(this.entries.has(type as DefinitionId)?type as DefinitionId:undefined);return id&&this.available(id)?this.entries.get(id):undefined;}
+ all(){return Object.freeze(this.catalog.modules.all().flatMap(definition=>this.available(definition.id)?this.entries.get(definition.id)??[]:[]));}
+ create(id:DefinitionId,index=0){const registration=this.entries.get(id);if(!registration||!this.available(id))throw Error(`Unknown module UI: ${id}`);const result=registration.create(index);if(moduleKind(result)!==registration.definition.builtinType&&moduleKind(result)!==registration.definition.id||result.extension&&result.extension.schemaVersion!==registration.definition.schemaVersion||!registration.definition.configuration?.safeParse(result.extension?result.extension.config:result).success)throw Error('Module factory returned an incompatible configuration.');return this.configurations?decodeModule(encodeModule(result,this.configurations),()=>result,this.configurations):result;}
 }

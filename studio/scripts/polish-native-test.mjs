@@ -1,0 +1,33 @@
+// Compiled Windows app and real backend; only isolated synthetic credentials.
+import {chromium,expect} from './test-browser.mjs';
+import {spawn} from 'node:child_process';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {initialDocument,encodeDocument} from '../src/core/config.ts';
+const root=new URL('../../',import.meta.url),data=new URL(`.tools/polish-native/run-${Date.now()}/`,root),artifacts=new URL('../artifacts/polish-native/',import.meta.url),secret='PRIVATE-NATIVE-CANARY-token-profile-device';
+await mkdir(data,{recursive:true});await mkdir(artifacts,{recursive:true});
+await writeFile(new URL('config.json',data),JSON.stringify({host:'127.0.0.1',port:4682,http_enabled:true,http_port:5282,auth_token:secret,capture_enabled:false,cpu_affinity:[]}));
+const doc=initialDocument();doc.gameProfiles[0].name=secret;doc.profiles[0].name=secret;await writeFile(new URL('studio.json',data),JSON.stringify(encodeDocument(doc)));
+const exe=process.env.STUDIO_NATIVE_EXE||fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe',root)),http='http://127.0.0.1:5282';let child;
+const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width:1366,height:768}}),results=[],errors=[];
+await context.addInitScript(({secret})=>{localStorage.setItem('studio.connection',JSON.stringify({url:'ws://127.0.0.1:4682',token:secret}));Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{if(window.failClipboard)throw Error('clipboard');window.copiedText=text;}}});},{secret});
+const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+const start=async()=>{child=spawn(exe,['--tray'],{windowsHide:true,stdio:'ignore',env:{...process.env,INPUT_OVERLAY_STUDIO_DATA_DIR:fileURLToPath(data),WEBVIEW2_USER_DATA_FOLDER:fileURLToPath(new URL('webview/',data))}});await expect.poll(async()=>{try{return(await fetch(`${http}/studio/index.html`)).status;}catch{return 0;}},{timeout:25000}).toBe(200);};
+const stop=async()=>{if(child?.exitCode===null){const done=new Promise(r=>child.once('exit',r));child.kill();await done;}};
+const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};
+const copy=async()=>{await page.locator('.diagnostic-settings>button').click();await expect.poll(()=>page.evaluate(()=>typeof window.copiedText)).toBe('string');const text=await page.evaluate(()=>window.copiedText);expect(text).not.toContain(secret);return JSON.parse(text);};
+try{
+ await start();await page.goto(`${http}/studio/index.html`);await expect(page.locator('[data-connection-part=save]')).toHaveAttribute('data-connection-state','Saved to capture server');
+ await check('compiled diagnostics reflect the native backend while excluding native tokens and profile names',async()=>{await page.getByRole('button',{name:'Settings',exact:true}).click();const report=await copy();expect(report.connection).toMatchObject({state:'Connected',save:'capture-server',capture:'disabled',source:'none'});expect(report.format).toBe('input-overlay-studio-diagnostics');});
+ let overlay;
+ await check('a real Runtime is reflected as one ready source independently of disabled Capture',async()=>{overlay=await context.newPage();overlay.on('pageerror',e=>errors.push(e.message));await overlay.goto(`${http}/studio/overlay.html#ws=${encodeURIComponent('ws://127.0.0.1:4682')}&token=${secret}`);await expect(page.locator('[data-connection-part=runtime]')).toHaveAttribute('data-connection-state','ready');const report=await copy();expect(report.connection.sources).toEqual({connected:1,ready:1,failed:0,unresponsive:0});expect(report.connection.capture).toBe('disabled');await overlay.close();});
+ await check('native restart produces loss and recovery messages without inventing a connected source',async()=>{await stop();await expect(page.locator('.connection-notice')).toHaveAttribute('data-connection-notice','lost');await start();await expect(page.locator('.connection-notice')).toHaveAttribute('data-connection-notice','restored',{timeout:20000});await expect(page.locator('[data-connection-part=runtime]')).toHaveAttribute('data-connection-state','none');await expect(page.locator('.connection-notice')).toHaveCount(0,{timeout:9000});});
+ await check('authentication failure is actionable and its diagnostic output remains private',async()=>{const token=page.getByLabel('Authentication token',{exact:true});await token.fill('incorrect-fixture');await page.getByRole('button',{name:'Save & reconnect',exact:true}).click();await expect(page.locator('.connection-notice')).toHaveAttribute('data-connection-notice','authentication');await page.locator('.connection-notice').getByRole('button',{name:'Connection settings',exact:true}).click();await expect(page.locator('[data-settings-section=connection] input').first()).toBeFocused();const report=await copy();expect(report.connection.state).toBe('Authentication failed');expect(report.connection.source).toBe('unknown');await token.fill(secret);await page.getByRole('button',{name:'Save & reconnect',exact:true}).click();await expect(page.locator('[data-connection-part=save]')).toHaveAttribute('data-connection-state','Saved to capture server');});
+ await check('compiled clipboard denial retains a manually selectable safe report',async()=>{await page.evaluate(()=>{window.failClipboard=true;});await page.locator('.diagnostic-settings>button').click();await expect(page.getByLabel('Diagnostic report',{exact:true})).toBeVisible();expect(await page.getByLabel('Diagnostic report',{exact:true}).inputValue()).not.toContain(secret);await page.evaluate(()=>{window.failClipboard=false;});});
+ await check('compiled language chunks contain diagnostic labels and contextual guidance in all twelve locales',async()=>{
+  for(const locale of ['en','ru','de','fr','es','pt-br','tr','pl','ja','ko','zh-cn','zh-tw']){
+   await page.locator('.language-settings select').selectOption(locale);const text=await page.locator('.diagnostic-settings>button').innerText();expect(text.length).toBeGreaterThan(3);expect(text).not.toContain('polish:');await page.locator('.navigation nav button').nth(1).click();await expect(page.locator('[data-setting-id="profiles.game.dpi"] .hint')).toContainText('1600');await page.locator('.navigation nav button').nth(3).click();
+  }
+ });
+ expect(errors).toEqual([]);await page.screenshot({path:fileURLToPath(new URL('native-diagnostics.png',artifacts))});await writeFile(new URL('results.json',artifacts),JSON.stringify({passed:results.length,results,errors},null,2));
+}finally{await browser.close();await stop();}

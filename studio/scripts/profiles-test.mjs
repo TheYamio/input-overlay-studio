@@ -1,4 +1,4 @@
-import {chromium,expect} from '@playwright/test';
+import {chromium,expect} from './test-browser.mjs';
 import {createServer} from 'vite';
 import {WebSocketServer} from 'ws';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
@@ -10,7 +10,7 @@ const vite=await createServer({server:{host:'127.0.0.1',port:5226,strictPort:tru
 const wss=new WebSocketServer({host:'127.0.0.1',port:4626});let document=initialDocument(),revision=0;
 const send=(ws,packet)=>ws.send(JSON.stringify(packet));const broadcast=packet=>{for(const ws of wss.clients)if(ws.authed&&ws.readyState===1)send(ws,packet);};
 wss.on('connection',ws=>ws.on('message',raw=>{const m=JSON.parse(String(raw));if(m.type==='auth'){ws.authed=m.token==='profiles-test';send(ws,{type:'auth_response',status:ws.authed?'success':'failed',protocol:5,studio_capabilities:{...contract,role:'capture'}});return;}if(!ws.authed)return;if(m.type==='studio_get')send(ws,{type:'studio_config',document:encodeDocument(document),revision:String(revision)});if(m.type==='studio_set'){if(m.base_revision!==String(revision)){send(ws,{type:'studio_conflict',document:encodeDocument(document),revision:String(revision),request_id:m.request_id});return;}document=parseDocument(JSON.stringify(m.document));revision++;broadcast({type:'studio_config',document:encodeDocument(document),revision:String(revision),origin:m.origin});send(ws,{type:'studio_saved',revision:String(revision),request_id:m.request_id});}}));
-const browser=await chromium.launch({headless:true}),context=await browser.newContext({acceptDownloads:true,viewport:{width:1560,height:1000}});await context.addInitScript(()=>localStorage.setItem('studio.connection',JSON.stringify({url:'ws://127.0.0.1:4626',token:'profiles-test'})));const page=await context.newPage(),errors=[],results=[];page.on('pageerror',e=>errors.push(e.message));const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};const synced=()=>expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+const browser=await chromium.launch({headless:true}),context=await browser.newContext({acceptDownloads:true,viewport:{width:1560,height:1000}});await context.addInitScript(()=>localStorage.setItem('studio.connection',JSON.stringify({url:'ws://127.0.0.1:4626',token:'profiles-test'})));const page=await context.newPage(),errors=[],results=[];page.on('pageerror',e=>errors.push(e.message));const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};const synced=()=>expect(page.locator('.statusbar')).toContainText('Saved to capture server');
 try{
  await page.goto('http://127.0.0.1:5226');await synced();await page.getByRole('button',{name:'Profiles',exact:true}).click();
  const originalGame=document.gameProfiles[0].id,originalOverlay=document.activeProfileId;

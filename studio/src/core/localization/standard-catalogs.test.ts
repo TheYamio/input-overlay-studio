@@ -3,17 +3,13 @@ import {createStudioLocalization} from './builtins';
 import {builtinLanguages,languageChoices,overlayText} from './runtime';
 import {standardPacks} from './standard-packs';
 import {LocalizationRegistry,parseLocalePack} from './registry';
-import sindarin from './catalogs/sjn-teng-x-art.json';
 import {loadBuiltinLanguage} from './load-language';
 const placeholders=(value:string)=>[...value.matchAll(/\{\{[a-zA-Z0-9.-]+\}\}/g)].map(match=>match[0]).sort();
 
 describe('Experimental built-in translations',()=>{
- it('provides all requested standard locales and an explicitly partial Tengwar glossary',()=>{
-  expect(builtinLanguages.map(pack=>pack.locale)).toEqual(['en','ru','zh-cn','es','pt-br','de','fr','tr','pl','ja','ko','zh-tw','sjn-teng-x-art']);
+ it('provides the twelve standard interface locales',()=>{
+  expect(builtinLanguages.map(pack=>pack.locale)).toEqual(['en','ru','zh-cn','es','pt-br','de','fr','tr','pl','ja','ko','zh-tw']);
   expect(new Set(builtinLanguages.map(pack=>pack.locale)).size).toBe(builtinLanguages.length);
-  expect(builtinLanguages.at(-1)?.name).toContain('partial');
-  expect(parseLocalePack(sindarin).locale).toBe('sjn-teng-x-art');
-  expect(Object.values(sindarin.namespaces.ui).some(value=>/[\ue000-\ue10f]/.test(value))).toBe(true);
  });
  it('keeps product branding out of the translation template and language catalogs',()=>{
   const r=createStudioLocalization(standardPacks);

@@ -1,4 +1,4 @@
-import {tr} from './core/localization/messages.ts';
+import {tr,trText} from './core/localization/messages.ts';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { ElementStyle } from './core/visual';
 import type { OverlayModule } from './core/config';
@@ -28,6 +28,6 @@ export function ElementStyleTools({ module: m, override, change, applyAll }: { m
     <div className="style-actions"><button className="secondary small" onClick={() => { clipboard.set(structuredClone(resolvedStyle(m, override))); setMessage('Appearance copied. Choose another key or mouse button to paste.'); }}>{tr('ui:s-c589316e325c',"Copy style")}</button><button className="secondary small" disabled={!clipboard.style} onClick={() => { change(structuredClone(clipboard.style!)); setMessage('Style pasted as individual overrides.'); }}>{tr('ui:s-c8d99f8f4151',"Paste style")}</button></div>
     <button className="text-button" disabled={!override || !Object.keys(override).length} onClick={() => { change(undefined); setMessage('All fields inherit the module style.'); }}>{tr('ui:s-bd3e89026f22',"Use module style")}</button>
     {clipboard.style && <button className="text-button" onClick={() => { applyAll(structuredClone(clipboard.style!)); setMessage('Copied style applied. Undo restores the previous appearance.'); }}>{m.type === 'mouse' ? tr('ui:s-7830d435d8a2',"Paste style to shown buttons") : tr('ui:s-1a90d0672752',"Paste style to all keys")}</button>}
-    <p className="hint" role="status">{message || (override && Object.keys(override).length ? `${Object.keys(override).length} overridden fields. Reset a field to follow the module again.` : 'All fields inherit the module style. Pasting creates individual overrides.')}</p>
+    <p className="hint" role="status">{trText(message || (override && Object.keys(override).length ? `${Object.keys(override).length} overridden fields. Reset a field to follow the module again.` : 'All fields inherit the module style. Pasting creates individual overrides.'))}</p>
   </div>;
 }

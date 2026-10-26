@@ -6,5 +6,5 @@ describe('future migrations from the current baseline',()=>{
  it('rejects missing, duplicate and nonforward steps',()=>{expect(()=>new MigrationEngine(5,[])).toThrow();expect(()=>new MigrationEngine(6,[{id:'skip',from:4,to:6,migrate:v=>v}])).toThrow();});
  it('rejects old versions and protects future versions',()=>{const engine=new MigrationEngine(4,[]);for(const version of [1,2,3,5,99])expect(()=>engine.prepare({version},v=>v)).toThrow();});
  it('rejects partial and dishonest transformations',()=>{const source={version:4};const engine=new MigrationEngine(5,[{id:'broken.step',from:4,to:5,migrate:v=>{(v as {version:number}).version=5;throw Error('failed');}}]);expect(()=>engine.prepare(source,v=>v)).toThrow('failed');expect(source.version).toBe(4);});
- it('only imports the current canonical format',()=>{const original=initialDocument(),wire=encodeDocument(original);expect(parseDocument(JSON.stringify(wire))).toEqual(original);for(const version of [1,2,3,5])expect(()=>parseDocument(JSON.stringify({...wire,version}))).toThrow();});
+ it('only imports the current canonical format',()=>{const original=initialDocument(),wire=encodeDocument(original);expect(encodeDocument(parseDocument(JSON.stringify(wire)))).toEqual(wire);for(const version of [1,2,3,5])expect(()=>parseDocument(JSON.stringify({...wire,version}))).toThrow();});
 });

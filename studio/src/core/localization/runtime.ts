@@ -13,7 +13,6 @@ export const builtinLanguages=[
  {locale:'ja',name:'日本語',direction:'ltr' as const},
  {locale:'ko',name:'한국어',direction:'ltr' as const},
  {locale:'zh-tw',name:'繁體中文',direction:'ltr' as const},
- {locale:'sjn-teng-x-art',name:'Sindarin · Tengwar (partial)',direction:'ltr' as const},
 ];
 // Runtime imports only these small label catalogs, never the Studio interface dictionaries.
 export const overlayPacks:LocalePack[]=Object.entries(runtimeCatalogs).map(([locale,overlay])=>({version:1,locale,namespaces:{overlay}}));

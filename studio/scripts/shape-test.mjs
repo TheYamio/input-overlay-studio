@@ -1,6 +1,6 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Synthetic transport; no live user configuration is read or changed.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -30,7 +30,7 @@ const check = async (name, fn) => { await fn(); results.push(name); console.log(
 const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill-rule="evenodd" d="M5 5H95V95H5Z M30 30H70V70H30Z"/></svg>';
 const upload = (name, source = svg) => page.getByLabel('Upload SVG shape', { exact: true }).setInputFiles({ name, mimeType: 'image/svg+xml', buffer: Buffer.from(source) });
 try {
-  await page.goto('http://127.0.0.1:5211'); await expect(page.getByText('Capture connected')).toBeVisible();
+  await page.goto('http://127.0.0.1:5211'); await expect(page.getByText('Capture server connected')).toBeVisible();
   await page.locator('.layer-list').getByRole('button', { name: 'Keyboard', exact: true }).click();
   await page.getByText('Borders & shape', { exact: true }).click();
   await check('SVG upload stores geometry and applies a reusable vector mask', async () => {

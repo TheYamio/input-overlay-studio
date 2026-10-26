@@ -1,5 +1,5 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -45,7 +45,7 @@ const studio = () => page.getByRole('button',{name:'Studio',exact:true}).click()
 const bind = async (command,combo) => { await page.getByRole('button',{name:`Change ${command} shortcut`,exact:true}).click(); await page.keyboard.press(combo); };
 const restoreDefaults = () => page.getByRole('button',{name:'Restore default shortcuts',exact:true}).click();
 try {
-  await page.goto('http://127.0.0.1:5199'); await expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+  await page.goto('http://127.0.0.1:5199'); await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
   await check('Ctrl+C/V copy a whole module with independent identities and single-step Undo',async()=>{
     await focusModule('Keyboard'); const initial=structuredClone(module('keyboard')), count=modules().length, before=await history();
     await page.keyboard.press('Control+c'); expect(await history()).toBe(before); await page.keyboard.press('Control+v'); await expect.poll(()=>modules().length).toBe(count+1);
@@ -107,7 +107,7 @@ try {
   });
   await check('custom command bindings survive reload and physical codes work on Russian layouts',async()=>{
     await settings(); await bind('Copy selection','Alt+c'); await bind('Delete selection','F2');
-    await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); await settings(); await expect(page.getByRole('button',{name:'Change Copy selection shortcut',exact:true})).toContainText('Alt+C'); await expect(page.getByRole('button',{name:'Change Delete selection shortcut',exact:true})).toContainText('F2');
+    await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); await settings(); await expect(page.getByRole('button',{name:'Change Copy selection shortcut',exact:true})).toContainText('Alt+C'); await expect(page.getByRole('button',{name:'Change Delete selection shortcut',exact:true})).toContainText('F2');
     await studio(); await focusModule('Keyboard'); const count=modules().length;
     await page.evaluate(()=>window.dispatchEvent(new KeyboardEvent('keydown',{code:'KeyC',key:'с',altKey:true,bubbles:true,cancelable:true}))); await page.keyboard.press('Control+v'); await expect.poll(()=>modules().length).toBe(count+1);
     await page.keyboard.press('F2'); await expect.poll(()=>modules().length).toBe(count); await settings(); await restoreDefaults();
@@ -123,7 +123,7 @@ try {
     await page.getByRole('button',{name:'Change Copy selection shortcut',exact:true}).click(); await page.keyboard.press('ArrowRight'); await expect(shortcutSection().getByRole('status')).toContainText('reserved'); await page.keyboard.press('Escape');
   });
   await check('disabled commands stay disabled after reload and resetting restores aliases',async()=>{
-    await page.getByRole('button',{name:'Clear Delete selection shortcuts',exact:true}).click(); await page.reload(); await expect(page.getByText('Capture connected')).toBeVisible(); await studio(); await focusModule('Keyboard'); const count=modules().length; await page.keyboard.press('Delete'); expect(modules().length).toBe(count);
+    await page.getByRole('button',{name:'Clear Delete selection shortcuts',exact:true}).click(); await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); await studio(); await focusModule('Keyboard'); const count=modules().length; await page.keyboard.press('Delete'); expect(modules().length).toBe(count);
     await settings(); await page.getByRole('button',{name:'Reset Delete selection shortcuts',exact:true}).click(); await expect(page.getByRole('button',{name:'Change Delete selection shortcut',exact:true})).toContainText('Delete / Backspace');
   });
   await check('remapped Undo cancels an active resize without committing it',async()=>{

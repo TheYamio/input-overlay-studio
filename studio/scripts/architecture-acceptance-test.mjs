@@ -1,4 +1,4 @@
-import {chromium,expect} from '@playwright/test';
+import {chromium,expect} from './test-browser.mjs';
 import {createServer} from 'vite';
 import WebSocket from 'ws';
 import {spawn} from 'node:child_process';
@@ -18,7 +18,7 @@ const start=async()=>{child=spawn(exe,['--tray'],{windowsHide:true,stdio:'ignore
 const stop=async()=>{ws?.terminate();ws=undefined;if(child&&child.exitCode===null){const done=new Promise(resolve=>child.once('exit',resolve));child.kill();await done;}};
 const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};
 const call=(fn,arg)=>page.evaluate(({source,arg})=>Function('arg',`return (${source})(window.architectureAcceptance,arg)`)(arg),{source:fn.toString(),arg});
-const synced=()=>expect(page.getByRole('status')).toHaveText('Synced to OBS');
+const synced=()=>expect(page.getByRole('status')).toHaveText('Saved to capture server');
 const disk=async()=>JSON.parse(await readFile(new URL('studio.json',data),'utf8'));
 const counter=document=>document.profiles[0].modules.find(module=>module.type==='acceptance.counter');
 const pack={version:1,locale:'zz-x-counter',name:'Français · acceptance',namespaces:{counter:{caption:'Légende du compteur',gain:'Gain du compteur'},overlay:{'acceptance.counter.title':'Compteur'}}};

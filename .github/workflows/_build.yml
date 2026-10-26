@@ -46,11 +46,15 @@ jobs:
         run: |
           pnpm exec playwright install chromium
           pnpm test:localization
+          pnpm test:support
           pnpm test:custom-localization
           pnpm test:localization-layout
           pnpm test:browser
           pnpm test:visual
           pnpm test:sync
+          pnpm test:connection
+          pnpm test:setup
+          pnpm test:polish
           pnpm test:editor
           pnpm test:customization
           pnpm test:visual-features
@@ -62,7 +66,10 @@ jobs:
           pnpm test:animation
           pnpm test:settings-ui
           pnpm test:schema-animation
+          pnpm test:settings-boundary
           pnpm test:schema-settings
+          pnpm test:module-migrations
+          pnpm test:hot-path
           pnpm test:module-runtime
           pnpm test:extensible-modules
           pnpm test:profiles
@@ -77,17 +84,24 @@ jobs:
 
       - name: Rust tests
         working-directory: ws-server/src-tauri
-        run: cargo test --lib
+        run: cargo test --locked --lib
 
       - name: build ws-server exe
         working-directory: ws-server/src-tauri
-        run: cargo build --release
+        run: cargo build --locked --release
 
       - name: Native architecture acceptance
         working-directory: studio
         run: |
+          pnpm test:module-migrations-native
+          pnpm test:lifecycle-native
           pnpm test:acceptance
+          pnpm test:settings-boundary-native
           pnpm test:language-native
+          pnpm test:connection-native
+          pnpm test:setup-native
+          pnpm test:polish-native
+          pnpm test:support-native
           pnpm test:native
           pnpm test:extensible-native
 
@@ -145,7 +159,7 @@ jobs:
 
       - name: build ws-server binary
         working-directory: ws-server/src-tauri
-        run: cargo build --release
+        run: cargo build --locked --release
 
       - name: upload linux artifact
         uses: actions/upload-artifact@v4

@@ -1,6 +1,6 @@
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 // Isolated synthetic capture server. Never reads the user's native configuration.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from './test-browser.mjs';
 import { createServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { mkdir, readFile } from 'node:fs/promises';
@@ -27,7 +27,7 @@ const page = await context.newPage(), errors = [], results = [];
 page.on('pageerror', error => errors.push(error.message));
 const check = async (name, fn) => { await fn(); results.push(name); console.log(`PASS ${name}`); };
 const profile = () => document.profiles[0], card = name => page.locator('.library-card').filter({ has: page.getByRole('heading', { name, exact: true }) });
-const saved = () => page.locator('.saved-preset'), synced = () => expect(page.locator('.statusbar')).toContainText('Synced to OBS');
+const saved = () => page.locator('.saved-preset'), synced = () => expect(page.locator('.statusbar')).toContainText('Saved to capture server');
 try {
   await page.goto('http://127.0.0.1:5218'); await synced(); await page.getByRole('button', { name: 'Presets', exact: true }).click();
   await check('all compositions show descriptions, swatches and an explicit full-layout action', async () => {

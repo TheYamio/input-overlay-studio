@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::ffi::CString;
-use std::sync::atomic::{AtomicBool, Ordering};
+use crate::services::stop_signal::StopSignal;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -11,7 +11,7 @@ use crate::ws_server::InputSender;
 use crate::services::consts::hid_to_vk;
 use crate::ws_server::InputEvent;
 
-const READ_TIMEOUT_MS: i32 = 200;
+const READ_TIMEOUT_MS: i32 = 50;
 
 //protocols
 #[derive(Clone)]
@@ -34,21 +34,26 @@ struct DeviceEntry {
 
 //api
 pub struct AnalogThread {
-    stop: Arc<AtomicBool>,
+    stop: Arc<StopSignal>,
     handles: Vec<thread::JoinHandle<()>>,
 }
 
 impl AnalogThread {
+    pub fn is_alive(&self)->bool{self.handles.iter().any(|handle|!handle.is_finished())}
     //filter is the analog_keyboard config value "auto" or a brandname.
     pub fn start(tx: InputSender, filter: &str) -> Self {
-        let stop = Arc::new(AtomicBool::new(false));
-        let mut handles = Vec::new();
+        let stop = Arc::new(StopSignal::default());
+        let worker_stop=Arc::clone(&stop);let filter=filter.to_string();
+        let manager=thread::Builder::new().name("AnalogManager".into()).spawn(move||{
+            if worker_stop.is_cancelled(){return;}
+            let mut handles=Vec::new();
 
-        match find_devices(filter) {
+        match find_devices(&filter) {
             Ok(devices) => {
                 for entry in devices {
+                    if worker_stop.is_cancelled(){break;}
                     let tx2 = tx.clone();
-                    let stop2 = Arc::clone(&stop);
+                    let stop2 = Arc::clone(&worker_stop);
                     let h = thread::Builder::new()
                         .name("AnalogHID".into())
                         .spawn(move || device_thread(tx2, entry, stop2))
@@ -62,16 +67,41 @@ impl AnalogThread {
             Err(e) => tracing::warn!("analog: HID enumeration failed: {e}"),
         }
 
+            for handle in handles{let _=handle.join();}
+        }).expect("failed to spawn analog manager");
+        let handles=vec![manager];
         AnalogThread { stop, handles }
     }
 }
 
 impl Drop for AnalogThread {
     fn drop(&mut self) {
-        self.stop.store(true, Ordering::Relaxed);
+        self.stop.cancel();
         for h in self.handles.drain(..) {
             let _ = h.join();
         }
+    }
+}
+
+#[cfg(test)]
+mod lifecycle_tests {
+    use super::*;
+
+    #[test]
+    fn dropping_reader_interrupts_backoff_and_joins_its_worker() {
+        let stop = Arc::new(StopSignal::default());
+        let worker_stop = stop.clone();
+        let (started, ready) = std::sync::mpsc::channel();
+        let handle = thread::spawn(move || {
+            started.send(()).unwrap();
+            assert!(worker_stop.wait(Duration::from_secs(16)));
+        });
+        ready.recv_timeout(Duration::from_secs(1)).unwrap();
+        let reader = AnalogThread { stop, handles: vec![handle] };
+        let (finished, done) = std::sync::mpsc::channel();
+        let cleanup = thread::spawn(move || { drop(reader); finished.send(()).unwrap(); });
+        done.recv_timeout(Duration::from_millis(500)).unwrap();
+        cleanup.join().unwrap();
     }
 }
 
@@ -168,15 +198,15 @@ fn madlions_layout(pid: u16) -> Option<&'static [u16]> {
     }
 }
 
-fn device_thread(tx: InputSender, entry: DeviceEntry, stop: Arc<AtomicBool>) {
+fn device_thread(tx: InputSender, entry: DeviceEntry, stop: Arc<StopSignal>) {
     let mut backoff = Duration::from_secs(1);
 
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         let api = match HidApi::new() {
             Ok(a) => a,
             Err(e) => {
                 tracing::error!("analog: HidApi::new failed: {e}");
-                thread::sleep(backoff);
+                if stop.wait(backoff){break;}
                 backoff = (backoff * 2).min(Duration::from_secs(16));
                 continue;
             }
@@ -196,12 +226,12 @@ fn device_thread(tx: InputSender, entry: DeviceEntry, stop: Arc<AtomicBool>) {
                 Protocol::Bytech => run_bytech(&dev, &tx, &stop),
             }
             let _ = tx.send(InputEvent::Reset);
-            if !stop.load(Ordering::Relaxed) {
+            if !stop.is_cancelled() {
                 tracing::info!("analog: device disconnected, retrying in {}s", backoff.as_secs());
             }
         }
-        if !stop.load(Ordering::Relaxed) {
-            thread::sleep(backoff);
+        if !stop.is_cancelled() {
+            if stop.wait(backoff){break;}
             backoff = (backoff * 2).min(Duration::from_secs(16));
         }
     }
@@ -213,11 +243,11 @@ fn run_passive(
     dev: &hidapi::HidDevice,
     tx: &InputSender,
     proto: &Protocol,
-    stop: &AtomicBool,
+    stop: &StopSignal,
 ) {
     let mut buf = [0u8; 512];
     let mut prev: HashSet<u16> = HashSet::new();
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         match dev.read_timeout(&mut buf, READ_TIMEOUT_MS) {
             Ok(0) => {}
             Ok(n) => {
@@ -341,7 +371,7 @@ fn parse_nuphy(report: &[u8], tx: &InputSender) {
     }
 }
 
-fn run_drunkdeer(dev: &hidapi::HidDevice, tx: &InputSender, stop: &AtomicBool) {
+fn run_drunkdeer(dev: &hidapi::HidDevice, tx: &InputSender, stop: &StopSignal) {
     let mut req = [0u8; 64];
     req[0] = 0x04;
     req[1] = 0xb6;
@@ -352,7 +382,7 @@ fn run_drunkdeer(dev: &hidapi::HidDevice, tx: &InputSender, stop: &AtomicBool) {
     let mut prev_vks: HashSet<u16> = HashSet::new();
     let mut last_poll = Instant::now() - Duration::from_secs(1);
 
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         if last_poll.elapsed() >= Duration::from_millis(8) {
             if dev.write(&req).is_err() { break; }
             last_poll = Instant::now();
@@ -403,7 +433,7 @@ fn run_drunkdeer(dev: &hidapi::HidDevice, tx: &InputSender, stop: &AtomicBool) {
             Ok(_) => {}
             Err(_) => break,
         }
-        thread::sleep(Duration::from_millis(1));
+        if stop.wait(Duration::from_millis(1)){break;}
     }
 }
 
@@ -411,7 +441,7 @@ fn run_keychron(
     dev: &hidapi::HidDevice,
     tx: &InputSender,
     layout: &'static [u16],
-    stop: &AtomicBool,
+    stop: &StopSignal,
 ) {
     let mut req = [0u8; 33]; //report_id=0 + 32 byte
                              //wakeup
@@ -421,7 +451,11 @@ fn run_keychron(
 
     let mut buf = [0u8; 64];
     //wait a bit after wakeup
-    let _ = dev.read_timeout(&mut buf, 500);
+    let deadline=Instant::now()+Duration::from_millis(500);
+    while !stop.is_cancelled()&&Instant::now()<deadline{
+        match dev.read_timeout(&mut buf,READ_TIMEOUT_MS){Ok(0)=>{},_=>break}
+    }
+    if stop.is_cancelled(){return;}
 
     //get keys
     req[2] = 0x31;
@@ -430,7 +464,7 @@ fn run_keychron(
     let mut chunk = 0usize;
     let mut depths = vec![0.0f32; layout.len()];
 
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         match dev.read_timeout(&mut buf, READ_TIMEOUT_MS) {
             Ok(n) if n >= 32 => {
                 //30 travel values at offsets 2 to31
@@ -476,7 +510,7 @@ fn run_madlions(
     dev: &hidapi::HidDevice,
     tx: &InputSender,
     layout: &'static [u16],
-    stop: &AtomicBool,
+    stop: &StopSignal,
 ) {
     let mut req = [0u8; 33];
     req[1] = 0x02;
@@ -489,7 +523,7 @@ fn run_madlions(
 
     let mut buf = [0u8; 64];
 
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         match dev.read_timeout(&mut buf, READ_TIMEOUT_MS) {
             Ok(n) if n >= 28 => {
                 for i in 0..4usize {
@@ -539,13 +573,13 @@ fn bytech_request() -> [u8; 64] {
     buf
 }
 
-fn run_bytech(dev: &hidapi::HidDevice, tx: &InputSender, stop: &AtomicBool) {
+fn run_bytech(dev: &hidapi::HidDevice, tx: &InputSender, stop: &StopSignal) {
     let req = bytech_request();
     let mut last_poll = Instant::now() - Duration::from_secs(1);
     let mut buf = [0u8; 128];
     let mut prev_vks: HashSet<u16> = HashSet::new();
 
-    while !stop.load(Ordering::Relaxed) {
+    while !stop.is_cancelled() {
         if last_poll.elapsed() >= Duration::from_millis(8) {
             if dev.write(&req).is_err() { break; }
             last_poll = Instant::now();
@@ -596,7 +630,7 @@ fn run_bytech(dev: &hidapi::HidDevice, tx: &InputSender, stop: &AtomicBool) {
             Ok(_) => {}
             Err(_) => break,
         }
-        thread::sleep(Duration::from_millis(1));
+        if stop.wait(Duration::from_millis(1)){break;}
     }
 }
 

@@ -1,12 +1,7 @@
-import { builtinCatalog } from '../../core/architecture/builtins';
-import { VisualRuntimeRegistry } from './registry';
-import { distanceFactory,sensitivityFactory } from './metrics';
-import { trailFactory } from './trail';
-import { keyboardFactory,mouseFactory } from './caps';
+import {CompiledModuleHost,type CompiledModuleManifest} from '../../core/architecture/manifest';
+import {builtinManifests} from '../../core/architecture/builtin-manifests';
+import {builtinVisualFactories} from './factories';
 
-export function createVisualRuntimeRegistry(){
- const registry=new VisualRuntimeRegistry(builtinCatalog);
- for(const [id,factory] of [['overlay.distance',distanceFactory],['overlay.sensitivity',sensitivityFactory],['overlay.trail',trailFactory],['overlay.mouse',mouseFactory],['overlay.keyboard',keyboardFactory]] as const)registry.register(id,factory);
- return registry;
-}
+export function createVisualModuleEnvironment(extra:readonly CompiledModuleManifest[]=[]){return new CompiledModuleHost('obs').install(...builtinManifests(builtinVisualFactories),...extra);}
+export function createVisualRuntimeRegistry(){return createVisualModuleEnvironment().runtime;}
 export const visualRuntimeRegistry=createVisualRuntimeRegistry();

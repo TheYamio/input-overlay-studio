@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "capture_enabled": {
+      "type": "boolean"
+    },
+    "host": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "auth_token": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^\\S+$"
+    },
+    "key_whitelist": {
+      "maxItems": 512,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[a-z0-9_]+$"
+      }
+    },
+    "raw_mouse_min_delta": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "send_mouse_move": {
+      "type": "boolean"
+    },
+    "cpu_affinity": {
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 63
+      }
+    },
+    "analog_keyboard": {
+      "type": "string",
+      "enum": [
+        "",
+        "auto",
+        "wooting",
+        "razer",
+        "nuphy",
+        "drunkdeer",
+        "keychron",
+        "madlions",
+        "bytech"
+      ]
+    },
+    "http_enabled": {
+      "type": "boolean"
+    },
+    "http_port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "linux_evdev_keyboard_device": {
+      "type": "string",
+      "maxLength": 4096
+    },
+    "linux_raw_mouse_device": {
+      "type": "string",
+      "maxLength": 4096
+    }
+  },
+  "required": [
+    "capture_enabled",
+    "host",
+    "port",
+    "auth_token",
+    "key_whitelist",
+    "raw_mouse_min_delta",
+    "send_mouse_move",
+    "cpu_affinity",
+    "analog_keyboard",
+    "http_enabled",
+    "http_port",
+    "linux_evdev_keyboard_device",
+    "linux_raw_mouse_device"
+  ],
+  "additionalProperties": {}
+}
