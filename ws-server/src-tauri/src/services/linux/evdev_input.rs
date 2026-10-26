@@ -359,8 +359,8 @@ fn run_mouse(
             .name("EvdevMouseFlush".into())
             .spawn(move || {
                 let interval = Duration::from_micros(1_000_000 / RAW_MOUSE_FLUSH_HZ as u64);
-                while !stop2.load(Ordering::Relaxed) {
-                    if stop.wait(interval){break;}
+                while !stop2.is_cancelled() {
+                    if stop2.wait(interval){break;}
                     let dx = std::mem::take(&mut *adx.lock().unwrap());
                     let dy = std::mem::take(&mut *ady.lock().unwrap());
                     if dx != 0 || dy != 0 {
