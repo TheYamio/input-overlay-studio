@@ -29,8 +29,7 @@ dist-ssr
 *.local
 
 # Editor directories and files
-*/.vscode/*
-!.vscode/extensions.json
+**/.vscode/
 .idea
 .DS_Store
 *.suo
@@ -47,3 +46,15 @@ dist-ssr
 
 # Local implementation diary; keep release sources free of internal progress reports
 /docs/MODULARIZATION_PLAN.md
+
+# Private architecture, QA and release preparation notes
+/docs/ARCHITECTURE.md
+/docs/TESTING.md
+/docs/RELEASING.md
+/docs/RELEASE_STYLE_GUIDE.md
+/docs/RELEASE_TEMPLATE.md
+/docs/releases/v0.4.0.md
+/docs/releases/v0.6.2.md
+/docs/releases/v0.6.3.md
+/docs/releases/
+/.codex/
