@@ -1,92 +1,89 @@
-<p align="center">
-  <img src="docs/media/hero.svg" alt="Input Overlay Studio — твой ввод, твой стиль, твой стрим" width="100%" />
+<p align="right">
+  <a href="./README.md">English</a> | <a href="./README.ru.md">Русский</a>
 </p>
 
 <p align="center">
-  <strong>Клавиатура, мышь и траектория движения — в твоём оформлении, прямо в OBS.</strong><br />
-  Визуальный редактор для Windows. Ваш персональный оверлей.
+  <img src="docs/media/hero.svg" width="100%" alt="Input Overlay Studio — your input, your style, your stream" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/TheYamio/input-overlay-studio/releases/download/v0.6.9/Input-Overlay-Studio-0.6.9-Windows-x64.zip"><img src="docs/media/download.svg" alt="Скачать Input Overlay Studio v0.6.9 для Windows x64" width="322" height="54" /></a>
+  <strong>Your input. Your style. Your stream.</strong><br />
+  A visual editor for keyboard and mouse overlays in OBS.
 </p>
 
 <p align="center">
-  <a href="#в-игре">Посмотреть в деле</a> ·
-  <a href="#быстрый-старт">Установка</a> ·
-  <a href="docs/CUSTOMIZATION.md">Кастомизация</a> ·
-  <a href="https://github.com/TheYamio/input-overlay-studio/releases/tag/v0.6.9">Что нового в v0.6.9</a>
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases/latest"><strong>Download for Windows</strong></a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="docs/CUSTOMIZATION.md">Customization</a> ·
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases">What's new</a>
 </p>
 
-## В игре
+<p align="center">
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases/latest"><img src="https://img.shields.io/github/v/release/TheYamio/input-overlay-studio?style=flat&amp;label=release&amp;color=bcafff&amp;labelColor=252c45" alt="Latest release" /></a>
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases/latest"><img src="https://img.shields.io/badge/platform-Windows%20x64-bcafff?style=flat&amp;labelColor=252c45" alt="Windows x64" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-bcafff?style=flat&amp;labelColor=252c45" alt="GPL-3.0 license" /></a>
+  <a href="https://www.twitch.tv/the_yamio"><img src="https://img.shields.io/badge/Twitch-Follow-9146FF?style=flat&amp;logo=twitch&amp;logoColor=white&amp;labelColor=252c45" alt="Follow The Yamio on Twitch" /></a>
+  <a href="https://www.youtube.com/@the_yamio"><img src="https://img.shields.io/badge/YouTube-Watch-FF0033?style=flat&amp;logo=youtube&amp;logoColor=white&amp;labelColor=252c45" alt="Watch The Yamio on YouTube" /></a>
+  <a href="https://discord.gg/ayYfS9w3n7"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat&amp;logo=discord&amp;logoColor=white&amp;labelColor=252c45" alt="Join the Discord community" /></a>
+</p>
 
-25 секунд реального геймплея: нажатия, треккинг и пройденное расстояние.
+Turn your keystrokes, mouse clicks and movement into an overlay that fits your setup. Start with a preset, make it yours on the canvas, and bring it into OBS with a Browser Source.
+
+## See it in action
+
+Real gameplay. Live input. Your overlay.
 
 https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 
-## Собери свой оверлей
+## Make it yours
 
-| Оформление | Ввод и движение |
+| | What you can do |
 | :--- | :--- |
-| **Рисунок на кейкапах.** Персонализация клавиш и кнопок мыши; учитывает геометрию клавиш. | **Клавиатура и мышь.** Одновременные нажатия, отдельные левые/правые модификаторы, клавиши мыши и аналоговая заливка. |
-| **Точная настройка.** Положение, масштаб, поворот, отражение, смешивание и цветокоррекция картинки. Шрифты, рамки и эффекты нажатия. | **Mouse Trail.** Пять стилей следа, затухание, импульсы кликов, скорость и масштаб с учётом DPI. |
-| **Своя раскладка.** Перетаскивание и размер каждой клавиши, назначение физическим нажатием, копирование стилей, Undo/Redo. | **Игровые профили.** DPI, sensitivity, cm/360 и дистанция. CS2, Valorant, Apex, Overwatch 2, KovaaK’s и ручные настройки. |
+| **Paint your keycaps** | Spread one continuous image across your keys. Gaps, rounded corners and cutouts in custom shapes remain untouched. |
+| **Shape every detail** | Move and resize modules and individual keys. Import SVG shapes, edit labels, and tune colors, fonts and borders. |
+| **Bring input to life** | Customize press animations, lighting, timing and mouse trails. Preview changes with live input or Demo. |
+| **Show your setup** | Display DPI, sensitivity, estimated mouse distance and cm/360 using game profiles. |
+| **Start with a preset** | Choose a standard layout or a creator-made preset. Apply a color theme to your current composition, or replace the full layout. |
+| **Keep your work** | Undo changes, save your presets, and export profiles with their images to use on another computer. |
 
-Семь переработанных заводских композиций, **Yamio preset**, собственные пресеты с описаниями и палитрами, JSON-экспорт со встроенными изображениями. Оформление синхронизируется с OBS.
+Choose from 12 built-in interface languages, or import your own translation. Your custom captions stay as you wrote them.
 
-**В 0.6.9:** мастер первого запуска, понятные состояния подключения к OBS и более надёжное сохранение. Улучшены переводы и работа редактора с большими композициями; добавлена добровольная поддержка разработки. [Подробнее о релизе](docs/CHANGELOG.md).
+## Quick start
 
-Удобный и стильный интерфейс, изменение размеров на холсте, импорт SVG-форм, настраиваемые горячие клавиши и независимые эффекты движения/подсветки с задержками. В Настройках доступны 11 языков. [Подробнее о языках](docs/LOCALIZATION.md).
+1. **[Download the Windows x64 ZIP](https://github.com/TheYamio/input-overlay-studio/releases/latest)** and extract the entire archive.
+2. **Run Input Overlay Studio.** The setup guide helps you choose a layout and check your input. [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) is required.
+3. **Make it yours.** Set your DPI and game sensitivity, then customize your overlay.
+4. **Add it to OBS.** Click **Copy OBS URL**, add a **Browser Source**, and paste the URL. Use **1920 × 1080** for the recommended starting size.
+
+Keep Studio running while using the overlay. Closing its window leaves it in the system tray; choose **Exit** from the tray menu to stop it.
+
+[OBS setup guide →](docs/OBS_SETUP.md)
+
+## Useful links
+
+| What you need | Where to go |
+| :--- | :--- |
+| Customize keys, shapes and artwork | [Customization](docs/CUSTOMIZATION.md) · [Visual features](docs/VISUAL_FEATURES.md) |
+| Save, transfer or restore your work | [Saving & sync](docs/SAVING_AND_SYNC.md) |
+| Choose a language or add a translation | [Languages](docs/LOCALIZATION.md) |
+| Build the app, report a bug or suggest an idea | [Development](docs/DEVELOPMENT.md) · [GitHub Issues](https://github.com/TheYamio/input-overlay-studio/issues) |
 
 <details>
-<summary><strong>Посмотреть редактор и настройку рисунка</strong></summary>
+<summary><strong>Data & privacy</strong></summary>
 
-### Всё на одном холсте
-
-Перемещай модули, меняй размеры, настраивай слои и проверяй результат в Demo.
-
-![Редактор Studio: модули, холст, свойства и пресеты](docs/media/studio-0.6.2.png)
-
-### Общий стиль для клавиш
-
-Загрузи PNG, JPEG или WebP и настрой изображение в отдельном предпросмотре. Применение в один шаг.
-
-![Редактор общего рисунка на кейкапах](docs/media/keycap-editor.webp)
-
-[Настройка оформления](docs/CUSTOMIZATION.md) · [Общий рисунок и визуальные возможности](docs/VISUAL_FEATURES.md)
+Everyday use works offline. Input capture runs locally, and the overlay connects to your computer by default. No telemetry, typed-text history or DLL injection into games.
 
 </details>
 
-## Быстрый старт
+**Support development**
 
-1. **[Скачай Windows x64 ZIP](https://github.com/TheYamio/input-overlay-studio/releases/download/v0.6.9/Input-Overlay-Studio-0.6.9-Windows-x64.zip)** и распакуй **весь архив**.
-2. **Запусти Studio.** Нужен установленный [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section).
-3. **Настрой профиль и оформление.** Укажи DPI, игру и sensitivity; выбери тему и расположи модули.
-4. **Нажми Copy OBS URL.** В OBS добавь **Browser Source / Источник браузера**, вставь ссылку и задай разрешение **1920 × 1080**.
+Input Overlay Studio is free, with every feature included. If it helps your streams, you can support its continued development.
 
-Готово: ваш оверлея готов. Приложение остаётся работать в системном трее; полный выход — **Exit** в меню трея. Demo служит для предпросмотра, а **Copy OBS URL** создаёт источник реального ввода.
-
-[Подключение к OBS →](docs/OBS_SETUP.md)
-
-## Полезное
-
-| Задача | Инструкция |
-| :--- | :--- |
-| Настроить клавиши, стили и назначение кнопок | [Кастомизация](docs/CUSTOMIZATION.md) |
-| Разобраться с сохранением и конфликтами | [Сохранение и синхронизация](docs/SAVING_AND_SYNC.md) |
-| Собрать приложение или помочь проекту | [Разработка и сборка](docs/DEVELOPMENT.md) · [Сообщить об ошибке](https://github.com/TheYamio/input-overlay-studio/issues) |
-
-<details>
-<summary><strong>Данные и приватность</strong></summary>
-
-Повседневная работа не требует интернета. Телеметрии, истории текстового ввода и внедрения DLL в игры нет. По умолчанию сервер доступен только локально: `127.0.0.1:4455` (WebSocket) и `127.0.0.1:4456` (HTTP).
-
-Настройки и логи: `%LOCALAPPDATA%/InputOverlayStudio`. Существующий portable `config.json` рядом с exe сохраняет прежнее расположение данных. Для разработки можно задать `INPUT_OVERLAY_STUDIO_DATA_DIR`; `--tray` запускает захват без окна.
-
-OBS-страница: `/studio/overlay.html`, web-редактор: `/studio/index.html`. Корень локального HTTP-сервера открывает Studio. Для LAN нужно явно изменить bind host и адреса источника. Ссылка OBS содержит токен доступа во фрагменте — не публикуй её. Экспортируемые профили токена не содержат. Перед обновлением сохраните отдельную копию старых настроек.
-
-</details>
+<p>
+  <a href="https://boosty.to/spicytea"><img src="https://img.shields.io/badge/Boosty-Support-F15F2C?style=flat&amp;logo=boosty&amp;logoColor=white&amp;labelColor=252c45" alt="Support development on Boosty" /></a>
+  <a href="https://ko-fi.com/the_yamio"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=flat&amp;logo=kofi&amp;logoColor=white&amp;labelColor=252c45" alt="Support development on Ko-fi" /></a>
+</p>
 
 ---
 
-**Открытый код · GPL-3.0.** Захват ввода построен на основе [girlglock/input-overlay](https://github.com/girlglock/input-overlay). [Лицензия](LICENSE), сведения об исходных авторах и [лицензии зависимостей](THIRD_PARTY_NOTICES.md) сохранены.
+Licensed under [GPL-3.0](LICENSE). Input capture builds on [girlglock/input-overlay](https://github.com/girlglock/input-overlay). See [third-party notices](THIRD_PARTY_NOTICES.md) for dependency credits and licenses.

@@ -1,36 +1,94 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="364" viewBox="0 0 1280 364" role="img" aria-labelledby="title desc">
-<title id="title">Input Overlay Studio</title><desc id="desc">Your input. In focus. Локальный редактор оверлея для OBS.</desc>
-<defs>
- <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#151b21"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
- <radialGradient id="glow"><stop stop-color="#a5ef6b" stop-opacity=".10"/><stop offset="1" stop-color="#a5ef6b" stop-opacity="0"/></radialGradient>
- <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#a5ef6b" stroke-opacity=".045"/></pattern>
-</defs>
-<rect x="1" y="1" width="1278" height="362" rx="24" fill="url(#bg)" stroke="#2b343e"/>
-<rect x="740" y="2" width="514" height="360" fill="url(#grid)"/>
-<ellipse cx="1024" cy="170" rx="250" ry="190" fill="url(#glow)"/>
-<g transform="translate(50 42) scale(.14)">
- <rect x="16" y="16" width="480" height="480" rx="112" fill="#1e282e"/>
- <rect x="80" y="80" width="304" height="304" rx="64" fill="#a5ef6b"/>
- <path d="M144 176v64a32 32 0 0 0 32 32h48" fill="none" stroke="#1b2a18" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
- <path d="M272 232v208l58-58 40 78 49-25-40-77h82Z" fill="#f1f6ec" stroke="#151b21" stroke-width="24" stroke-linejoin="round"/>
-</g>
-<g font-family="Segoe UI,Arial,sans-serif">
- <text x="142" y="72" font-size="13" letter-spacing="3" fill="#a5ef6b">YOUR INPUT. IN FOCUS.</text>
- <text x="142" y="97" font-size="12" fill="#8a97a4">WINDOWS · OBS · LOCAL</text>
- <text x="54" y="193" font-size="66" font-weight="700" letter-spacing="-2" fill="#f0f4f8">Input Overlay</text>
- <text x="56" y="252" font-size="50" font-weight="300" letter-spacing="1" fill="#a5ef6b">Studio</text>
- <text x="58" y="310" font-size="17" fill="#a4b1bf">Твой ввод. Твой стиль. Твой стрим.</text>
-</g>
-<g transform="translate(853 58)" font-family="Segoe UI,Arial,sans-serif" font-size="20" font-weight="600" text-anchor="middle">
- <g fill="#1d272f" stroke="#35424c" stroke-width="1.5">
-  <rect x="72" y="0" width="62" height="62" rx="12" fill="#a5ef6b" stroke="#c3fa99"/>
-  <rect x="0" y="72" width="62" height="62" rx="12"/><rect x="72" y="72" width="62" height="62" rx="12"/><rect x="144" y="72" width="62" height="62" rx="12"/>
-  <rect x="0" y="144" width="62" height="48" rx="10"/><rect x="72" y="144" width="134" height="48" rx="10"/>
- </g>
- <text x="103" y="39" fill="#1b2a18">W</text><g fill="#b7c4cf"><text x="31" y="111">A</text><text x="103" y="111">S</text><text x="175" y="111">D</text><text x="31" y="174" font-size="11">CTRL</text><text x="139" y="174" font-size="12">SPACE</text></g>
-</g>
-<path d="M818 302C875 302 893 289 929 291S989 330 1033 309 1077 250 1135 267 1168 295 1214 280" fill="none" stroke="#a5ef6b" stroke-opacity=".2" stroke-width="2"/>
-<path d="M929 291C963 293 989 330 1033 309S1077 250 1135 267 1168 295 1214 280" fill="none" stroke="#a5ef6b" stroke-width="2"/>
-<circle cx="1214" cy="280" r="5" fill="#a5ef6b"/>
-<g transform="translate(1111 81)"><rect width="79" height="122" rx="38" fill="#1b242c" stroke="#405049" stroke-width="1.5"/><path d="M40 0v45M0 46h79" fill="none" stroke="#405049" stroke-width="1.5"/><rect x="35" y="19" width="10" height="20" rx="5" fill="#a5ef6b"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
+  <title id="title">Input Overlay Studio</title>
+  <desc id="desc">Your input. Your style. Your stream. Keyboard, mouse and motion in midnight and iris.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#1b2035"/><stop offset=".6" stop-color="#111424"/><stop offset="1" stop-color="#15182c"/>
+    </linearGradient>
+    <radialGradient id="ambient">
+      <stop stop-color="#8971df" stop-opacity=".22"/><stop offset="1" stop-color="#8971df" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="key" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#30374f"/><stop offset="1" stop-color="#20263c"/>
+    </linearGradient>
+    <linearGradient id="pressed" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#dbd2ff"/><stop offset="1" stop-color="#ad98f5"/>
+    </linearGradient>
+    <linearGradient id="trail" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#bcafff" stop-opacity="0"/><stop offset=".38" stop-color="#bcafff"/><stop offset="1" stop-color="#dbd3ff"/>
+    </linearGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#bcafff" stroke-opacity=".055"/>
+    </pattern>
+    <linearGradient id="gridFade"><stop stop-color="white" stop-opacity="0"/><stop offset=".45" stop-color="white"/></linearGradient>
+    <mask id="fade"><rect x="700" width="580" height="400" fill="url(#gridFade)"/></mask>
+    <clipPath id="bounds"><rect x="1" y="1" width="1278" height="398" rx="26"/></clipPath>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#070916" flood-opacity=".45"/></filter>
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <g clip-path="url(#bounds)">
+    <rect width="1280" height="400" fill="url(#background)"/>
+    <ellipse cx="1030" cy="170" rx="365" ry="310" fill="url(#ambient)"/>
+    <rect x="700" width="580" height="400" fill="url(#grid)" mask="url(#fade)"/>
+    <path d="M56 399H1224" stroke="#bcafff" stroke-opacity=".12"/>
+
+    <!-- Original program mark; its green remains the brand accent. -->
+    <g transform="translate(52 36) scale(.125)">
+      <rect x="16" y="16" width="480" height="480" rx="112" fill="#252c41"/>
+      <rect x="80" y="80" width="304" height="304" rx="64" fill="#a5ef6b"/>
+      <path d="M144 176v64a32 32 0 0 0 32 32h48" fill="none" stroke="#1b2a18" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M272 232v208l58-58 40 78 49-25-40-77h82Z" fill="#f1f6ec" stroke="#151b21" stroke-width="24" stroke-linejoin="round"/>
+    </g>
+
+    <g font-family="Segoe UI,Arial,sans-serif">
+      <text x="138" y="61" font-size="12" font-weight="600" letter-spacing="2.4" fill="#c9bdff">YOUR INPUT. IN FOCUS.</text>
+      <text x="138" y="86" font-size="12" letter-spacing="1.2" fill="#9da6c5">WINDOWS · OBS · LOCAL</text>
+      <text x="54" y="199" font-size="72" font-weight="700" letter-spacing="-2.5" fill="#eef0fb">Input Overlay</text>
+      <text x="56" y="267" font-size="62" font-weight="350" letter-spacing="-.8" fill="#bcafff">Studio</text>
+      <rect x="58" y="310" width="30" height="3" rx="1.5" fill="#bcafff"/>
+      <text x="58" y="350" font-size="20" fill="#c0c6df">Your input. Your style. Your stream.</text>
+    </g>
+
+    <!-- Keycaps have a raised rim and an inset face. -->
+    <g transform="translate(790 74)" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" font-weight="600">
+      <rect x="76" y="-4" width="78" height="78" rx="20" fill="#bcafff" opacity=".14" filter="url(#softGlow)"/>
+      <g filter="url(#shadow)">
+        <rect x="80" y="0" width="68" height="68" rx="15" fill="url(#pressed)" stroke="#e0d7ff"/>
+        <rect x="0" y="80" width="68" height="68" rx="15" fill="url(#key)" stroke="#505571"/>
+        <rect x="80" y="80" width="68" height="68" rx="15" fill="url(#key)" stroke="#505571"/>
+        <rect x="160" y="80" width="68" height="68" rx="15" fill="url(#key)" stroke="#505571"/>
+        <rect x="0" y="160" width="68" height="48" rx="13" fill="url(#key)" stroke="#505571"/>
+        <rect x="80" y="160" width="148" height="48" rx="13" fill="url(#key)" stroke="#505571"/>
+      </g>
+      <g fill="none" stroke="#b4afd7" stroke-opacity=".14">
+        <rect x="6" y="85" width="56" height="55" rx="11"/>
+        <rect x="86" y="85" width="56" height="55" rx="11"/>
+        <rect x="166" y="85" width="56" height="55" rx="11"/>
+      </g>
+      <text x="114" y="43" font-size="23" fill="#29203e">W</text>
+      <g fill="#e0e3f3" font-size="22">
+        <text x="34" y="122">A</text><text x="114" y="122">S</text><text x="194" y="122">D</text>
+      </g>
+      <g fill="#b2bbd8" font-size="12" letter-spacing=".6">
+        <text x="34" y="190">CTRL</text><text x="154" y="190">SPACE</text>
+      </g>
+      <!-- Minimal selection corners hint at the visual editor. -->
+      <path d="M-14 95V69H12M216 69H242V95M-14 194V222H12M216 222H242V194" fill="none" stroke="#bcafff" stroke-opacity=".35" stroke-width="1.5"/>
+    </g>
+
+    <g transform="translate(1095 93)" filter="url(#shadow)">
+      <path d="M49 0C20 0 0 21 0 52V102C0 143 20 166 49 166S98 143 98 102V52C98 21 78 0 49 0Z" fill="#22283e" stroke="#65617e" stroke-width="1.5"/>
+      <path d="M48 1C20 1 1 22 1 52V62H48Z" fill="#bcafff" fill-opacity=".18"/>
+      <path d="M49 0V62M0 62H98" fill="none" stroke="#65617e" stroke-width="1.5"/>
+      <rect x="42" y="24" width="14" height="27" rx="7" fill="#bcafff"/>
+      <path d="M49 30V44" stroke="#f1ebff" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M33 145Q49 152 65 145" fill="none" stroke="#bcafff" stroke-opacity=".2"/>
+    </g>
+
+    <path d="M752 343C818 343 823 316 866 323S925 370 973 344 1011 293 1064 309 1122 356 1165 335 1194 311 1220 318" fill="none" stroke="#a58bf3" stroke-width="9" opacity=".13" filter="url(#softGlow)"/>
+    <path d="M752 343C818 343 823 316 866 323S925 370 973 344 1011 293 1064 309 1122 356 1165 335 1194 311 1220 318" fill="none" stroke="url(#trail)" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="1220" cy="318" r="11" fill="#bcafff" opacity=".12"/>
+    <circle cx="1220" cy="318" r="4.5" fill="#ded5ff"/>
+  </g>
+  <rect x=".75" y=".75" width="1278.5" height="398.5" rx="26" fill="none" stroke="#41455f" stroke-width="1.5"/>
 </svg>
