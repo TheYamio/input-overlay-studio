@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="322" height="54" viewBox="0 0 322 54"><rect width="322" height="54" rx="11" fill="#a5ef6b"/><g fill="none" stroke="#192615" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M26 16v17m-6-6 6 6 6-6M18 35v4h16v-4"/></g><text x="49" y="32" fill="#192615" font-family="Segoe UI,Arial,sans-serif" font-weight="600" font-size="14">Скачать для Windows · v0.6.9</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="72" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+  <title id="title">Download for Windows</title>
+  <desc id="desc">Input Overlay Studio — portable Windows x64 ZIP.</desc>
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d0c4ff"/><stop offset="1" stop-color="#bcafff"/></linearGradient>
+  </defs>
+  <rect x="1" y="5" width="358" height="66" rx="15" fill="#161122" fill-opacity=".3"/>
+  <rect x="1" y="1" width="358" height="66" rx="15" fill="url(#surface)" stroke="#e1d8ff"/>
+  <rect x="15" y="12" width="44" height="44" rx="11" fill="#fff" fill-opacity=".2"/>
+  <g fill="none" stroke="#30234c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M37 22v19m-7-7 7 7 7-7M27 43v5h20v-5"/>
+    <path d="m325 28 6 6-6 6M316 34h15"/>
+  </g>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#241b40">
+    <text x="75" y="30" font-size="17" font-weight="650">Download for Windows</text>
+    <text x="75" y="49" font-size="12" fill="#493a68">Portable ZIP · x64</text>
+  </g>
+</svg>

@@ -12,7 +12,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TheYamio/input-overlay-studio/releases/latest"><strong>Скачать для Windows</strong></a> ·
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases/latest"><img src="docs/media/download.ru.svg" width="360" alt="Скачать Input Overlay Studio для Windows x64" /></a>
+</p>
+
+<p align="center">
   <a href="#быстрый-старт">Быстрый старт</a> ·
   <a href="docs/CUSTOMIZATION.md">Кастомизация</a> ·
   <a href="https://github.com/TheYamio/input-overlay-studio/releases">Что нового</a>

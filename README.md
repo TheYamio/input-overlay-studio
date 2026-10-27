@@ -12,7 +12,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TheYamio/input-overlay-studio/releases/latest"><strong>Download for Windows</strong></a> ·
+  <a href="https://github.com/TheYamio/input-overlay-studio/releases/latest"><img src="docs/media/download.svg" width="360" alt="Download Input Overlay Studio for Windows x64" /></a>
+</p>
+
+<p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="docs/CUSTOMIZATION.md">Customization</a> ·
   <a href="https://github.com/TheYamio/input-overlay-studio/releases">What's new</a>
