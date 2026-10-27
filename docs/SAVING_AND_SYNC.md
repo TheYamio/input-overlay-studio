@@ -1,33 +1,44 @@
-# Сохранение и синхронизация
+# Saving & sync
 
-Каждая принятая правка сохраняется локально вместе с версией сервера, от которой началось редактирование. Отправка на сервер происходит через 350 мс после изменения. OBS получает настройки после успешной записи сервером.
+Accepted edits are saved locally. Studio sends changes to the capture server after a 350 ms delay, and connected OBS sources receive the saved configuration.
 
-## Статусы
+## Save status
 
-- **Saved locally** — черновик записан в браузерное хранилище.
-- **Saving…** — сервер ещё не подтвердил запись.
-- **Synced to OBS** — сервер подтвердил текущую версию; подключённые OBS-клиенты получают её через WebSocket.
-- **Conflict · local draft kept** — на сервере появилась другая версия; локальный черновик сохранён и не заменяется автоматически.
-- **Local save failed / Save failed · draft kept** — произошла ошибка. Если локальное хранилище недоступно, используйте экспорт до закрытия редактора.
+| Status | Meaning |
+| :--- | :--- |
+| **Saved locally** | The draft is stored on this device. |
+| **Saving…** | Studio is waiting for the server to confirm the save. |
+| **Synced to OBS** | The server has saved this version and distributed it to connected OBS sources. |
+| **Conflict · local draft kept** | Another editor saved a different version. Choose which version to use. |
+| **Local save failed / Save failed · draft kept** | Export the draft, then check storage or the connection before closing Studio. |
 
-## Если открыты два редактора
+## Resolve changes from another editor
 
-При конфликте можно:
+When two editors change the same document, Studio offers three actions:
 
-1. Нажать **Export local draft**, чтобы сохранить локальный вариант отдельным JSON.
-2. Нажать **Publish local version**, чтобы явно заменить серверную версию своим вариантом. Сервер повторно проверит, что версия не успела измениться.
-3. Нажать **Use server version**, чтобы принять серверный вариант. Предыдущий локальный вариант остаётся в Undo в текущем сеансе.
+1. **Export local draft** saves your current version as a separate JSON file.
+2. **Publish local version** replaces the server document with your draft after checking its revision again.
+3. **Use server version** loads the server document. Your previous local version remains available through Undo during the current session.
 
-Это выбор целого документа. Автоматического слияния отдельных полей пока нет. Варианты разных клиентов не смешиваются молча.
+Each choice applies to the complete document. After reconnecting or restarting, Studio resumes publishing the local draft when the server revision matches the one it was based on. Matching content is recognized as already saved. A different server revision opens the version choice above.
 
-После отключения и перезапуска локальный черновик публикуется автоматически только если серверная версия не изменилась. Если данные на сервере совпадают с черновиком, повторная запись не требуется. Старый черновик без сведений о базовой версии требует явного выбора при отличающихся серверных данных.
+## Back up and transfer
 
-## Резервные копии и восстановление
+- **Settings → Export JSON** exports all profiles, presets and their resources.
+- **Export preset** transfers one saved composition with its images.
+- **Import JSON** and **Import preset** load the corresponding exports.
 
-Предыдущая рабочая конфигурация сохраняется как резервная копия. Если основной файл повреждён, приложение предлагает восстановление. Перед обновлением или переносом на другой компьютер дополнительно сохраните профиль через Export JSON.
+Connection credentials are stored separately from profile exports.
 
-Если появляется ошибка сохранения, сначала экспортируйте локальный черновик и только затем закрывайте редактор. Токен подключения в экспорт профилей не включается.
+## Restore your work
 
-## Обновление
+Studio keeps the previous working configuration as a backup. If the main configuration file is damaged, the application offers recovery. **Restore last local backup** loads the previous browser copy; native `.backup.json` files are kept in the application data directory.
 
-После замены файлов приложения перезапустите захват и обновите источник браузера в OBS. Документы старых версий v1–v3 не импортируются в текущую версию; сохраните их копию до обновления.
+When a save fails, use **Export local draft** before closing the editor. Keep an exported copy when moving to another computer or updating the application.
+
+## Update the application
+
+1. Export a copy of your profiles.
+2. Choose **Exit** from the system tray menu.
+3. Extract the new ZIP and run Studio.
+4. Refresh the Browser Source in OBS.

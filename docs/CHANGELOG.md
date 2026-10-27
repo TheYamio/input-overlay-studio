@@ -1,54 +1,52 @@
-# v0.6.9 — 27 октября 2026
+# Changelog
 
-- Мастер первого запуска: выбор языка на первом шаге, проверка реального ввода и пошаговое подключение OBS. Переход к настройкам подключения сохраняет текущий шаг и прогресс.
-- Понятные сообщения о захвате, сохранении и готовности источника OBS. Переподключение и восстановление после перезапуска стали надёжнее.
-- Улучшено сохранение больших композиций и непрерывных правок; Undo/Redo сохраняет привычное поведение. Ошибки записи показываются явно, локальный черновик остаётся доступен.
-- Исправлены языковые настройки, переводы и расположение элементов на небольших окнах. Неполный встроенный синдарин убран из списка языков; пользовательские языковые пакеты и подписи сохранены.
-- Добавлен раздел добровольной поддержки разработки через Boosty и Ko-fi. Все функции остаются бесплатными.
-- По запросу можно скопировать диагностические сведения о программе и подключении без токенов, пользовательских подписей и истории ввода.
-- Повышена устойчивость при медленных источниках OBS, переподключении устройств и остановке захвата.
+## v0.6.9 — October 27, 2026
 
-**Обновление:** перед заменой файлов экспортируйте копию профилей. Полностью завершите приложение через Exit в трее, распакуйте новый ZIP, запустите Studio и обновите источник браузера в OBS.
+- First-run setup guide with language selection, real input checks and step-by-step OBS connection. Opening connection settings keeps the current step and progress.
+- Clearer capture, save and OBS source status, with improved reconnecting and recovery after a restart.
+- Faster saving for large compositions and continuous edits. Save failures show an explicit status and keep the local draft available.
+- Improved translations, language settings and layouts in small windows. Removed the incomplete built-in Sindarin option while preserving custom packages and captions.
+- Voluntary development support through Boosty and Ko-fi, with all features available for free.
+- Copyable diagnostics for the application and connection.
+- Better stability with slow OBS sources, device reconnects and capture shutdown.
 
-# v0.6.3 — 24 октября 2026
+**Update:** Export a copy of your profiles, choose **Exit** from the system tray, extract the new ZIP, run Studio and refresh the OBS Browser Source.
 
-Исправления языковых настроек и локализации.
+## v0.6.3 — October 24, 2026
 
-- Пользовательские переводы теперь независимы: каждый импорт создаёт новый пакет, даже при одинаковом названии и коде языка. Встроенные переводы доступны отдельно и защищены от подмены.
-- Добавлен экспорт выбранного перевода с метаданными. Удаление требует подтверждения; при удалении активного пакета выбирается встроенный язык с тем же кодом или английский.
-- Выбор языка и библиотека сохраняются одной операцией. Ошибка записи оставляет прежнее состояние; перед переносом установленных пакетов создаётся резервная копия.
-- Проверяются параметры подстановки. Некорректный перевод не может заменить рабочие строки или изменить название программы.
-- Закрыты пропуски в стандартных языках, исправлены формулировки редактора, настройки изображения, горячих клавиш и пресетов. Переводы по-прежнему отмечены как экспериментальные; художественный синдарин остаётся частичным.
-- Исправлены возврат фокуса из инспектора, перевод названий команд внутри подсказок и обновление сообщений о конфликтах при смене языка.
-- Кнопки диалога пресета остаются видимыми на коротком окне, поля прокручиваются отдельно. Добавлен отступ перед кнопками импорта и экспорта языков.
-- Выбор пользовательского перевода для подписей OBS сохраняется отдельно от языка Studio и переносится вместе с профилем.
+- Independent custom translations: each import creates its own package alongside the built-in languages.
+- Export the selected translation with its metadata. Removing the active package selects the matching built-in language or English.
+- Language selection and the package library save together, with backups during migration.
+- Translation placeholder validation and consistent product branding across languages.
+- Improved editor, image, shortcut and preset translations.
+- Fixed inspector focus return, translated command names in tooltips, and conflict messages after changing languages.
+- Improved preset dialog scrolling in short windows and spacing around language import/export buttons.
+- Custom OBS label translations travel with exported profiles.
 
-**Обновление:** после замены файлов приложения перезапустите захват и обновите источник браузера в OBS. Перед обновлением сохраните резервную копию настроек. Windows ZIP содержит только EXE и необходимые DLL.
+**Update:** Export your settings, replace the application files, restart capture and refresh the OBS Browser Source.
 
-# v0.6.2 — 23 октября 2026
+## v0.6.2 — October 23, 2026
 
-- Новый интерфейс «Полночь · ирис»: слои слева, свойства справа с регулируемой шириной, больше места для холста и доступная прокрутка на небольших экранах.
-- Восемь ручек изменения размеров модулей и клавиш, точные перемещения стрелками, сохранение пропорций, отмена жестов и редактирование клавиш прямо на холсте.
-- Копирование, вырезание, вставка, дублирование и удаление выделенных модулей, клавиш и кнопок мыши; настраиваемые сочетания клавиш с разрешением конфликтов.
-- Импорт SVG-контуров и прозрачных отверстий для клавиш, кнопок и корпуса мыши. Картинки и подсветка обрезаются по форме и скруглениям; подписи можно скрывать.
-- Переработанные заводские композиции и Yamio preset. У пресетов есть описания и палитры; применение только цветов явно отделено от применения полного расположения.
-- Независимые движение и подсветка: эффекты, градиенты, интенсивность, easing, задержки и длительность нажатия/отпускания, локальный образец анимации и наследование настроек отдельных кнопок.
-- Явные связи игровых профилей и оверлеев, резервные копии, защита от перезаписи более новых конфигураций и сохранение корректных данных временно недоступных модулей.
-- 12 стандартных языков интерфейса, импорт/экспорт языковых пакетов и независимый язык метрик OBS. Переводы помечены как экспериментальные. Художественный синдарин с тенгваром представлен частичным словарём с английскими подсказками.
-- Название Input Overlay Studio и логотип не переводятся при смене языка, включая пользовательские языковые пакеты.
-- Встроенные офлайн-шрифты, Unicode/IME, направление текста и сохранение целых графем при вписывании и ограничении длины подписей.
-- Оптимизированы обновления сцены: неизменившиеся свойства и подписи не перенастраиваются, перемещение модулей пересчитывает общую картинку без полной обработки кейкапов, языковые каталоги загружаются по необходимости.
-- Приложение запускается в одном экземпляре: повторный запуск открывает уже работающий редактор.
+- Midnight Iris interface with Layers on the left, resizable Properties on the right and more canvas space.
+- Eight resize handles for modules and keys, arrow-key positioning, aspect-ratio controls and direct key editing on the canvas.
+- Copy, cut, paste, duplicate and delete for selected modules, keys and mouse buttons, with configurable shortcuts and conflict resolution.
+- SVG contours and cutouts for keys, mouse buttons and mouse bodies. Artwork and lighting follow the selected shapes; labels can be hidden.
+- Redesigned built-in compositions and Yamio preset. Presets include descriptions and palettes, with separate color and full-layout actions.
+- Independent motion and lighting controls, gradients, intensity, easing, timing, delays, previews and per-button inheritance.
+- Explicit game/overlay profile links, backups, configuration version checks and preservation of inactive module data.
+- Twelve standard interface languages, translation package import/export and localized OBS metrics. Added an artistic Sindarin glossary with Tengwar.
+- Consistent Input Overlay Studio branding across languages.
+- Bundled offline fonts, Unicode and IME support, text direction and grapheme-aware caption fitting.
+- Faster scene updates, cached metrics and on-demand language catalogs.
+- Single-instance application behavior: launching again opens the running editor.
 
-**Обновление:** документы старых версий v1–v3 не поддерживаются. Перед обновлением сохраните копию прежних настроек. Windows ZIP содержит только EXE и необходимые DLL; исходники и лицензии доступны отдельно.
+**Update:** Export a copy of your settings before replacing the application files. The Windows ZIP contains the executable and required DLLs; source and licenses are available at the release tag.
 
-# v0.4.0 — 21 октября 2026
+## v0.4.0 — October 21, 2026
 
-Стабильный релиз объединяет этапы 0.3.3-dev.1–dev.3; отдельная стабильная 0.3.3 не выпускалась.
-
-- Прямое редактирование клавиш на холсте, назначение физическим нажатием, копирование/массовая вставка стилей, сброс переопределений и один Undo на жест.
-- Единая полупрозрачная картинка для группы клавиатур и кнопок мыши, прозрачные промежутки, отражение X/Y и полный редактор изображения с предварительным просмотром и отменой.
-- Изолированный просмотр idle/pressed/analog/scroll, семь разных заводских композиций и живые миниатюры пресетов.
-- Пропуск неизменившихся кейкапов, индексы DOM и кеширование Distance. Ускорена работа больших раскладок.
-- Собственная иконка Input Overlay Studio для приложения, окна, трея, редактора и favicon.
-- Windows x64 portable ZIP содержит exe и необходимые DLL. Исходники и лицензии доступны по тегу релиза.
+- Direct key editing on the canvas, assignment by physical input, style copying, bulk style application and one Undo step per gesture.
+- Shared artwork across keyboards and mouse buttons, image mirroring and a dedicated placement editor.
+- Idle, pressed, analog and scroll previews, seven built-in compositions and live preset thumbnails.
+- Faster large-layout rendering with cached keycaps, DOM indexes and distance values.
+- Custom Input Overlay Studio icons for the application, window, tray, editor and favicon.
+- Portable Windows x64 ZIP with the executable and required DLLs. Source and licenses are available at the release tag.

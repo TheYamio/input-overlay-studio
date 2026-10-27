@@ -1,37 +1,54 @@
-# Настройка и использование
+# OBS setup
 
-1. Запустите Studio. Создаётся локальный токен, Capture connected подтверждает авторизацию.
-2. В Profiles задайте DPI и sensitivity. CS2 учитывает m_yaw. Для KovaaK’s выберите действительную Sensitivity Scale, custom yaw либо ручной cm/360.
-3. Выберите тему. Кнопки модулей слева добавляют элементы. Слои выбирают, скрывают, блокируют. Drag меняет позицию, нижний правый угол — размер. Snap: сетка 8 px и привязка краёв/центров к соседним видимым модулям. В Properties доступны Left/Center X/Right/Top/Center Y/Bottom и Reset position. Блокировка запрещает drag/resize и команды выравнивания. Safe area: внутренние 90% кадра.
-4. Нижняя панель свойств: цвета, прозрачность, форма, клавиши, мышь и след. Left/right Shift: VK 160/161; Ctrl: 162/163; Space: 32. Подписи — безопасный обычный текст.
-5. Live использует устройства; Demo генерирует только предпросмотр. Copy OBS URL всегда создаёт Live-источник.
-6. OBS → Sources → Browser: вставьте URL, Рекомендуемый размер: Width 1920, Height 1080; также можно задать 2560×1440 или другой размер. Логическая сцена автоматически вписывается без растяжения, свободные поля остаются прозрачными. Фон прозрачен; дополнительный CSS не нужен. Частота источника настраивается в OBS. 120 FPS в Studio — целевой лимит, не гарантия частоты OBS.
-7. Изменения сохраняются и синхронизируются автоматически. Save profile сохраняет вручную. Закрытое окно не останавливает приложение в трее. Полный выход — Exit в меню трея.
+## Connect your overlay
 
-## Дистанция
+1. Extract the Windows ZIP and run **Input Overlay Studio**. Follow the setup guide to choose a layout and check keyboard, mouse and wheel input.
+2. In **Profiles**, set your game, DPI and sensitivity. For CS2, use your `m_yaw` value. For KovaaK's, choose the matching sensitivity scale, custom yaw or manual cm/360.
+3. Customize the overlay on the Studio canvas. Add modules from the Layers panel, drag to position them, and pull the edges or corners to resize. The right-hand **Properties** panel controls the selected object.
+4. Click **Copy OBS URL**.
+5. In OBS, add a **Browser Source**, paste the URL, and set its width and height. Start with **1920 × 1080**; other sizes, such as 2560 × 1440, also work. The composition fits the source proportionally with a transparent background.
+6. Select the Browser Source frame rate in OBS. Configure Studio's rendering target under **Settings → Rendering performance**.
 
-Правильный DPI нужен для физического расстояния и DPI Normalized Scale. Это приблизительная оценка, не точные координаты на коврике. Sensitivity не изменяет масштаб следа. Fixed Field сдвигает виртуальную область у края, Follow/Recenter плавно ведёт камеру за курсором.
+Changes save and sync automatically. **Save profile** saves manually. Closing the Studio window leaves capture running in the system tray; choose **Exit** from the tray menu to stop the application.
 
-Reset сбрасывает общий счётчик источников. Keep total between launches сохраняет итог примерно каждые 3 секунды. Reset when capture app starts начинает новый счётчик при запуске. При аварийном выходе последние секунды могут не сохраниться. Старый server без distance_counts не учитывает движения, потерянные при его агрегации; новый backend сохраняет исходную длину пути.
+**Live** uses your devices. **Demo** provides sample input for editing. **Copy OBS URL** creates a live overlay source.
 
-## Профили и пресеты
+## Profiles and presets
 
-Профиль содержит игру, DPI, sensitivity, тему и компоновку. Presets → Save current layout создаёт пользовательский пресет: apply, rename, duplicate, delete, Export preset и Import preset со встроенными изображениями. Apply theme изменяет оформление текущих модулей; Reset layout восстанавливает заводскую композицию. Изменения отменяются Undo.
+A profile holds the game, DPI, sensitivity, appearance and layout. The preset library lets you save, rename, duplicate, import and export compositions with their images.
 
-Settings → Export JSON сохраняет профили и пользовательские пресеты без токена. Import проверяет структуру и числа, неверный файл отклоняется. Restore last local backup восстанавливает предыдущую web-копию. Нативные `.backup.json` — в каталоге данных приложения. При повреждении studio.json предлагается восстановление, оригинал сохраняется перед явной заменой.
+Apply a color theme to your current layout or load a complete preset. Use Undo to restore the previous composition. See [Customization](CUSTOMIZATION.md).
 
-## Два компьютера
+Use **Settings → Export JSON** to transfer all profiles and saved presets. Recovery and backup options are covered in [Saving & sync](SAVING_AND_SYNC.md).
 
-На игровом ПК явно задайте LAN bind host, включите HTTP и примените native settings. На ПК OBS откройте `http://GAME_PC:4456/studio/index.html`, задайте `ws://GAME_PC:4455` и токен. Copy OBS URL использует текущий host страницы. Оба порта должны быть доступны. На незашифрованной LAN странице браузер может запретить clipboard: выделите OBS URL в Settings и скопируйте вручную. По умолчанию доступ ограничен loopback.
+## Mouse distance and trail
 
-## Диагностика
+Set the correct mouse DPI for estimated physical distance and **DPI Normalized Scale**. **Fixed Field** shifts the virtual field at its boundary; **Follow / Recenter** follows the cursor smoothly. Adjust the trail's motion scale and camera follow time in its properties.
 
-- Проверьте токен, Capture connected и HTTP-порт. OBS должен открывать overlay.html, не index.html.
-- Отображаются только настроенные клавиши. FPS privacy filter ограничивает отправку на backend после Apply server settings.
-- Pause preview останавливает только Studio-клиент. Broadcast device input останавливает отправку всем источникам после применения native settings.
-- Analog требует поддерживаемую HID-клавиатуру и выбор auto/бренда. Обычные digital-состояния работают независимо.
-- При отключении соединения состояния сбрасываются, клиент повторяет подключение. Новый backend v0.2 восстанавливает удерживаемые клавиши и кнопки снимком состояния. На Windows учитывается текущее состояние ОС, в том числе после перезапуска сервера. Старый backend без поддержки snapshot по-прежнему требует повторного нажатия.
+Under **Settings → Distance**:
 
-Оформление кейкапов, прозрачность и настройки мыши/траектории: [CUSTOMIZATION.md](CUSTOMIZATION.md).
+- **Reset total distance** resets the shared counter.
+- **Keep total between launches** saves the total about every three seconds.
+- **Reset when capture app starts** starts a new counter each time capture launches.
 
-Дополнительные настройки захвата находятся в Settings → Native capture server → Advanced capture settings: фильтр клавиш, движение мыши, порог движения, CPU affinity, токен и автозапуск. Они заменяют прежнее отдельное окно настроек.
+## Use two computers
+
+1. On the gaming PC, open **Settings → Native capture server**. Set the bind host to an address reachable on your LAN, enable HTTP, and apply the settings.
+2. Allow the configured HTTP and WebSocket ports through the firewall. The defaults are 4456 and 4455.
+3. On the OBS PC, open `http://GAME_PC:4456/studio/index.html`. Set the connection URL to `ws://GAME_PC:4455` and enter the gaming PC's token.
+4. Click **Copy OBS URL** and add it as an OBS Browser Source. If clipboard access is unavailable, copy the displayed URL manually from Settings.
+
+## Connection checks
+
+| What to check | Action |
+| :--- | :--- |
+| Capture connection | Check **Capture connected**, the WebSocket address and token in Settings. |
+| Browser Source address | Use the URL produced by **Copy OBS URL**, which opens `/studio/overlay.html`. |
+| Local HTTP service | Enable **Local HTTP server** and check that its port is available. Apply the server settings after editing. |
+| Input filtering | Review **Use FPS privacy filter** or **Clear key filter**, then apply the server settings. |
+| Input broadcast | Enable **Broadcast device input** and apply the server settings. |
+| Analog input | Select **auto** or the matching brand under **Analog keyboard** for your supported HID keyboard. |
+
+Studio reconnects automatically after a connection loss and restores held keys and buttons from the capture state.
+
+Capture options for key filtering, mouse movement, movement threshold, CPU affinity, token and startup behavior are under **Settings → Native capture server → Advanced capture settings**.

@@ -1,156 +1,132 @@
-# Кастомизация Input Overlay Studio
+# Customization
 
-## Свои SVG-формы и подписи
+## Canvas and Properties
 
-В **Appearance → Borders & shape → Upload SVG shape** можно загрузить свой контур. Форма задаёт обрезку фона, общей картинки, рамки и подсветки нажатия; отверстия в контуре остаются прозрачными. Форма сохраняется как векторная геометрия в библиотеке конфигурации и переносится с пресетом. Масштабирование не превращает её в растровую картинку.
+Select a module in Layers or on the canvas. Drag it to move; pull an edge or corner to resize. **Proportions locked** keeps the aspect ratio, and **Free resize** allows independent width and height. Shift temporarily switches the resize mode; Alt temporarily disables snapping.
 
-Поддерживаются SVG до 128 КБ: paths, группы с трансформациями, прямоугольники, окружности, эллипсы, линии и многоугольники; до 64 контуров на форму. Текст, эффекты, ссылки/use и clipPath нужно предварительно преобразовать в обычные контуры. Для отверстий подходит `fill-rule="evenodd"`. Скругление для SVG задаётся в самом файле; **Corner radius** доступен для стандартного прямоугольника.
+Arrow keys move the selection by 1 canvas unit, or 10 with Shift. When a resize handle has focus, arrows adjust its edge. Escape cancels the current gesture. **Lock position** protects the object's geometry. Each completed gesture is one Undo step.
 
-Форму можно назначить всему модулю или отдельной клавише/кнопке через **Customize this key/button**. Для корпуса мыши есть отдельный выбор **Mouse body Shape** в свойствах мыши; он используется в режиме **Mouse Diagram**. **Remove unused shapes** удаляет из библиотеки только формы, которые не используются ни профилями, ни сохранёнными пресетами.
+The **Properties** panel sits on the right. Drag its left edge to change the width, or double-click to restore 360 px. With the divider focused, arrows adjust the width by 16 px, Shift changes the step to 32 px, and Home/End select the minimum/maximum. In narrow windows, Properties opens as a side panel over the canvas.
 
-**Appearance → Text & typography → Show labels** скрывает подписи без изменения названий и привязок. У отдельных кнопок этот параметр можно переопределить и вернуть к значению модуля. Для сохранения этих возможностей нужен обновлённый нативный сервер; со старым сервером черновик остаётся локально.
+Use **Fit contents** to frame all modules, **Focus selection** to frame the selected module, and **100%** for actual size. Zoom is available up to 400%. Position values use the 1920 × 1080 canvas coordinate system.
 
-## Пресет Yamio preset
+Numeric fields accept a period or comma. Arrow keys adjust the value; Shift increases the step; Escape cancels the current edit. Sliders have exact numeric inputs, opacity uses percentages, and colors accept a picker or HEX value.
 
-В **Presets → Yamio preset → Use full layout** доступен первый пресет по мотивам сетапа: раскладка из 81 клавиши в фиолетовых и лаймовых цветах, графитовая мышь с прорезями и розовыми акцентами, светлый след с переходом в розовый. Это стилизованные контуры по фотографиям устройств. DPI и чувствительность текущего профиля сохраняются; Undo возвращает прежнее оформление и расположение модулей.
+## Edit individual keys
 
-## Общее изображение на кейкапах
+1. Select **Keyboard** and open **Key Layout** in Properties.
+2. Choose **Edit keys on canvas**, double-click the keyboard, or press Ctrl+E.
+3. Select a key and drag it. Eight handles adjust its edges and corners. Shift keeps proportions; Alt temporarily disables snapping.
+4. Use arrows for 1-unit movement, or Shift+arrows for 10 units. Holding an arrow groups the movement into one Undo step.
+5. Choose **Finish editing keys on canvas** to return to the full composition.
 
-1. В Studio выберите Keyboard (или Mouse Buttons).
-2. В разделе Artwork → Keycap Image нажмите Upload image и выберите PNG, JPEG или WebP.
-3. Откройте Position & scale image. Перетаскивайте картинку по предпросмотру; колесо меняет масштаб. Числовые поля позволяют точно задать масштаб, положение и поворот.
-4. Выберите Cover, Contain, Original или Tile и нажмите Apply image placement. Cancel и Escape отменяют черновик; Undo возвращает предыдущую применённую настройку.
-5. Настройте Image opacity, Image blending, яркость, контраст, насыщенность и оттенок. Все изменения передаются в OBS автоматически.
+Use **Duplicate key** to make a copy. **Key gap** adjusts the key surfaces and the corresponding artwork bounds. A keyboard supports up to 100 keys.
 
-Изображение использует одну систему координат всей раскладки. Каждая клавиша показывает свой участок; промежутки и скруглённые углы остаются прозрачными. Рисунок не повторяется внутри каждой клавиши. Масштаб всего модуля сохраняет взаимное расположение фрагментов.
+### Assign an input
 
-В Key Layout выберите клавишу и снимите Include this key in image, чтобы исключить её. Для мыши аналогичная настройка находится в Individual Mouse Button. Подписи и рамки отображаются поверх картинки.
+Choose **Assign by pressing a key**, then press the physical key. Left and right Shift, Ctrl and Alt are recognized separately. Enable **Update label when assigning** to update the caption along with the binding.
 
-Image on press:
-- Tint — активный цвет накладывается поверх рисунка; его интенсивность задаёт Pressed color overlay.
-- Brighten — рисунок становится ярче и непрозрачнее во время удержания.
-- Hide — рисунок скрывается, клавиша получает обычный активный цвет.
+Escape, **Cancel**, changing tools or losing window focus ends assignment. The capture also times out after 15 seconds. **Advanced key code** allows direct entry of a Windows VK code, including Escape. Physical key positions are used across keyboard layouts.
 
-Прозрачность исходного PNG/WebP сохраняется. Background opacity управляет подложкой, Image opacity — картинкой, Module opacity — всем модулем вместе с текстом. Для прозрачного рисунка поверх игры оставьте Opacity = 100% и уменьшайте первые два параметра.
+## SVG shapes and labels
 
-Входной файл: до 8 MB и 24 мегапикселей. Приложение уменьшает изображение максимум до 2048×2048 с сохранением пропорций и оптимизирует в WebP. В конфигурации допускается до 8 используемых изображений и до 1,8 MB JSON. При превышении лимита редактор сохраняет предыдущую конфигурацию и показывает сообщение. SVG, удалённые URL и ссылки на локальные файлы не используются.
+Upload a contour under **Appearance → Borders & shape → Upload SVG shape**. The shape defines the background, artwork, border and press highlight. Cutouts remain transparent, and the vector shape travels with exported presets.
 
-## Индивидуальные стили
+SVG files can be up to 128 KB with up to 64 contours. Supported geometry includes paths, transformed groups, rectangles, circles, ellipses, lines and polygons. Convert text, effects, references and clipping paths to outlines before import. Use `fill-rule="evenodd"` for cutouts. Define SVG corner rounding in the file; **Corner radius** adjusts standard rectangles.
 
-Appearance задаёт общий стиль модуля. В клавиатуре включите Customize this key, в мыши — Customize this button. Изменённые поля переопределяют общий стиль; остальные продолжают наследоваться. Отключение Customize удаляет переопределения и возвращает общий стиль.
+Apply a shape to the entire module or enable **Customize this key/button** for an individual control. **Mouse body Shape** changes the body in **Mouse Diagram** mode. **Remove unused shapes** clears unreferenced library entries.
 
-Доступны обычный и активный цвета, фон и его прозрачность, рамки, скругления, локальные шрифты, размер и насыщенность текста, межбуквенный интервал, обводка/тень, эффект нажатия, времена нажатия/отпускания, смещение и интенсивность свечения. Fit text inside key уменьшает слишком длинную подпись до размера клавиши. Свечение отображается в режиме Glow. Reduced motion отключает анимации и смещение.
+Use **Appearance → Text & typography → Show labels** to control captions for the module or an individual key/button. **Fit text inside key** adjusts the text to its key; **Fit text inside module** fits the Distance or Sensitivity display.
 
-Mouse Diagram использует постоянные области M1–M5 и прокрутки. Скрытие одной кнопки не меняет назначение остальных. Individual Mouse Button позволяет менять координаты и размеры в локальных координатах мыши, а Reset button position & size возвращает выбранный элемент к стандартной геометрии. Scroll highlight задаёт длительность подсветки направлений колёсика.
+## Continuous keycap artwork
 
-Distance и Sensitivity поддерживают настройки текста, подложки и рамок. По умолчанию их фон прозрачен, рамка выключена. Для Sensitivity можно выбрать горизонтальную или вертикальную компоновку.
+1. Select **Keyboard** or **Mouse Buttons**.
+2. Open **Artwork → Keycap Image → Upload image** and choose a PNG, JPEG or WebP file.
+3. Open **Position & scale image**. Drag to position the image and scroll to scale it. Numeric fields set exact position, scale and rotation.
+4. Choose **Cover**, **Contain**, **Original** or **Tile**, then select **Apply image placement**. Cancel or Escape discards the draft; Undo restores the previous applied settings.
+5. Adjust **Image opacity**, **Image blending**, brightness, contrast, saturation and tint. Applied changes sync to OBS automatically.
 
-## Mouse Trail
+Each key shows its section of one continuous image. Gaps, rounded corners and cutouts in custom shapes remain untouched. To exclude a key, clear **Include this key in image** in Key Layout; mouse buttons have the equivalent option under **Individual Mouse Button**. Labels and borders appear above the image.
 
-Trail Appearance содержит цвета и параметры сетки, центра, маркера, медленного/быстрого движения, кликов M1/M2, длительности и размера click effects. Camera follow задаёт время следования камеры в Follow / Recenter. Скорость для градиента нормализуется к DPI профиля. Подложка может быть полностью прозрачной; чёткость Canvas адаптируется к масштабу вывода с ограничением разрешения для снижения нагрузки.
+| Image on press | Effect |
+| :--- | :--- |
+| Tint | Overlays the active color; adjust its strength with **Pressed color overlay**. |
+| Brighten | Increases image brightness and opacity while held. |
+| Hide | Uses the key's active background color while held. |
 
-## Перенос оформления и обновление
+**Background opacity** controls the surface, **Image opacity** controls the artwork, and module **Opacity** controls the entire module including text. For translucent artwork over gameplay, keep module opacity at 100% and adjust the surface and image separately.
 
-Сохраните композицию в Presets → Save current layout. Export preset включает используемые изображения. Import preset переносит её вместе с рисунками, независимо от путей на исходном компьютере. Полный Export JSON включает все профили и сохранённые пресеты. Токены подключения не экспортируются.
+Upload images up to 8 MB and 24 megapixels. Studio fits them within 2048 × 2048 and stores optimized WebP. A configuration supports up to eight used images within its 1.8 MB JSON limit.
 
-Перед обновлением сохраните копию профиля через Export JSON. Правила переноса и восстановления описаны в [SAVING_AND_SYNC.md](SAVING_AND_SYNC.md).
+For cross-module artwork and the full image editor, see [Visual features](VISUAL_FEATURES.md).
 
-Редактирование клавиш на холсте, назначение нажатием и инструменты индивидуального стиля описаны ниже. Общие изображения и композиции — в [VISUAL_FEATURES.md](VISUAL_FEATURES.md).
+## Individual styles
 
-## Подгонка текста и ошибки импорта
+**Appearance** defines the module style. Enable **Customize this key** or **Customize this button** to override individual values. **Inherited** follows the module, **Reset ↶** restores one inherited value, and **Use module style** restores the complete module style.
 
-Key gap меняет размер поверхности вокруг заданных координат клавиш; границы раскладки и картинки следуют за итоговыми поверхностями. При загрузке и импорте модуль за пределами холста возвращается внутрь сцены. Lock position сохраняет X/Y и размер, включая переключение Mouse Diagram.
+Adjust normal and pressed colors, surface opacity, borders, rounding, fonts, text size and weight, letter spacing, outlines and shadows.
 
-Для Distance и Sensitivity параметр Fit text inside module уменьшает весь текстовый блок до размеров модуля. При отключении подгонки используется заданный размер шрифта с обрезкой внутри модуля. Параметры нажатия показываются для клавиш и кнопок; Trail получает собственные параметры линии, фона и рамки.
+**Copy style** captures the effective style; **Paste style** applies it to another key or button. **Paste style to all keys** and **Paste style to shown buttons** apply the style in one Undo step.
 
-Повреждённая картинка отклоняется при импорте с указанием имени. Текущий документ при этом сохраняется. Уменьшение исходника при Upload по-прежнему доступно, но размер исходного растра проверяется до декодирования. Если Copy OBS URL сообщает об отключённом HTTP или занятом порте, исправьте настройки сервера и нажмите Apply server settings.
+In **Mouse Diagram**, use **Individual Mouse Button** to adjust each button's local position and size. **Reset button position & size** restores its geometry. **Scroll highlight** controls wheel-direction highlight duration.
 
-## Клавиши на холсте
+Distance and Sensitivity have text, surface and border settings. Sensitivity supports horizontal and vertical arrangements.
 
-1. Выберите Keyboard в списке слоёв. В начале Properties находится сворачиваемый раздел Key Layout.
-2. Нажмите **Edit keys on canvas**. Редактор увеличит выбранную клавиатуру, вписывая полные границы модуля и ручки. OBS продолжает показывать полную композицию.
-3. Нажмите клавишу, чтобы выбрать её в инспекторе, затем перетаскивайте. У выбранной клавиши восемь ручек размера: четыре угла и четыре края. Shift при перетаскивании сохраняет пропорции. Ручки поддерживают стрелки: 1 единица, с Shift — 10. Snap to grid действует на локальную геометрию; Alt временно отключает привязку.
-4. Стрелки перемещают выбранную клавишу на 1 локальную единицу, Shift — на 10. Удержание стрелки записывается одной операцией после отпускания.
-5. Esc отменяет текущий жест. Потеря фокуса, изменение масштаба/окна или замена документа также отменяют черновой жест. Щелчок без изменения геометрии только выбирает клавишу.
-6. После отпускания клавиатура снова вписывается в размер модуля. **Finish editing keys on canvas** возвращает полный холст. Координаты и размер самого модуля сохраняются.
+## Animation and lighting
 
-Числовые поля остаются доступны; Key gap и общая картинка используют прежнюю модель общей раскладки. Lock position защищает также геометрию отдельных клавиш; подписи, назначение и оформление редактируются. Duplicate key создаёт независимую копию с новым ID и выбирает её. Лимит — 100 клавиш. Групповое выделение, распределение интервалов и выравнивание нескольких клавиш остаются дальнейшим развитием.
+Open **Appearance → Press & release** to configure motion and lighting.
 
-## Назначение нажатием
+| Setting | Options |
+| :--- | :--- |
+| Button motion | None, Press, Scale, Lift, Bounce, Pulse |
+| Lighting mode | Fill, Outline, Glow, Fill + glow, Gradient, Ripple, Analog Fill, Off |
+| Timing | Press/release duration and delay, in milliseconds |
 
-**Assign by pressing a key** принимает одну физическую клавишу из браузера либо native input. Левые/правые Shift, Ctrl и Alt различаются. В Demo назначение использует живой вход. При включённом **Update label when assigning** меняется и подпись; выключите флажок, чтобы сохранить свой текст.
+Gradient uses **Accent color**, **Secondary light color** and the gradient angle. Adjust lighting intensity and glow strength separately. Set a nonzero **Border width** for Outline.
 
-Esc, Cancel, щелчок по другому инструменту, потеря фокуса окна или ожидание 15 секунд завершают захват без изменения конфигурации. Неизвестная браузеру клавиша оставляет возможность повторить ввод. Advanced key code раскрывает Windows VK, включая возможность назначить Esc вручную. Переключение профиля/модуля отменяет старый захват.
+Short presses are shown with the configured delay, and another press cancels a pending release. **Play animation** previews the effect. Individual keys and mouse buttons support inherited values, per-value reset and style copying. **Reduced motion** disables motion and ripple animation. Glow quality follows the Performance setting.
 
-Назначение по browser code использует физическую позицию клавиши независимо от текущей раскладки текста. Сочетания клавиш не записываются: один кейкап отображает один Windows VK. Аппаратная приёмка разных устройств и Windows-раскладок остаётся отдельной проверкой.
+## Mouse trail
 
-## Наследование и копирование
+Choose a style: Clean Line, Fade Trail, Neon Trail, Speed Gradient or Segmented Trail. **Trail Appearance** controls the grid, center, marker, slow/fast colors and click effects, including their size and duration.
 
-В индивидуальном стиле каждый параметр показывает **Inherited** либо **Reset ↶**. Reset удаляет только данное переопределение; остальные индивидуальные параметры сохраняются. Последующие изменения модуля применяются к унаследованному полю. **Use module style** удаляет индивидуальное оформление целиком.
+**Camera follow** controls smoothing in **Follow / Recenter**. **DPI Normalized Scale** uses the profile DPI for movement scale. Adjust the background opacity for a transparent trail surface.
 
-**Copy style** запоминает фактическое оформление с учётом наследования. **Paste style** применяет снимок к выбранной клавише или кнопке мыши; данные подписи, назначения, геометрии и изображения сохраняются. Буфер общий для модулей текущего сеанса и очищается при перезагрузке.
+## Preset library
 
-**Paste style to all keys** и **Paste style to shown buttons** выполняют одно действие с одним Undo. Скрытые кнопки мыши не меняются. Вставленные поля становятся переопределениями; отдельный Reset возвращает наследование.
+Choose a standard layout or a creator-made preset. **Full layouts** loads the shown buttons, shapes, artwork and positions while retaining the profile's game, DPI and sensitivity. **Colors on my layout** previews your composition in each palette and applies colors and surface transparency.
 
-## История действий
+**Save current setup** captures a complete layout or reusable palette. Add a name and a description of up to 500 characters. Saved presets include color swatches and support search, export and import. **Edit details** changes the metadata; **Update from current setup** refreshes the saved composition.
 
-Перетаскивание/resize и удержание стрелки — один Undo. Изменения slider за один drag или одно удержание стрелки группируются; ввод текста/числа и последовательность изменений color picker объединяются до смены фокуса. Новое действие отдельной кнопкой создаёт следующий шаг. Правки продолжают сохраняться локально и синхронизироваться во время настройки.
+**Yamio preset → Use full layout** loads an 81-key violet-and-lime keyboard, a graphite cutout mouse with pink accents, and a light-to-pink mouse trail. Undo returns to the previous composition.
 
-Группировка истории не переносит assets в IndexedDB и не меняет модель хранения полных документов в Undo. Для больших изображений оптимизация стоимости хранения остаётся отдельным этапом.
+## Commands and keyboard shortcuts
 
-## Настройки редактора
+The toolbar below the canvas shows the command target: **Module**, **Key** or **Mouse button**. Enter key editing with **Edit keys on canvas**, a double-click or Ctrl+E. Use **Edit individual mouse buttons** or **Edit mouse button** to select a mouse control. Escape exits individual editing, then clears the selection.
 
-Свойства выбранного объекта находятся в правой панели на всю высоту рабочей области. Её ширина меняется перетаскиванием левой границы и запоминается на устройстве; стрелки влево/вправо меняют ширину на 16 px, с Shift — на 32 px, Home/End задают минимум/максимум, двойной щелчок восстанавливает 360 px. Esc отменяет перетаскивание. Вкладки и заголовок закреплены; одна вертикальная прокрутка с отступом снизу позволяет добраться до последнего поля. В узких окнах свойства открываются справа поверх холста и закрываются крестиком или нажатием на затемнение. Нижняя строка команд, сетки, безопасной области и фона остаётся под холстом. У ползунков есть точный ввод; прозрачность задаётся в процентах, цвета — палитрой или HEX. Числовые поля принимают точку и запятую, стрелки меняют значение, Shift увеличивает шаг, Escape отменяет ввод. В Position указаны единицы холста 1920×1080. Fit contents вписывает все модули, Focus selection выделяет один; кнопка 100% показывает фактический размер, увеличение доступно до 400%.
+| Default shortcut | Action |
+| :--- | :--- |
+| Ctrl+C / Ctrl+V | Copy / paste the selected object |
+| Ctrl+X | Cut the selected object |
+| Ctrl+D | Duplicate the selected object |
+| Delete / Backspace | Delete a module or key; hide a mouse button |
+| Ctrl+Z | Undo an action or cancel the current gesture |
+| Ctrl+Shift+Z / Ctrl+Y | Redo |
+| Ctrl+S | Save the profile |
+| Ctrl+E | Toggle key / mouse-button editing |
+| Ctrl+Shift+G | Toggle snapping |
+| Ctrl+Shift+I / Ctrl+Shift+L | Toggle Properties / Layers |
+| Shift+1 / Shift+0 | Fit the full canvas / show 100% |
+| Ctrl+= / Ctrl+− | Zoom in / out |
 
-Общие изображения и состояния: [VISUAL_FEATURES.md](VISUAL_FEATURES.md).
+Open **Settings → Keyboard shortcuts** or select **Shortcuts** in the canvas toolbar. Search for a command, assign up to three shortcuts, disable a binding or restore defaults. For a conflict, choose **Reassign shortcut** or keep the existing binding. Escape cancels recording; recording times out after 20 seconds. Shortcuts follow physical key positions across keyboard layouts.
 
+The object clipboard works between profiles in the current Studio window and carries required images and SVGs. Pasted modules receive an independent artwork group. A copied key carries its visible style; a duplicated key retains inheritance. Pasting a mouse button applies the style, label and geometry to the selected physical input. Duplicating uses the first hidden mouse input from 1–7. A profile supports up to 32 modules.
 
-## Размер и положение модулей на холсте
+Text fields use their normal editing shortcuts. **Lock position** protects the object's geometry and composition. Shortcut preferences are saved on this device.
 
-Наведите на модуль или выберите его: потяните край либо угол рамки. Кнопки и рисунок масштабируются сразу; противоположный край остаётся на месте. Ручки сохраняют удобный размер на экране при любом увеличении. Режим Focus selection включает полные границы модуля.
+## Undo, save and transfer
 
-**Proportions locked** сохраняет отношение ширины к высоте; переключатель **Free resize** разрешает независимые размеры. При перетаскивании Shift временно меняет этот режим, Alt отключает сетку. У клавиатуры и мыши содержимое вписывается в рамку с сохранением формы, поэтому свободная рамка может содержать пустое место.
+A completed move, resize or held-arrow movement forms one Undo step. Slider drags and continuous text, number and color edits are grouped until focus changes. Edits continue saving locally and syncing as you work.
 
-Щелчок по модулю, затем стрелки — перемещение на 1 единицу холста; Shift — 10. Фокус на ручке размера и стрелки меняют соответствующий край. Esc, потеря фокуса или отмена указателя возвращают исходную геометрию. Один завершённый жест — одно действие Undo; Lock position защищает геометрию. Двойной щелчок по клавиатуре открывает редактирование отдельных клавиш.
-
-
-## Команды выделения и горячие клавиши
-
-Панель команд под холстом показывает область действия: **Module**, **Key** или **Mouse button**. В обычном режиме выбран весь модуль. **Edit keys on canvas**, двойной щелчок или Ctrl+E открывают клавиши; в свойствах мыши **Edit individual mouse buttons** или выбор **Edit mouse button** переключает команды на отдельную кнопку. Esc сначала завершает индивидуальное редактирование, затем снимает выделение.
-
-| Стандартное сочетание | Действие |
-| --- | --- |
-| Ctrl+C / Ctrl+V | Скопировать / вставить выбранный объект |
-| Ctrl+X | Вырезать выбранный объект |
-| Ctrl+D | Дублировать выбранный объект |
-| Delete / Backspace | Удалить выбранный модуль или клавишу; скрыть кнопку мыши |
-| Ctrl+Z | Отменить действие или текущий жест |
-| Ctrl+Shift+Z / Ctrl+Y | Повторить действие |
-| Ctrl+S | Сохранить профиль |
-| Ctrl+E | Переключить редактирование клавиш / кнопок мыши |
-| Ctrl+Shift+G | Переключить привязку к сетке |
-| Ctrl+Shift+I / Ctrl+Shift+L | Показать или скрыть свойства / слои |
-| Shift+1 / Shift+0 | Вписать полный холст / показать 100% |
-| Ctrl+= / Ctrl+− | Увеличить / уменьшить масштаб |
-
-В **Settings → Keyboard shortcuts** или через кнопку **Shortcuts** есть поиск команд, замена и добавление сочетаний (до трёх на команду), отключение, индивидуальный и общий сброс. При конфликте выберите **Reassign shortcut** либо сохраните старое назначение. Запись отменяется Esc, потерей фокуса или через 20 секунд. Используются физические позиции клавиш, поэтому команды работают в английской и русской раскладках. Системные сочетания и клавиши навигации зарезервированы.
-
-Буфер объектов принадлежит текущему окну Studio. Он хранит снимок данных и нужные изображения/SVG, позволяет вставлять между профилями и сохраняется после удаления источника; после закрытия окна буфер очищается. Дубликаты получают новые ID; вставляемый модуль отделяется от общей группы картинки, чтобы не менять её границы у оригинала. Клавиша при копировании переносит видимый стиль, при дублировании сохраняет наследование. Общая картинка клавиатуры при вставке отдельной клавиши берётся из целевого модуля.
-
-Вставка кнопки мыши переносит оформление, подпись и геометрию на выбранный физический вход, сохраняя его номер. Дублирование использует первый скрытый вход из 1–7; если все показаны, выберите кнопку для вставки или предварительно скройте одну. Lock position запрещает вырезание/удаление и изменение состава отдельных кнопок, но позволяет копировать защищённый модуль. Лимиты — 32 модуля в профиле и 100 клавиш в клавиатуре.
-
-Глобальные команды не перехватывают ввод в полях, списках и редакторе изображения, а также запись физической клавиши. Текстовые Ctrl+C/V/X/Z и Delete работают штатно. Один объектный жест — один Undo; удержание команды не создаёт повторяющиеся копии. Настройки сочетаний сохраняются на этом устройстве отдельно от JSON оверлея и не меняют физические VK-привязки или захват ввода для OBS.
-
-### Preset library
-
-Choose **Full layouts** to load the shown buttons, shapes, artwork and positions. Game, DPI and sensitivity remain in the profile. **Colors on my layout** previews the current buttons with each palette and transfers colors and surface transparency while preserving geometry, SVGs, labels, artwork and animation settings.
-
-**Save current setup** captures a full layout or a reusable color palette. Both support names, descriptions (up to 500 characters), automatic color swatches, search, export and import. **Edit details** changes metadata in one Undo step; **Update from current setup** refreshes the stored snapshot. Palette-only presets always apply colors, even in the Full layouts view.
-
-### Анимация и подсветка кнопок
-
-В Appearance → Press & release движение и подсветка настраиваются отдельно. Button motion: None, Press, Scale, Lift, Bounce, Pulse. Lighting mode: Fill, Outline, Glow, Fill + glow, Gradient, Ripple, Analog Fill, Off. Gradient использует Accent color, Secondary light color и угол; интенсивность и сила свечения задаются отдельно. Outline требует ненулевой Border width.
-
-Press/Release duration задают скорость перехода, Press/Release delay — задержку визуального отклика в миллисекундах. Короткое нажатие отображается даже с задержкой; повторное нажатие отменяет ожидающее отпускание. Сброс ввода отменяет отложенные эффекты. Физическое состояние клавиш и расчёт расстояния не задерживаются. Play animation воспроизводит отдельный локальный пример через общий рендерер.
-
-Для клавиш и кнопок мыши доступны те же параметры с наследованием, сбросом отдельных значений и копированием стиля. Reduced motion отключает движение и анимацию волны; качество свечения следует Performance. Старые профили продолжают работать без обязательных новых полей.
+Use **Presets → Save current setup** to keep a composition. **Export preset** carries its images; **Settings → Export JSON** exports all profiles and saved presets. See [Saving & sync](SAVING_AND_SYNC.md) for backups and recovery.
