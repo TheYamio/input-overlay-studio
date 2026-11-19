@@ -6,6 +6,7 @@
 - Added a separate read-only OBS token. Browser Sources clear the overlay when Capture rejects an expired or revoked token.
 - Kept offline drafts separate across tabs, with recovery in **Settings → Other local drafts**.
 - Made module edits and gesture saves faster in large profile libraries while preserving Undo and Redo.
+- Wrapped long settings hints in narrow inspector panels.
 - Fixed the default Linux data directory and mouse path length calculation.
 - Saved mouse distance only when the total changes and flushed pending input and distance on tray exit.
 

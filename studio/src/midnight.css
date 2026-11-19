@@ -419,7 +419,7 @@ input[type=range] { min-height: 28px; height: 28px; }
 /* Generated controls keep the existing Midnight sizing and scroll flow. */
 .schema-field { border: 0; padding: 0; margin: 0; min-width: 0; position: relative; }
 .schema-field > .field, .schema-field > .range-field, .schema-field > .visual-color { width: 100%; }
-.schema-field > .hint, .schema-field > .warning { display: block; margin: 6px 0 10px; line-height: 1.5; }
+.schema-field > .hint, .schema-field > .warning { display: block; margin: 6px 0 10px; line-height: 1.5; overflow-wrap: anywhere; }
 .schema-field:disabled { opacity: .65; }
 
 /* Language changes preserve control identity, numeric drafts and canvas coordinates. */
