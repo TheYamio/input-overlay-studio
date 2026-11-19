@@ -14,6 +14,8 @@ await vite.listen();
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 0 });
 await new Promise((resolve, reject) => { wss.once('listening', resolve); wss.once('error', reject); });
 const testPort = wss.address().port;
+const editorToken = 'integration-test';
+const obsToken = '0123456789abcdef0123456789abcdef';
 let document = null; let revision = 0;
 let sequence = 0; const heldKeys = new Map(), heldButtons = new Set();
 const broadcast = packet => {
@@ -30,19 +32,29 @@ const broadcast = packet => {
 wss.on('connection', ws => {
   ws.on('message', raw => {
     const message = JSON.parse(raw.toString()); if(message.document?.version===4)message.document=parseDocument(JSON.stringify(message.document));
-    if (message.type === 'auth') { ws.authed = message.token === 'integration-test'; ws.send(JSON.stringify({ type: 'auth_response', studio_capabilities:{...contract,role:'capture'}, status: ws.authed ? 'success' : 'failed', protocol:5, studio_revisions: true, state_snapshot: true })); return; }
+    if (message.type === 'auth') {
+      const role = message.studio_client?.role;
+      ws.canWrite = role === 'studio' && message.token === editorToken;
+      ws.authed = ws.canWrite || (role === 'runtime' && message.token === obsToken);
+      ws.send(JSON.stringify({
+        type: 'auth_response', studio_capabilities: { ...contract, role: 'capture' },
+        status: ws.authed ? 'success' : 'failed', protocol: 5, studio_revisions: true, state_snapshot: true,
+        ...(ws.canWrite ? { obs_token: obsToken } : {}),
+      }));
+      return;
+    }
     if (!ws.authed) return;
     if (message.type === 'input_snapshot') ws.send(JSON.stringify({ type: 'input_snapshot', sequence: ++sequence, keys: [...heldKeys].map(([rawcode, depth]) => ({ rawcode, depth })), buttons: [...heldButtons] }));
     if (message.type === 'studio_get') { ws.send(JSON.stringify({ type: 'studio_config', revision: String(revision), document })); ws.gotConfig = true; }
-    if (message.type === 'studio_set') { if (message.base_revision !== String(revision)) { ws.send(JSON.stringify({ type: 'studio_conflict', document, revision: String(revision), request_id: message.request_id })); return; } revision++; document = message.document; broadcast({ type: 'studio_config', revision: String(revision), document, origin: message.origin }); ws.send(JSON.stringify({ type: 'studio_saved', revision: String(revision), request_id: message.request_id })); }
-    if (message.type === 'distance_reset') broadcast({ type: 'distance_total', cm: 0 });
+    if (message.type === 'studio_set' && ws.canWrite) { if (message.base_revision !== String(revision)) { ws.send(JSON.stringify({ type: 'studio_conflict', document, revision: String(revision), request_id: message.request_id })); return; } revision++; document = message.document; broadcast({ type: 'studio_config', revision: String(revision), document, origin: message.origin }); ws.send(JSON.stringify({ type: 'studio_saved', revision: String(revision), request_id: message.request_id })); }
+    if (message.type === 'distance_reset' && ws.canWrite) broadcast({ type: 'distance_total', cm: 0 });
   });
 });
 const heartbeat = setInterval(() => broadcast({ type: 'heartbeat' }), 3000);
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1560, height: 1000 }, permissions: ['clipboard-write', 'clipboard-read'] });
 await context.addInitScript(() => localStorage.setItem('studio.inspector-section', 'all'));
-await context.addInitScript(port => localStorage.setItem('studio.connection', JSON.stringify({ url: `ws://127.0.0.1:${port}`, token: 'integration-test' })), testPort);
+await context.addInitScript(({ port, token }) => localStorage.setItem('studio.connection', JSON.stringify({ url: `ws://127.0.0.1:${port}`, token })), { port: testPort, token: editorToken });
 const page = await context.newPage();
 const errors = []; page.on('pageerror', e => errors.push(e.message));
 const results = [];
@@ -126,7 +138,9 @@ try {
   });
   const overlay = await context.newPage(); overlay.on('pageerror', e => errors.push(e.message));
   await check('OBS source is transparent and editor-free', async () => {
+    await page.bringToFront();
     await page.getByRole('button', { name: /Copy OBS URL/ }).click(); await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('overlay.html'); const url = await page.evaluate(() => navigator.clipboard.readText());
+    expect(new URLSearchParams(new URL(url).hash.slice(1)).get('token')).toBe(obsToken);
     if (url.includes('demo=')) throw Error('Demo leaked into OBS URL');
     await overlay.goto(url); await expect(overlay.locator('.overlay-module')).toHaveCount(document.profiles[0].modules.length);
     expect(await overlay.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)'); await expect(overlay.locator('nav,button,header')).toHaveCount(0);

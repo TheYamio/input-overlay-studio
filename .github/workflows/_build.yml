@@ -42,6 +42,7 @@ jobs:
           pnpm build
 
       - name: Browser and editor regressions
+        shell: bash
         working-directory: studio
         run: |
           pnpm exec playwright install chromium
@@ -91,6 +92,7 @@ jobs:
         run: cargo build --locked --release
 
       - name: Native architecture acceptance
+        shell: bash
         working-directory: studio
         run: |
           pnpm test:module-migrations-native
