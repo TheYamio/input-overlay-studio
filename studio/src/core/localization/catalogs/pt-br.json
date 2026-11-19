@@ -5,6 +5,16 @@
   "direction": "ltr",
   "namespaces": {
     "ui": {
+      "s-a1a2ec59c68e": "Outros rascunhos locais",
+      "s-b283d9336e65": "Sessão do editor salva",
+      "s-2985e1599973": "Não foi possível abrir o rascunho. Exporte as alterações atuais e tente novamente.",
+      "s-d55a6e901cb6": "Abrir rascunho local",
+      "s-f9f5d3675692": "Excluir este rascunho local salvo?",
+      "s-8c604ffea3a6": "Não foi possível excluir o rascunho local.",
+      "s-6dc220fd6ec5": "Excluir rascunho local",
+      "s-f2c20dad09e0": "Gerar novo token do OBS",
+      "s-4db68fbcefcc": "Depois de aplicar o novo token, copie uma nova URL para cada fonte do OBS.",
+      "s-4c5676d82250": "O servidor de captura não forneceu um token do OBS. Atualize o servidor e reconecte o Studio.",
       "s-3f4f0acd1a28": "Pressionar e soltar",
       "s-fd63a2f84e63": "O movimento, a luz e o tempo podem ser combinados de forma independente.",
       "s-ef8b5b4a2664": "Ponto de início rápido. encaixe-o abaixo.",

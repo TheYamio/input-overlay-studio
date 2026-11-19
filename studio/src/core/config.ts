@@ -1,3 +1,4 @@
+import { randomId } from './uuid.ts';
 import { decodeDocument, projectDocument, encodeDocument, persistedDocumentSchema, validateModuleExtensions } from './module-format.ts';
 export { encodeDocument, persistedDocumentSchema };
 import { z } from 'zod';
@@ -29,7 +30,7 @@ export function planDocumentMigration(input:unknown){
 }
 export { MigrationError };
 export type StudioDocument = z.infer<typeof documentSchema>;
-export const uid = () => crypto.randomUUID();
+export const uid = () => randomId();
 export function layoutKeys(layout: OverlayModule['layout']): Key[] {
   const k = (code: number, label: string, x: number, y: number, w = 54): Key => ({ id: `${code}`, code, label, x, y, w, h: 54 });
   const keys = [k(87, 'W', 62, 0), k(65, 'A', 0, 62), k(83, 'S', 62, 62), k(68, 'D', 124, 62)];

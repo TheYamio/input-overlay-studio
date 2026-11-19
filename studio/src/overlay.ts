@@ -19,6 +19,11 @@ resize(); window.addEventListener('resize', resize);
 const params = new URLSearchParams(location.hash.slice(1));
 const connection = new InputConnection(engine, 'runtime',visualRuntimeRegistry.configurations);
 let stopDemo: (() => void) | undefined;
+connection.onStatus = status => {
+  if (status !== 'Authentication failed') return;
+  pendingRevision = undefined;
+  scene.dispose();
+};
 connection.onDocument = (document,revision) => {
   if (!document) return;
   renderFailed=false;pendingRevision=revision;

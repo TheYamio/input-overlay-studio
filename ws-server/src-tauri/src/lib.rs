@@ -15,6 +15,7 @@ mod ws_server;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use tauri::{
     menu::{Menu, MenuItem},
@@ -24,7 +25,7 @@ use tauri::{
 use tokio::sync::{watch, RwLock};
 
 use services::config::Config;
-use ws_server::{InputEvent, ServerStatus, WsState};
+use ws_server::{InputEvent, ServerSignal, ServerStatus, WsState};
 
 struct AppState {
     config: Arc<RwLock<Config>>,
@@ -33,6 +34,8 @@ struct AppState {
     config_writer:tokio::sync::Mutex<()>,
     activity: Arc<studio_activity::StudioActivity>,
     ws_state: Arc<WsState>,
+    server_task: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
+    exit_ready: AtomicBool,
     #[cfg(windows)]
     _raw_input: Mutex<Option<services::windows::raw_input::RawInputThread>>,
     #[cfg(target_os = "linux")]
@@ -93,13 +96,22 @@ async fn get_config(state: tauri::State<'_, AppState>) -> Result<Config, String>
 
 #[tauri::command]
 async fn save_config(new_cfg: serde_json::Value, state: tauri::State<'_, AppState>) -> Result<(), services::config::ConfigError> {
-    let new_cfg=Config::parse(new_cfg)?;
     // Serialize the complete apply, including service restarts, across callers.
     let _writer=state.config_writer.lock().await;
+    if state.server_task.lock().unwrap().is_none() {
+        return Err(services::config::ConfigError::new("native-storage"));
+    }
+    let mut new_cfg = new_cfg;
+    if let Some(fields) = new_cfg.as_object_mut() {
+        if !fields.contains_key("obs_token") {
+            fields.insert("obs_token".into(), state.config.read().await.obs_token.clone().into());
+        }
+    }
+    let new_cfg=Config::parse(new_cfg)?;
     let (need_rebind, need_analog_restart, need_http_restart, need_evdev_restart) = {
         let old = state.config.read().await;
         (
-            old.host != new_cfg.host || old.port != new_cfg.port || old.auth_token != new_cfg.auth_token,
+            old.host != new_cfg.host || old.port != new_cfg.port || old.auth_token != new_cfg.auth_token || old.obs_token != new_cfg.obs_token,
             old.analog_keyboard != new_cfg.analog_keyboard || old.capture_enabled != new_cfg.capture_enabled,
             old.http_enabled != new_cfg.http_enabled
                 || old.http_port != new_cfg.http_port
@@ -132,7 +144,7 @@ async fn save_config(new_cfg: serde_json::Value, state: tauri::State<'_, AppStat
     let _ = state.ws_state.input_tx.send(InputEvent::Reset);
 
     if need_rebind {
-        let _ = state.ws_state.rebind_tx.send(());
+        let _ = state.ws_state.rebind_tx.send(ServerSignal::Rebind);
     }
 
     let need_analog_restart=need_analog_restart||capture_enabled&&!new_analog_kb.is_empty()&&!state.analog.lock().unwrap().as_ref().is_some_and(|reader|reader.is_alive());
@@ -248,22 +260,23 @@ pub fn run() {
         std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     }
 
-    let portable_dir = std::env::current_exe()
-        .expect("failed to get exe path").parent().expect("exe has no parent dir").to_path_buf();
-    let data_dir = if let Some(path) = std::env::var_os("INPUT_OVERLAY_STUDIO_DATA_DIR") {
-        PathBuf::from(path)
-    } else if portable_dir.join("config.json").exists() {
-        portable_dir
-    } else {
-        std::env::var_os("LOCALAPPDATA").map(PathBuf::from)
-            .unwrap_or(portable_dir).join("InputOverlayStudio")
+    let (data_dir, _legacy_data) = match services::data_dir::resolve() {
+        Ok(paths) => paths,
+        Err(error) => { eprintln!("Input Overlay Studio: {error}"); std::process::exit(1); }
     };
-    std::fs::create_dir_all(&data_dir).expect("cannot create application data directory");
-
     let log_dir = data_dir.join("logs");
-    std::fs::create_dir_all(&log_dir).ok();
     let log_filename = format!("{}.log", chrono::Local::now().format("%Y-%m-%d_%H-%M-%S"));
-    let file_appender = tracing_appender::rolling::never(&log_dir, &log_filename);
+    let file_appender = match tracing_appender::rolling::RollingFileAppender::builder()
+        .rotation(tracing_appender::rolling::Rotation::NEVER)
+        .filename_prefix(log_filename)
+        .build(&log_dir)
+    {
+        Ok(appender) => appender,
+        Err(error) => {
+            eprintln!("Input Overlay Studio: cannot open data directory {}: {error}", data_dir.display());
+            std::process::exit(1);
+        }
+    };
     let (non_blocking_file, _log_guard) = tracing_appender::non_blocking(file_appender);
 
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -289,11 +302,15 @@ pub fn run() {
         }
     };
 
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             if !argv.iter().any(|arg| arg == "--tray") { toggle_window(app); }
         }))
         .setup(move |app| {
+            #[cfg(target_os = "linux")]
+            if let Some(old) = &_legacy_data {
+                services::data_dir::migrate_linux_data(old, &data_dir)?;
+            }
             let config_path = data_dir.join("config.json");
             let loaded=services::config::load(&config_path);
             let cfg=loaded.config;let startup_warning=loaded.warning;
@@ -314,7 +331,7 @@ pub fn run() {
             let activity=Arc::new(studio_activity::StudioActivity::new(data_dir.join("studio-activity.json")));
             let config = Arc::new(RwLock::new(cfg));
             let status = Arc::new(Mutex::new(ServerStatus::default()));
-            let (rebind_tx, rebind_rx) = watch::channel(());
+            let (rebind_tx, rebind_rx) = watch::channel(ServerSignal::Rebind);
             let (input_tx, input_rx) = ws_server::input_channel();
 
             let ws_state = Arc::new(WsState {
@@ -322,7 +339,7 @@ pub fn run() {
                 input_tx: input_tx.clone(),
             });
 
-            {
+            let server_task = {
                 let cfg = Arc::clone(&config);
                 let st = Arc::clone(&status);
                 let report_app=app.handle().clone();let capture_app=app.handle().clone();
@@ -335,8 +352,8 @@ pub fn run() {
                 let studio = Arc::new(studio_store::StudioStore::new(data_dir.join("studio.json")));
                 tauri::async_runtime::spawn(async move {
                     ws_server::run(cfg, input_rx, st, rebind_rx, hooks, studio, capture_tx, activity).await;
-                });
-            }
+                })
+            };
 
             #[cfg(windows)]
             let raw_input_handle = if capture_enabled {
@@ -377,6 +394,8 @@ pub fn run() {
                 config_writer:tokio::sync::Mutex::new(()),
                 activity,
                 ws_state,
+                server_task: Mutex::new(Some(server_task)),
+                exit_ready: AtomicBool::new(false),
                 #[cfg(windows)]
                 _raw_input: Mutex::new(raw_input_handle),
                 #[cfg(target_os = "linux")]
@@ -426,15 +445,45 @@ pub fn run() {
                 ]
             }
         })
-        .build(context)
-        .expect("error building tauri application")
-        .run(|_app, event| {
-            if let tauri::RunEvent::ExitRequested { api, code, .. } = event {
-                if code.is_none() {
-                    api.prevent_exit();
+        .build(context);
+    match app {
+        Ok(app) => app.run(handle_run_event),
+        Err(error) => {
+            tracing::error!("Input Overlay Studio could not start: {error}");
+            drop(_log_guard);
+            std::process::exit(1);
+        }
+    }
+}
+
+fn handle_run_event(app: &tauri::AppHandle, event: tauri::RunEvent) {
+    let tauri::RunEvent::ExitRequested { api, code, .. } = event else { return };
+    let Some(code) = code else { api.prevent_exit(); return };
+    let Some(state) = app.try_state::<AppState>() else { return };
+    if state.exit_ready.load(Ordering::Acquire) { return; }
+    api.prevent_exit();
+    let task = state.server_task.lock().unwrap().take();
+    if let Some(task) = task {
+        let app = app.clone();
+        tauri::async_runtime::spawn(async move {
+            let state = app.state::<AppState>();
+            {
+                let _writer = state.config_writer.lock().await;
+                #[cfg(windows)]
+                let capture = state._raw_input.lock().unwrap().take();
+                #[cfg(target_os = "linux")]
+                let capture = state._evdev.lock().unwrap().take();
+                let analog = state.analog.lock().unwrap().take();
+                if let Err(error) = tauri::async_runtime::spawn_blocking(move || drop((capture, analog))).await {
+                    tracing::error!("capture could not stop cleanly: {error}");
                 }
+                state.ws_state.rebind_tx.send_replace(ServerSignal::Shutdown);
             }
+            if let Err(error) = task.await { tracing::error!("server could not stop cleanly: {error}"); }
+            state.exit_ready.store(true, Ordering::Release);
+            app.exit(code);
         });
+    }
 }
 
 fn build_tray(app: &tauri::App) -> tauri::Result<()> {

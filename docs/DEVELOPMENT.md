@@ -31,6 +31,8 @@ Start the frontend with `pnpm --dir studio dev`. Run the capture application for
 
 Set `INPUT_OVERLAY_STUDIO_DATA_DIR` to use an isolated data directory. Close the running application through **Exit** in the system tray before starting a different build. A second normal launch opens the existing editor. `--tray` starts capture in the background.
 
+On Linux, the default data directory is `$XDG_DATA_HOME/InputOverlayStudio`. If `XDG_DATA_HOME` is unset, empty or relative, Studio uses `$HOME/.local/share/InputOverlayStudio`. A `config.json` beside the executable activates portable mode. On first use of the new default directory, Studio copies existing data from the old `InputOverlayStudio` folder beside the executable.
+
 ## Verify changes
 
 ```powershell

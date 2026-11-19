@@ -147,6 +147,14 @@ fn run_raw_input(
                 }
             }
         }
+        // Capture may stop between polling ticks. Account for the final
+        // buffered reports before unregistering and closing the input queue.
+        drain_buffer(&tx, us_layout, min_delta, &mut motion, &mut buffer);
+        if motion.distance_counts > 0.0 {
+            let _ = tx.send(InputEvent::MouseMove {
+                dx: motion.dx, dy: motion.dy, distance_counts: Some(motion.distance_counts),
+            });
+        }
         unregister_devices();
         let _ = DestroyWindow(hwnd);
         let _ = tx.send(InputEvent::Reset);

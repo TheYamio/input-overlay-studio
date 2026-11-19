@@ -11,14 +11,14 @@ import contract from '../src/core/compatibility/contract.json' with {type:'json'
 const root=new URL('../../',import.meta.url),data=new URL(`.tools/lifecycle-native/run-${Date.now()}/`,root),artifacts=new URL('../artifacts/lifecycle-native/',import.meta.url);
 await mkdir(data,{recursive:true});await mkdir(artifacts,{recursive:true});
 const endpoint='ws://127.0.0.1:4689',http='http://127.0.0.1:5289',token='lifecycle-isolated-fixture';
-await writeFile(new URL('config.json',data),JSON.stringify({host:'127.0.0.1',port:4689,http_enabled:true,http_port:5289,auth_token:token,capture_enabled:false,cpu_affinity:[]}));
+await writeFile(new URL('config.json',data),JSON.stringify({host:'127.0.0.1',port:4689,http_enabled:true,http_port:5289,auth_token:token,obs_token:'0123456789abcdef0123456789abcdef',capture_enabled:false,cpu_affinity:[]}));
 const exe=process.env.STUDIO_NATIVE_EXE||fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe',root));
 const sockets=[],results=[],errors=[],skipped=[];let child,browser;
 const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};
 const client=async role=>{
  const ws=new WebSocket(endpoint),messages=[];sockets.push(ws);ws.on('error',()=>{});ws.on('message',data=>messages.push(JSON.parse(String(data))));
  await new Promise((resolve,reject)=>{ws.once('open',resolve);ws.once('error',reject);});
- const send=value=>ws.send(JSON.stringify(value));send({type:'auth',token,studio_client:{...contract,role}});
+ const send=value=>ws.send(JSON.stringify(value));send({type:'auth',token:role==='runtime'?'0123456789abcdef0123456789abcdef':token,studio_client:{...contract,role}});
  await expect.poll(()=>messages.some(m=>m.type==='auth_response')).toBe(true);
  return {ws,messages,send,last:type=>messages.findLast(m=>m.type===type)};
 };
@@ -36,7 +36,7 @@ try{
  const studio=await client('studio');studio.send({type:'studio_get'});await expect.poll(()=>!!studio.last('studio_config')).toBe(true);
  studio.send({type:'studio_set',document:encodeDocument(initialDocument()),base_revision:studio.last('studio_config').revision,request_id:1});await expect.poll(()=>studio.last('studio_saved')?.request_id).toBe(1);
  browser=await chromium.launch({headless:true});const page=await browser.newPage();page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`${http}/studio/overlay.html#ws=${encodeURIComponent(endpoint)}&token=${token}`);
+ await page.goto(`${http}/studio/overlay.html#ws=${encodeURIComponent(endpoint)}&token=0123456789abcdef0123456789abcdef`);
  await check('actual browser Runtime renders and confirms the document',async()=>{await expect(page.locator('.overlay-key').first()).toBeAttached();await expect.poll(()=>studio.last('connection_status')?.runtimes.ready).toBe(1);});
  await check('nonreading abusive Runtime is bounded while browser Runtime stays ready',async()=>{
   const slow=await client('runtime');slow.send({type:'studio_get'});await expect.poll(()=>!!slow.last('studio_config')).toBe(true);
@@ -60,7 +60,7 @@ try{
   await browser.close();browser=undefined;
   for(const socket of sockets){if(socket instanceof WebSocket)socket.terminate();else socket.destroy();}
   const exited=new Promise(resolve=>child.once('exit',resolve));child.kill();await exited;
-  await writeFile(new URL('config.json',data),JSON.stringify({host:'::1',port:4689,http_enabled:true,http_port:5289,auth_token:token,capture_enabled:false,cpu_affinity:[]}));
+  await writeFile(new URL('config.json',data),JSON.stringify({host:'::1',port:4689,http_enabled:true,http_port:5289,auth_token:token,obs_token:'0123456789abcdef0123456789abcdef',capture_enabled:false,cpu_affinity:[]}));
   child=spawn(exe,['--tray'],{windowsHide:true,stdio:'ignore',env:{...process.env,INPUT_OVERLAY_STUDIO_DATA_DIR:fileURLToPath(data),WEBVIEW2_USER_DATA_FOLDER:fileURLToPath(new URL('webview/',data))}});
   await expect.poll(async()=>{try{return(await fetch('http://[::1]:5289/studio/index.html')).status;}catch{return 0;}},{timeout:25000}).toBe(200);
   const ws=new WebSocket('ws://[::1]:4689'),messages=[];sockets.push(ws);ws.on('error',()=>{});ws.on('message',data=>messages.push(JSON.parse(String(data))));

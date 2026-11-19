@@ -1,10 +1,11 @@
 use std::os::unix::io::AsRawFd;
 use crate::services::stop_signal::StopSignal;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
-use evdev::{Device, InputEventKind, Key, RelativeAxisType};
+use evdev::{Device, InputEventKind, Key, RelativeAxisType, Synchronization};
+use crate::motion::{Motion, RelativeReport};
 use crate::ws_server::InputSender;
 
 use crate::services::consts::{hid_to_vk, RAW_MOUSE_FLUSH_HZ};
@@ -255,11 +256,19 @@ impl Drop for EvdevInputThread {
     }
 }
 
+fn set_nonblocking(device: &Device) -> std::io::Result<()> {
+    let fd = device.as_raw_fd();
+    let flags = unsafe { libc::fcntl(fd, libc::F_GETFL, 0) };
+    if flags == -1 || unsafe { libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) } == -1 {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(())
+}
+
 fn run_keyboard(mut dev: Device, tx: InputSender, stop: Arc<StopSignal>) {
-    unsafe {
-        let fd = dev.as_raw_fd();
-        let flags = libc::fcntl(fd, libc::F_GETFL, 0);
-        libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK);
+    if let Err(error) = set_nonblocking(&dev) {
+        tracing::error!("evdev: cannot configure nonblocking input: {error}");
+        return;
     }
     tracing::info!(
         "evdev: keyboard thread started ({})",
@@ -337,56 +346,32 @@ fn run_mouse(
     stop: Arc<StopSignal>,
     min_delta: i32,
 ) {
-    unsafe {
-        let fd = dev.as_raw_fd();
-        let flags = libc::fcntl(fd, libc::F_GETFL, 0);
-        libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK);
+    if let Err(error) = set_nonblocking(&dev) {
+        tracing::error!("evdev: cannot configure nonblocking input: {error}");
+        return;
     }
     tracing::info!(
         "evdev: mouse thread started ({})",
         dev.name().unwrap_or("?")
     );
 
-    let accum_dx: Arc<Mutex<i32>> = Arc::new(Mutex::new(0));
-    let accum_dy: Arc<Mutex<i32>> = Arc::new(Mutex::new(0));
-
-    {
-        let stop2 = Arc::clone(&stop);
-        let tx2 = tx.clone();
-        let adx = Arc::clone(&accum_dx);
-        let ady = Arc::clone(&accum_dy);
-        thread::Builder::new()
-            .name("EvdevMouseFlush".into())
-            .spawn(move || {
-                let interval = Duration::from_micros(1_000_000 / RAW_MOUSE_FLUSH_HZ as u64);
-                while !stop2.is_cancelled() {
-                    if stop2.wait(interval){break;}
-                    let dx = std::mem::take(&mut *adx.lock().unwrap());
-                    let dy = std::mem::take(&mut *ady.lock().unwrap());
-                    if dx != 0 || dy != 0 {
-                        let _ = tx2.send(InputEvent::MouseMove { dx, dy, distance_counts: None });
-                    }
-                }
-            })
-            .ok();
-    }
-
-    while !stop.is_cancelled() {
-        match dev.fetch_events() {
+    let interval = Duration::from_micros(1_000_000 / RAW_MOUSE_FLUSH_HZ as u64);
+    let mut next_flush = Instant::now() + interval;
+    let mut motion = Motion::default();
+    let mut report = RelativeReport::default();
+    loop {
+        let stopping = stop.is_cancelled();
+        let idle = match dev.fetch_events() {
             Ok(events) => {
                 for event in events {
                     match event.kind() {
-                        InputEventKind::RelAxis(axis) if axis == RelativeAxisType::REL_X => {
-                            let dx = event.value();
-                            if min_delta <= 0 || dx.abs() >= min_delta {
-                                *accum_dx.lock().unwrap() += dx;
-                            }
+                        InputEventKind::RelAxis(RelativeAxisType::REL_X) => report.add_x(event.value()),
+                        InputEventKind::RelAxis(RelativeAxisType::REL_Y) => report.add_y(event.value()),
+                        InputEventKind::Synchronization(Synchronization::SYN_REPORT) => {
+                            report.finish(&mut motion, min_delta);
                         }
-                        InputEventKind::RelAxis(axis) if axis == RelativeAxisType::REL_Y => {
-                            let dy = event.value();
-                            if min_delta <= 0 || dy.abs() >= min_delta {
-                                *accum_dy.lock().unwrap() += dy;
-                            }
+                        InputEventKind::Synchronization(Synchronization::SYN_DROPPED) => {
+                            report = RelativeReport::default();
                         }
                         InputEventKind::RelAxis(axis) if axis == RelativeAxisType::REL_WHEEL => {
                             let rotation: i8 = match event.value().cmp(&0) {
@@ -420,16 +405,37 @@ fn run_mouse(
                         _ => {}
                     }
                 }
+                false
             }
-            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                if stop.wait(Duration::from_millis(4)){break;}
-            }
-            Err(e) => {
-                tracing::error!("evdev: mouse error: {e}");
+            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => true,
+            Err(error) => {
+                tracing::error!("evdev: mouse error: {error}");
                 break;
             }
+        };
+        if stopping { break; }
+        let now = Instant::now();
+        if now >= next_flush {
+            flush_motion(&tx, &mut motion);
+            next_flush = now + interval;
+        }
+        if idle {
+            stop.wait(next_flush.saturating_duration_since(now).min(Duration::from_millis(4)));
         }
     }
 
+    flush_motion(&tx, &mut motion);
     tracing::info!("evdev: mouse thread stopped");
+}
+
+
+fn flush_motion(tx: &InputSender, motion: &mut Motion) {
+    let batch = motion.take();
+    if batch.distance_counts > 0.0 {
+        let _ = tx.send(InputEvent::MouseMove {
+            dx: batch.dx,
+            dy: batch.dy,
+            distance_counts: Some(batch.distance_counts),
+        });
+    }
 }

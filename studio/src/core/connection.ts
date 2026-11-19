@@ -1,3 +1,4 @@
+import { randomId } from './uuid.ts';
 import {parseConnectionStatus,type ConnectionStatus} from './connection-status';
 import { localCapabilities, negotiate, readIssue, writeIssue, type ClientRole, type Negotiation } from './compatibility/capabilities';
 import type { PreservedConfiguration } from './compatibility/preserved';
@@ -16,6 +17,7 @@ export class InputConnection {
   private watchdog?: ReturnType<typeof setInterval>;
   private stopped = true;
   private authenticated = false;
+  private obsToken?: string;
   private negotiation:Negotiation = negotiate({});
   private configurationBlocked=false;
   private heartbeatSupported = false;
@@ -25,7 +27,7 @@ export class InputConnection {
   private attempts = 0;
   private lastMessage = 0;
   private options?: ConnectionOptions;
-  private readonly clientId = crypto.randomUUID();
+  private readonly clientId = randomId();
   private sequence = 0;
   private inFlight?: { id: number; json: string };
   private saveTimer?: ReturnType<typeof setTimeout>;
@@ -68,6 +70,9 @@ export class InputConnection {
       this.lastMessage = performance.now();
       if (value.type === 'auth_response') {
         this.authenticated = value.status === 'success';
+        this.obsToken = this.authenticated && this.role === 'studio' &&
+          typeof value.obs_token === 'string' && /^[a-zA-Z0-9]{32}$/.test(value.obs_token) &&
+          value.obs_token !== this.options?.token ? value.obs_token : undefined;
         this.negotiation=negotiate(value);this.heartbeatSupported=this.negotiation.heartbeat;
         if (!this.authenticated) { this.onStatus('Authentication failed'); this.stopped = true; this.engine.reset(); ws.close(); return; }
         this.attempts = 0; this.lastInputSequence = -1; this.lastConfigSequence = -1; this.engine.reset(); this.onStatus('Connected');
@@ -176,7 +181,13 @@ export class InputConnection {
     this.socket.send(JSON.stringify({type:'runtime_ready',revision,state}));return true;
   }
   resetDistance() { if (this.role==='studio'&&this.authenticated&&!this.negotiation.issue&&this.socket?.readyState===WebSocket.OPEN) this.socket.send(JSON.stringify({ type: 'distance_reset' })); }
+  obsOptions(options: ConnectionOptions): ConnectionOptions | undefined {
+    if (!this.authenticated || this.socket?.readyState !== WebSocket.OPEN || !this.obsToken ||
+        this.options?.url !== options.url || this.options.token !== options.token) return undefined;
+    return { url: options.url, token: this.obsToken };
+  }
   stop() {
+    this.obsToken = undefined;
     this.stopped = true;this.onConnectionStatus(null);this.statusSequence=-1;this.runtimeAck=undefined; this.configGeneration++; clearTimeout(this.timer); clearTimeout(this.saveTimer); clearInterval(this.watchdog); this.authenticated = false; this.inFlight = undefined;
     if (this.socket) { this.socket.onclose = null; this.socket.close(); this.socket = undefined; }
     this.engine.reset();

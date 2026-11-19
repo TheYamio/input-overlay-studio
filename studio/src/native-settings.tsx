@@ -4,6 +4,7 @@ import { RegisteredField } from './registered-field';
 import { registerSettingsView } from './settings-views';
 import { useEffect, useState } from 'react';
 import { NumberInput } from './number-input';
+import { randomId } from './core/uuid';
 import type { NativeConfig, NativeSettings } from './core/settings/native';
 export type { NativeConfig } from './core/settings/native';
 
@@ -25,6 +26,12 @@ function LegacyNativeAdvanced({ config, change, settings }: { config: NativeConf
     <RegisteredField id="capture.server.token" label={tr('ui:s-4e024957e006',"Capture server token")} fallback={<label className="field"><span>{tr('ui:s-4e024957e006',"Capture server token")}</span><input type="password" autoComplete="off" maxLength={256} value={config.auth_token} onChange={e => change({ ...config, auth_token: e.target.value })}/></label>}/>
     {linux && <NativeDevices.Provider value={linux}><h4>{tr('ui:s-1e247fa5b061',"Linux input devices")}</h4>{([['linux_evdev_keyboard_device','Keyboard device','capture.server.linux-keyboard',linux.keyboards],['linux_raw_mouse_device','Mouse device','capture.server.linux-mouse',linux.mice]] as const).map(([key,label,id,devices])=><RegisteredField key={id} id={id} label={trText(label)} fallback={<label className="field"><span>{trText(label)}</span><select aria-label={trText(label)} value={config[key]} onChange={event=>change({...config,[key]:event.target.value})}><option value="">{tr('ui:s-d461a493a375',"Automatic")}</option>{config[key]&&!devices.some(([path])=>path===config[key])&&<option value={config[key]}>{config[key]}{tr('ui:s-db4a103d0d02',"(unavailable)")}</option>}{devices.map(([path,name])=><option key={path} value={path}>{name} · {path}</option>)}</select></label>}/>)}{linux.permissions.map((message,index)=><p key={index} className="hint">{trText(message)}</p>)}</NativeDevices.Provider>}
     <p className="hint">{tr('ui:s-54c99f509ddb',"Use Apply server settings below to activate the capture changes.")}</p>
+    {config.obs_token && <div className="field">
+      <button type="button" className="secondary" onClick={() => change({ ...config, obs_token: randomId().replaceAll('-', '') })}>
+        {trText('Regenerate OBS token')}
+      </button>
+      <small className="hint">{trText('After applying the new token, copy a fresh URL into each OBS source.')}</small>
+    </div>}
     {autostart !== null && <AutostartControl value={autostart} busy={busy} change={async enabled=>{
       setBusy(true);setError('');
       try { await settings.setAutostart(enabled); setAutostart(enabled); }

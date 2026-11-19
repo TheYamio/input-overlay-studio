@@ -1,6 +1,6 @@
 [package]
 name = "input-overlay-ws"
-version = "0.6.9"
+version = "0.6.10"
 description = "Input Overlay Studio - local input capture and OBS overlay editor"
 license = "GPL-3.0-only"
 authors = []

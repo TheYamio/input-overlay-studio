@@ -1,3 +1,4 @@
+import { randomId } from './uuid.ts';
 import type { OverlayModule, Profile } from './config';
 import type { ImageSettings } from './visual';
 import { capsFor } from './skins.ts';
@@ -24,7 +25,7 @@ export function linkArtwork(profile: Pick<Profile, 'modules'>, sourceId: string,
   const source = profile.modules.find(m => m.id === sourceId), target = profile.modules.find(m => m.id === targetId);
   if (!source || !target || source === target || !['keyboard', 'mouse'].includes(source.type) || !['keyboard', 'mouse'].includes(target.type)) return;
   if (join) {
-    source.image.groupId ||= crypto.randomUUID(); target.image = structuredClone(source.image);
+    source.image.groupId ||= randomId(); target.image = structuredClone(source.image);
   } else if (source.image.groupId && target.image.groupId === source.image.groupId) delete target.image.groupId;
 }
 export function consistentArtworkGroups(modules: OverlayModule[]) {

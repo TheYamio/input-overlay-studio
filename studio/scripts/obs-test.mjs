@@ -12,6 +12,8 @@ import { initialDocument, factoryModules, activeProfile, gameForProfile, encodeD
 const root = new URL('../../', import.meta.url), portable = new URL('.tools/obs-portable/', root);
 const captureData = new URL(`.tools/obs-acceptance/run-${Date.now()}/`, root), artifacts = new URL('../artifacts/', import.meta.url);
 const token = randomBytes(24).toString('hex'), password = randomBytes(24).toString('hex');
+const obsToken = randomBytes(16).toString('hex');
+const sceneName = 'Acceptance empty', sourceName = `Overlay ${Date.now()}`;
 const obsDirectory = fileURLToPath(new URL('bin/64bit/', portable));
 await mkdir(captureData, { recursive: true }); await mkdir(artifacts, { recursive: true });
 await mkdir(new URL('config/obs-studio/plugin_config/obs-websocket/', portable), { recursive: true });
@@ -23,14 +25,16 @@ await mkdir(new URL('config/obs-studio/basic/scenes/', portable), { recursive: t
 await writeFile(new URL('config/obs-studio/basic/scenes/input-overlay-acceptance.json', portable), JSON.stringify({
   name: 'Input Overlay acceptance', DesktopAudioDevice1: null, DesktopAudioDevice2: null,
   AuxAudioDevice1: null, AuxAudioDevice2: null, AuxAudioDevice3: null, AuxAudioDevice4: null,
-  sources: [{ name: 'Acceptance empty', uuid: randomUUID(), id: 'scene', versioned_id: 'scene', settings: { items: [], id_counter: 0 }, mixers: 0, volume: 1, enabled: true, muted: false, hotkeys: {}, canvas_uuid: '6c69626f-6273-4c00-9d88-c5136d61696e' }],
-  groups: [], scene_order: [{ name: 'Acceptance empty' }], current_scene: 'Acceptance empty', current_program_scene: 'Acceptance empty',
+  sources: [{ name: sceneName, uuid: randomUUID(), id: 'scene', versioned_id: 'scene', settings: { items: [], id_counter: 0 }, mixers: 0, volume: 1, enabled: true, muted: false, hotkeys: {}, canvas_uuid: '6c69626f-6273-4c00-9d88-c5136d61696e' }],
+  groups: [], scene_order: [{ name: sceneName }], current_scene: sceneName, current_program_scene: sceneName,
   current_transition: 'Fade', transition_duration: 300, transitions: [{ name: 'Fade', id: 'fade_transition', settings: {} }], quick_transitions: [], saved_projectors: [], modules: {},
 }));
 const userIniPath = new URL('config/obs-studio/user.ini', portable), userIni = await readFile(userIniPath, 'utf8').catch(() => '');
 const selection = 'SceneCollection=Input Overlay acceptance\nSceneCollectionFile=input-overlay-acceptance.json\n';
 await writeFile(userIniPath, /\[Basic\]\r?\n/.test(userIni) ? userIni.replace(/(\[Basic\]\r?\n)([\s\S]*?)(?=\r?\n\[|$)/, (_, heading, body) => heading + body.replace(/^SceneCollection(?:File)?=.*(?:\r?\n|$)/gm, '') + '\n' + selection) : userIni + '\n[Basic]\n' + selection);
-await writeFile(new URL('config.json', captureData), JSON.stringify({ host: '127.0.0.1', port: 4485, auth_token: token, http_enabled: true, http_port: 4486, cpu_affinity: [] }));
+const configFile = new URL('config.json', captureData);
+const captureConfig = { host: '127.0.0.1', port: 4485, auth_token: token, obs_token: obsToken, http_enabled: true, http_port: 4486, cpu_affinity: [] };
+await writeFile(configFile, JSON.stringify(captureConfig));
 // Fixed geometry makes CEF pixel probes independent of the current default preset.
 const doc = initialDocument(); activeProfile(doc).modules=factoryModules('Obsidian');
 [[440,400,290,310],[440,735,290,100],[790,400,550,430],[1400,510,300,100],[440,890,980,65]].forEach(([x,y,w,h],index)=>Object.assign(activeProfile(doc).modules[index],{x,y,w,h}));
@@ -41,6 +45,25 @@ const stop = async child => { if (child && child.exitCode === null) { const exit
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const hash = text => createHash('sha256').update(text).digest('base64');
 const results = []; const check = async (name, fn) => { await fn(); results.push({ name, passed: true }); console.log(`PASS ${name}`); };
+async function copySourceURL(expectedToken) {
+  const studioBrowser = await chromium.launch({ headless: true });
+  try {
+    const context = await studioBrowser.newContext();
+    await context.addInitScript(editorToken => {
+      localStorage.setItem('studio.connection', JSON.stringify({ url: 'ws://127.0.0.1:4485', token: editorToken }));
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: async url => { window.testSourceURL = url; } } });
+    }, token);
+    const page = await context.newPage();
+    await page.goto('http://127.0.0.1:4486/studio/index.html');
+    await expect(page.locator('[data-connection-part=save]')).toHaveAttribute('data-connection-state', 'Saved to capture server');
+    await page.getByRole('button', { name: 'Copy OBS URL', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => typeof window.testSourceURL)).toBe('string');
+    const url = new URL(await page.evaluate(() => window.testSourceURL));
+    expect(url.pathname).toBe('/studio/overlay.html');
+    if (new URLSearchParams(url.hash.slice(1)).get('token') !== expectedToken) throw Error('Studio did not copy the current OBS credential');
+    return url;
+  } finally { await studioBrowser.close(); }
+}
 let serial = 0; const requests = new Map();
 function request(requestType, requestData = {}) {
   return new Promise((resolve, reject) => {
@@ -101,16 +124,15 @@ try {
   obs = spawn(fileURLToPath(new URL('bin/64bit/obs64.exe', portable)), ['--portable', '--multi', '--collection', 'Input Overlay acceptance', '--disable-updater', '--minimize-to-tray', '--disable-missing-files-check', '--websocket_ipv4_only'], { cwd: obsDirectory, windowsHide: true, stdio: 'ignore' });
   await connectOBS();
   const version = await request('GetVersion');
-  // The portable test collection persists between runs. shutdown:false would keep
-  // old hidden Browser Sources alive and contaminate CPU/GPU/memory measurements.
-  const oldInputs = (await request('GetInputList')).inputs;
-  if (oldInputs.some(input => !/^Overlay [0-9]+$/.test(input.inputName))) throw Error('Unexpected source in the dedicated portable test collection; refusing to change it: ' + JSON.stringify(oldInputs.map(i => ({ name:i.inputName, kind:i.inputKind }))));
-  for (const input of oldInputs) await request('RemoveInput', { inputName: input.inputName });
-  const sceneName = `Input Overlay acceptance ${Date.now()}`, sourceName = `Overlay ${Date.now()}`;
-  await request('CreateScene', { sceneName }); await request('SetCurrentProgramScene', { sceneName });
-  for (const scene of (await request('GetSceneList')).scenes) if (scene.sceneName !== sceneName && /^Input Overlay acceptance [0-9]+$/.test(scene.sceneName)) await request('RemoveScene', { sceneName: scene.sceneName });
+  // The WebSocket may accept requests before OBS has loaded the test collection.
+  await expect.poll(async () => ({
+    scene: (await request('GetCurrentProgramScene')).currentProgramSceneName,
+    collection: (await request('GetSceneCollectionList')).currentSceneCollectionName,
+    rendering: (await request('GetStats')).renderTotalFrames > 0,
+  }), { timeout: 20000 }).toEqual({ scene: sceneName, collection: 'Input Overlay acceptance', rendering: true });
+  expect((await request('GetInputList')).inputs).toEqual([]);
   await request('SetVideoSettings', { baseWidth: 1920, baseHeight: 1080, outputWidth: 1920, outputHeight: 1080, fpsNumerator: 60, fpsDenominator: 1 });
-  const url = new URL('http://127.0.0.1:4486/studio/overlay.html'); url.hash = new URLSearchParams({ ws: 'ws://127.0.0.1:4485', token }).toString();
+  const url = await copySourceURL(obsToken);
   await check('actual OBS Browser Source loads the production overlay and authenticates', async () => {
     const kinds = await request('GetInputKindList'); expect(kinds.inputKinds).toContain('browser_source');
     await request('CreateInput', { sceneName, inputName: sourceName, inputKind: 'browser_source', sceneItemEnabled: true, inputSettings: { url: url.toString(), width: 1920, height: 1080, is_local_file: false, shutdown: false, fps_custom: true, fps: 60, css: 'body { background: rgba(0,0,0,0); margin:0; overflow:hidden; }' } });
@@ -198,6 +220,24 @@ try {
     const { measureOBS } = await import('./obs-resource.mjs');
     await measureOBS({ request, document: doc, url, sourceName, capture, obs, artifacts, seconds: Number(process.env.STUDIO_OBS_PERF_SECONDS) });
   }
+  await check('token rotation blanks the existing Browser Source and the newly copied URL restores it', async () => {
+    const replacement = randomBytes(16).toString('hex');
+    nativeSocket.close();
+    await stop(capture);
+    await writeFile(configFile, JSON.stringify({ ...captureConfig, obs_token: replacement }));
+    startCapture();
+    await expect.poll(async () => {
+      try { return (await fetch('http://127.0.0.1:4486/studio/overlay.html')).status; } catch { return 0; }
+    }, { timeout: 15000 }).toBe(200);
+    await nativeObserver();
+    await expect.poll(() => nativeReport?.runtimes, { timeout: 15000 }).toEqual({ connected: 0, ready: 0, failed: 0, unresponsive: 0 });
+    // The source stays open on its old URL until Capture rejects its credential.
+    await expect.poll(async () => (await screenshot(1920, 1080, 'obs-revoked.png')).transparent, { timeout: 15000 }).toBe(1920 * 1080);
+    const updated = await copySourceURL(replacement);
+    await request('SetInputSettings', { inputName: sourceName, inputSettings: { url: updated.toString() }, overlay: true });
+    await expect.poll(() => nativeReport?.runtimes, { timeout: 15000 }).toEqual({ connected: 1, ready: 1, failed: 0, unresponsive: 0 });
+    await expect.poll(async () => (await screenshot(1920, 1080, 'obs-token-updated.png')).visible, { timeout: 15000 }).toBeGreaterThan(1000);
+  });
   const report = { obsVersion: version.obsVersion, results, base, larger, stats: { activeFps: stats.activeFps, renderTotalFrames: stats.renderTotalFrames, renderSkippedFrames: stats.renderSkippedFrames }, physicalDevicesVerified: false, recordingTested: false, sourceURLContainsDemo: false };
   await writeFile(new URL('obs-results.json', artifacts), JSON.stringify(report, null, 2));
   console.log(`${results.length} actual OBS checks passed (OBS ${version.obsVersion}).`);

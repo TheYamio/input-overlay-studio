@@ -1,3 +1,4 @@
+import { randomId } from '../uuid.ts';
 import type { Scope, Store } from '../architecture/contracts';
 
 export interface SettingsChange {
@@ -26,7 +27,7 @@ export class SettingsEvents {
   private notifying = false;
   private version = 0;
   private sequence = 0;
-  private readonly origin = crypto.randomUUID();
+  private readonly origin = randomId();
   constructor(private readonly listenerError: (error: unknown) => void = () => {}) {}
   operation() { return `${this.origin}:${++this.sequence}`; }
   assertWritable() { if (this.notifying) throw new SettingsError('reentrant-write','Settings cannot be changed from a change notification.'); }

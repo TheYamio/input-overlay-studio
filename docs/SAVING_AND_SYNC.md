@@ -32,6 +32,8 @@ Connection credentials are stored separately from profile exports.
 
 ## Restore your work
 
+Offline edits are saved separately for each editor tab. Reload a tab to continue its draft. To recover a draft from another tab or a closed window, open **Settings → Other local drafts**, choose the saved session, and select **Open local draft**.
+
 Studio keeps the previous working configuration as a backup. If the main configuration file is damaged, the application offers recovery. **Restore last local backup** loads the previous browser copy; native `.backup.json` files are kept in the application data directory.
 
 When a save fails, use **Export local draft** before closing the editor. Keep an exported copy when moving to another computer or updating the application.

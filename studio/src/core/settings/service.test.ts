@@ -28,6 +28,16 @@ beforeEach(()=>vi.useFakeTimers());
 afterEach(()=>{for(const service of services.splice(0))service.dispose();vi.useRealTimers();});
 
 describe('durable gesture checkpoints',()=>{
+  it('rejects scoped edits that violate canvas, resource or key constraints without saving or recording Undo',()=>{
+    const f=fixture(), before=f.service.document;
+    const profile=before.profiles[0], module=profile.modules[0];
+    expect(f.service.editModule(profile.id,module.id,draft=>{draft.x=1920;})).toBe(false);
+    expect(f.service.editModule(profile.id,module.id,draft=>{draft.appearance.shapeId='missing';})).toBe(false);
+    expect(f.service.editModule(profile.id,module.id,draft=>{draft.keys.push({...draft.keys[0]});})).toBe(false);
+    expect(f.service.document).toBe(before);
+    expect(f.service.getSnapshot().canUndo).toBe(false);
+    expect(f.writes).toHaveLength(0);
+  });
   it('retains immediate full durability for adapters without a journal capability',()=>{
     const f=fixture();delete f.storage.saveDraft;f.service.beginGesture('custom adapter');f.edit('One');f.edit('Two');expect(f.writes).toHaveLength(2);f.service.endGesture();expect(f.writes).toHaveLength(2);
   });

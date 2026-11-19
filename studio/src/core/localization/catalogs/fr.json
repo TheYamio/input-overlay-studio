@@ -5,6 +5,16 @@
   "direction": "ltr",
   "namespaces": {
     "ui": {
+      "s-a1a2ec59c68e": "Autres brouillons locaux",
+      "s-b283d9336e65": "Session de l’éditeur enregistrée",
+      "s-2985e1599973": "Impossible d’ouvrir le brouillon. Exportez les modifications en cours et réessayez.",
+      "s-d55a6e901cb6": "Ouvrir le brouillon local",
+      "s-f9f5d3675692": "Supprimer ce brouillon local enregistré ?",
+      "s-8c604ffea3a6": "Impossible de supprimer le brouillon local.",
+      "s-6dc220fd6ec5": "Supprimer le brouillon local",
+      "s-f2c20dad09e0": "Régénérer le jeton OBS",
+      "s-4db68fbcefcc": "Après avoir appliqué le nouveau jeton, copiez une nouvelle URL dans chaque source OBS.",
+      "s-4c5676d82250": "Le serveur de capture n’a pas fourni de jeton OBS. Mettez-le à jour et reconnectez Studio.",
       "s-3f4f0acd1a28": "Appui et relâchement",
       "s-fd63a2f84e63": "Le mouvement, la lumière et le temps peuvent être combinés indépendamment.",
       "s-ef8b5b4a2664": "Point de départ rapide. Fine-tune ci-dessous.",

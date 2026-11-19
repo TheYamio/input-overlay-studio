@@ -8,14 +8,14 @@ import {initialDocument,encodeDocument} from '../src/core/config.ts';
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 const root=new URL('../../',import.meta.url),data=new URL(`.tools/connection-native/run-${Date.now()}/`,root),artifacts=new URL('../artifacts/connection-status-native/',import.meta.url);
 await mkdir(data,{recursive:true});await mkdir(artifacts,{recursive:true});
-await writeFile(new URL('config.json',data),JSON.stringify({host:'127.0.0.1',port:4678,http_enabled:true,http_port:5278,auth_token:'connection-native-fixture',capture_enabled:false,cpu_affinity:[]}));
+await writeFile(new URL('config.json',data),JSON.stringify({host:'127.0.0.1',port:4678,http_enabled:true,http_port:5278,auth_token:'connection-native-fixture',obs_token:'0123456789abcdef0123456789abcdef',capture_enabled:false,cpu_affinity:[]}));
 const exe=process.env.STUDIO_NATIVE_EXE||fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe',root));
 const endpoint='ws://127.0.0.1:4678',http='http://127.0.0.1:5278',sockets=[],results=[],errors=[];let child;
 const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width:1440,height:900}});
 await context.addInitScript(()=>localStorage.setItem('studio.connection',JSON.stringify({url:'ws://127.0.0.1:4678',token:'connection-native-fixture'})));
 const start=async()=>{child=spawn(exe,['--tray'],{windowsHide:true,stdio:'ignore',env:{...process.env,INPUT_OVERLAY_STUDIO_DATA_DIR:fileURLToPath(data),WEBVIEW2_USER_DATA_FOLDER:fileURLToPath(new URL('webview/',data))}});await expect.poll(async()=>{try{return(await fetch(`${http}/studio/index.html`)).status;}catch{return 0;}},{timeout:25000}).toBe(200);};
 const stop=async()=>{for(const ws of sockets.splice(0))ws.terminate();if(child?.exitCode===null){const done=new Promise(r=>child.once('exit',r));child.kill();await done;}};
-const connect=async(role,token='connection-native-fixture',capabilities=contract)=>{
+const connect=async(role,token=role==='runtime'?'0123456789abcdef0123456789abcdef':'connection-native-fixture',capabilities=contract)=>{
  const ws=new WebSocket(endpoint),messages=[];sockets.push(ws);ws.on('message',raw=>messages.push(JSON.parse(String(raw))));await new Promise((resolve,reject)=>{ws.once('open',resolve);ws.once('error',reject);});
  ws.send(JSON.stringify({type:'auth',token,studio_client:{...capabilities,role}}));await expect.poll(()=>messages.some(m=>m.type==='auth_response')).toBe(true);
  return {ws,messages,send:m=>ws.send(JSON.stringify(m)),last:type=>messages.findLast(m=>m.type===type)};
@@ -28,7 +28,7 @@ let observer,bare,revision,studio;
 const counts=async value=>{await expect.poll(()=>observer.last('connection_status')?.runtimes,{timeout:20000}).toEqual(value);};
 const expected=(connected,ready=0,failed=0,unresponsive=0)=>({connected,ready,failed,unresponsive});
 const page=async url=>{const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);return p;};
-const overlay=()=>page(`${http}/studio/overlay.html#ws=${encodeURIComponent(endpoint)}&token=connection-native-fixture`);
+const overlay=()=>page(`${http}/studio/overlay.html#ws=${encodeURIComponent(endpoint)}&token=0123456789abcdef0123456789abcdef`);
 try{
  await start();observer=await connect('studio');
  await check('a fresh server has no source, capture is disabled and Studio is not a Runtime',async()=>{await counts(expected(0));expect(observer.last('connection_status')).toMatchObject({capture_enabled:false,capture_running:false});expect((await get(observer)).document).toBeNull();});

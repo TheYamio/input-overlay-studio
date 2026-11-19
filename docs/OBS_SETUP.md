@@ -13,6 +13,8 @@ Changes save and sync automatically. **Save profile** saves manually. Closing th
 
 **Live** uses your devices. **Demo** provides sample input for editing. **Copy OBS URL** creates a live overlay source.
 
+After updating from a build that used the Studio token in OBS, copy a fresh URL into each Browser Source. Use **Regenerate OBS token** under **Settings → Native capture server → Advanced capture settings**, then apply the settings, to revoke the current OBS URLs. If you shared an older URL, rotate the **Capture server token** too.
+
 ## Profiles and presets
 
 A profile holds the game, DPI, sensitivity, appearance and layout. The preset library lets you save, rename, duplicate, import and export compositions with their images.
@@ -28,7 +30,7 @@ Set the correct mouse DPI for estimated physical distance and **DPI Normalized S
 Under **Settings → Distance**:
 
 - **Reset total distance** resets the shared counter.
-- **Keep total between launches** saves the total about every three seconds.
+- **Keep total between launches** saves changes about every three seconds and flushes the latest total when you choose **Exit** from the system tray.
 - **Reset when capture app starts** starts a new counter each time capture launches.
 
 ## Use two computers

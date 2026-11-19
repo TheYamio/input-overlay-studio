@@ -21,6 +21,10 @@
       "maxLength": 256,
       "pattern": "^\\S+$"
     },
+    "obs_token": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9]{32}$"
+    },
     "key_whitelist": {
       "maxItems": 512,
       "type": "array",

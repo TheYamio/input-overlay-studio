@@ -11,7 +11,10 @@ const browser=await chromium.launch({headless:true});
 try{
  const page=await browser.newPage();await page.goto('http://127.0.0.1:5293/__hot_path.html');await expect.poll(()=>page.evaluate(()=>!!window.hotPath)).toBe(true);
  let real=encodeDocument(initialDocument());try{real=JSON.parse(await readFile(archive+'/real-document.json','utf8'));}catch(error){if(error.code!=='ENOENT')throw error;}
- const documents=await page.evaluate(real=>window.hotPath.prepare(real),real);await writeFile(archive+'/large-document.json',JSON.stringify(documents.large));
+ const documents=await page.evaluate(real=>window.hotPath.prepare(real),real);
+ const largePath=archive+'/large-document.json';
+ if(label==='before')await writeFile(largePath,JSON.stringify(documents.large));
+ else try{documents.large=JSON.parse(await readFile(largePath,'utf8'));}catch(error){if(error.code!=='ENOENT')throw error;}
  const results=[];
  for(const [name,document] of Object.entries(documents))for(const gesture of [false,true]){
   const runs=[];for(let i=0;i<3;i++)runs.push(await page.evaluate(({document,gesture})=>window.hotPath.measure(document,gesture),{document,gesture}));

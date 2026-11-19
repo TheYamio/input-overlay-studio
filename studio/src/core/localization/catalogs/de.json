@@ -5,6 +5,16 @@
   "direction": "ltr",
   "namespaces": {
     "ui": {
+      "s-a1a2ec59c68e": "Andere lokale Entwürfe",
+      "s-b283d9336e65": "Gespeicherte Editor-Sitzung",
+      "s-2985e1599973": "Entwurf konnte nicht geöffnet werden. Exportiere deine Änderungen und versuche es erneut.",
+      "s-d55a6e901cb6": "Lokalen Entwurf öffnen",
+      "s-f9f5d3675692": "Diesen lokalen Entwurf löschen?",
+      "s-8c604ffea3a6": "Der lokale Entwurf konnte nicht gelöscht werden.",
+      "s-6dc220fd6ec5": "Lokalen Entwurf löschen",
+      "s-f2c20dad09e0": "OBS-Token neu erstellen",
+      "s-4db68fbcefcc": "Übernimm das neue Token und kopiere eine neue URL in jede OBS-Quelle.",
+      "s-4c5676d82250": "Der Erfassungsserver hat kein OBS-Token bereitgestellt. Aktualisiere den Server und verbinde Studio erneut.",
       "s-3f4f0acd1a28": "Drücken und Loslassen",
       "s-fd63a2f84e63": "Bewegung, Licht und Timing können unabhängig kombiniert werden.",
       "s-ef8b5b4a2664": "Schneller Startpunkt. Fine-tune es unten.",

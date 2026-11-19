@@ -1,12 +1,12 @@
 import {expect} from '@playwright/test';
 import WebSocket from 'ws';
 import {spawn} from 'node:child_process';
-import {mkdir,readFile,writeFile,readdir} from 'node:fs/promises';
+import {mkdir,readFile,writeFile,readdir,stat} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import contract from '../src/core/compatibility/contract.json' with {type:'json'};
 const root=new URL('../../',import.meta.url),data=new URL(`.tools/settings-boundary-native/run-${Date.now()}/`,root);await mkdir(data,{recursive:true});
 const exe=process.env.STUDIO_NATIVE_EXE||fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe',root));
-const config={host:'127.0.0.1',port:4785,auth_token:'boundary-native-test',http_enabled:true,http_port:4786,capture_enabled:false,cpu_affinity:[]};
+const config={host:'127.0.0.1',port:4785,auth_token:'boundary-native-test',obs_token:'0123456789abcdef0123456789abcdef',http_enabled:true,http_port:4786,capture_enabled:false,cpu_affinity:[]};
 const document=JSON.parse(await readFile(new URL('ws-server/src-tauri/schema/default-current.json',root),'utf8'));document.distance={persist:true,resetOnStart:false};
 const results=[],sockets=[];let child;
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -16,7 +16,7 @@ const start=async(httpPort=4786)=>{
  child=spawn(exe,['--tray'],{windowsHide:true,stdio:'ignore',env:{...process.env,INPUT_OVERLAY_STUDIO_DATA_DIR:fileURLToPath(data)}});
  await expect.poll(async()=>{if(child.exitCode!==null)throw Error(`Native process exited: ${child.exitCode}`);try{return (await fetch(`http://127.0.0.1:${httpPort}/studio/overlay.html`)).status;}catch{return 0;}},{timeout:20000}).toBe(200);
 };
-const client=async(role,token='boundary-native-test',descriptor)=>{
+const client=async(role,token=role==='runtime'?config.obs_token:config.auth_token,descriptor)=>{
  const ws=new WebSocket('ws://127.0.0.1:4785');sockets.push(ws);const packets=[];ws.on('message',raw=>packets.push(JSON.parse(raw.toString())));
  await new Promise((resolve,reject)=>{ws.once('open',resolve);ws.once('error',reject);});
  const next=async type=>{for(let n=0;n<100;n++){const index=packets.findIndex(packet=>packet.type===type);if(index!==-1)return packets.splice(index,1)[0];await wait(30);}throw Error('Native packet timeout: '+type);};
@@ -24,17 +24,31 @@ const client=async(role,token='boundary-native-test',descriptor)=>{
  const auth=await next('auth_response');return{ws,next,send,auth,get:async()=>{send({type:'studio_get'});return next('studio_config');}};
 };
 try{
- await writeFile(new URL('config.json',data),JSON.stringify(config));await writeFile(new URL('studio.json',data),JSON.stringify(document));await writeFile(new URL('distance.json',data),'42');await start();
+ const distanceFile = new URL('distance.json',data);
+ await writeFile(new URL('config.json',data),JSON.stringify(config));await writeFile(new URL('studio.json',data),JSON.stringify(document));await writeFile(distanceFile,'42.000');await start();
+ await check('two idle distance ticks leave the persisted file untouched', async () => {
+  const before = await stat(distanceFile);
+  await wait(6500);
+  expect((await stat(distanceFile)).mtimeMs).toBe(before.mtimeMs);
+  expect(await readFile(distanceFile,'utf8')).toBe('42.000');
+ });
  await check('empty and incorrect client tokens are rejected without exposing configuration',async()=>{
   for(const token of ['', 'incorrect-token']){const c=await client('studio',token);expect(c.auth.status).toBe('failed');c.ws.terminate();}
  });
- const studio=await client('studio');expect(studio.auth.status).toBe('success');
+ const studio=await client('studio');expect(studio.auth.status).toBe('success');expect(studio.auth.obs_token).toBe(config.obs_token);
+ await check('the Runtime connection requires its own credential', async () => {
+  const oldSource = await client('runtime', config.auth_token);
+  expect(oldSource.auth.status).toBe('failed');
+  expect(oldSource.auth.obs_token).toBeUndefined();
+  oldSource.ws.terminate();
+ });
  await check('Runtime, legacy and incompatible Studio cannot run any global mutation',async()=>{
   const bad={...structuredClone(contract),role:'studio',document:{read:[4],write:[]}};
-  for(const [role,descriptor]of [['runtime',undefined],[null,undefined],['studio',bad]]){
-   const c=await client(role,'boundary-native-test',descriptor),before=await c.get(),bytes=await readFile(new URL('studio.json',data),'utf8');
+  for(const [role,descriptor,token]of [['runtime',undefined,config.obs_token],[null,undefined,config.auth_token],['studio',bad,config.auth_token],['studio',undefined,config.obs_token]]){
+   const c=await client(role,token,descriptor),before=await c.get(),bytes=await readFile(new URL('studio.json',data),'utf8');
+   expect(c.auth.obs_token).toBeUndefined();
    for(const packet of [{type:'distance_reset'},{type:'studio_set',document,base_revision:before.revision}]){c.send({...packet,request_id:10});const error=await c.next('studio_error');expect(error.code).toBe('command-forbidden');}
-   expect(await readFile(new URL('distance.json',data),'utf8')).toBe('42');expect(await readFile(new URL('studio.json',data),'utf8')).toBe(bytes);expect((await c.get()).revision).toBe(before.revision);c.ws.terminate();
+   expect(await readFile(distanceFile,'utf8')).toBe('42.000');expect(await readFile(new URL('studio.json',data),'utf8')).toBe(bytes);expect((await c.get()).revision).toBe(before.revision);c.ws.terminate();
   }
  });
  await check('unknown commands are denied and Studio cannot impersonate Runtime readiness',async()=>{
@@ -50,6 +64,22 @@ try{
   studio.send({type:'distance_reset'});await expect.poll(async()=>JSON.parse(await readFile(new URL('distance.json',data),'utf8'))).toBe(0);expect(JSON.parse(await readFile(new URL('studio.json',data),'utf8')).profiles[0].name).toBe('Boundary verified');
  });
  await stop();
+ await check('upgrading an existing config creates a persistent OBS token without changing the Studio token', async () => {
+  const {obs_token: previous, ...legacy} = config;
+  await writeFile(new URL('config.json', data), JSON.stringify(legacy));
+  await start();
+  const stored = JSON.parse(await readFile(new URL('config.json', data), 'utf8'));
+  expect(stored.auth_token).toBe(config.auth_token);
+  expect(stored.obs_token).toHaveLength(32);
+  expect(stored.obs_token).not.toBe(previous);
+  expect((await client('studio')).auth.obs_token).toBe(stored.obs_token);
+  expect((await client('runtime', previous)).auth.status).toBe('failed');
+  expect((await client('runtime', stored.obs_token)).auth.status).toBe('success');
+  await stop();
+  await start();
+  expect((await client('studio')).auth.obs_token).toBe(stored.obs_token);
+  await stop();
+ });
  await check('an empty stored token is replaced once and only the generated token authenticates',async()=>{
   await writeFile(new URL('config.json',data),JSON.stringify({...config,auth_token:''}));await start();const stored=JSON.parse(await readFile(new URL('config.json',data),'utf8'));expect(stored.auth_token).toHaveLength(32);expect(stored.capture_enabled).toBe(false);const bad=await client('studio','arbitrary-token');expect(bad.auth.status).toBe('failed');const good=await client('studio',stored.auth_token);expect(good.auth.status).toBe('success');await stop();await start();expect(JSON.parse(await readFile(new URL('config.json',data),'utf8')).auth_token).toBe(stored.auth_token);await stop();
  });

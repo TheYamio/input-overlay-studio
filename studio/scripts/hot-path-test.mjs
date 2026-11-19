@@ -4,13 +4,13 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {initialDocument,encodeDocument} from '../src/core/config.ts';
 const vite=await createServer({server:{host:'127.0.0.1',port:5293,strictPort:true},plugins:[{name:'hot-path',configureServer(server){server.middlewares.use('/__hot_path.html',async(req,res)=>{res.setHeader('Content-Type','text/html');res.end(await server.transformIndexHtml('/__hot_path.html','<html><body><script type="module" src="/scripts/fixtures/hot-path.ts"></script></body></html>'));});}}]});await vite.listen();
 const browser=await chromium.launch({headless:true}),context=await browser.newContext(),results=[],errors=[];let page;
-const key='input-overlay-studio.document';const open=async()=>{page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));await page.goto('http://127.0.0.1:5293/__hot_path.html?probe');await expect.poll(()=>page.evaluate(()=>!!window.hotProbe)).toBe(true);};
+const key='input-overlay-studio.document';const open=async(scoped=false)=>{page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));await page.goto('http://127.0.0.1:5293/__hot_path.html?probe'+(scoped?'&scoped':''));await expect.poll(()=>page.evaluate(()=>!!window.hotProbe)).toBe(true);};
 const check=async(name,run)=>{await run();results.push(name);console.log('PASS '+name);};
 try{
  await open();await page.evaluate(seed=>window.hotPath.startProbe(window.hotPath.prepare(seed).large),encodeDocument(initialDocument()));
  await check('large gestures journal every update and keep the full checkpoint unchanged until the boundary',async()=>{
-  const state=await page.evaluate(key=>{const p=window.hotProbe,before=localStorage.getItem(key),opacity=p.settings.document.profiles[0].modules[0].opacity;p.settings.beginGesture('drag');for(let i=0;i<25;i++)p.settings.transaction(d=>{d.profiles[0].modules[0].opacity=.5+i/1000;});return {same:localStorage.getItem(key)===before,bytes:localStorage.getItem(key+'.draft').length,recovered:p.load().document.profiles[0].modules[0].opacity,opacity};},key);
-  expect(state.same).toBe(true);expect(state.bytes).toBeLessThan(1000);expect(state.recovered).toBe(.524);
+  const state=await page.evaluate(key=>{const p=window.hotProbe,before=localStorage.getItem(key),[profile,unchanged]=p.settings.document.profiles,opacity=profile.modules[0].opacity;const address={scope:'module',profileId:profile.id,moduleId:profile.modules[0].id};p.settings.beginGesture('drag');for(let i=0;i<25;i++)p.settings.set('overlay.instance.opacity',address,.5+i/1000);return {same:localStorage.getItem(key)===before,shared:p.settings.document.profiles[1]===unchanged,bytes:localStorage.getItem(key+'.draft').length,recovered:p.load().document.profiles[0].modules[0].opacity,opacity};},key);
+  expect(state.same).toBe(true);expect(state.shared).toBe(true);expect(state.bytes).toBeLessThan(1000);expect(state.recovered).toBe(.524);
   await page.evaluate(()=>window.hotProbe.settings.endGesture());expect(await page.evaluate(key=>localStorage.getItem(key+'.draft'),key)).toBeNull();
   await page.evaluate(()=>window.hotProbe.settings.undo());expect(await page.evaluate(()=>window.hotProbe.load().document.profiles[0].modules[0].opacity)).toBe(state.opacity);
   await page.evaluate(()=>window.hotProbe.settings.redo());expect(await page.evaluate(()=>window.hotProbe.load().document.profiles[0].modules[0].opacity)).toBe(.524);
@@ -30,6 +30,32 @@ try{
  await check('conflict journals retain their CAS base and server resolution remains undoable',async()=>{
   const state=await page.evaluate(()=>{const p=window.hotProbe;p.settings.connect({url:'ws://benchmark',token:''});p.transport.onDocument(structuredClone(p.settings.document),'r1');p.settings.beginGesture('conflict');p.settings.transaction(d=>{d.profiles[0].name='Local conflict';});const remote=structuredClone(p.settings.document);remote.profiles[0].name='Remote conflict';p.transport.onConflict(remote,'r2');const base=p.load().sync.baseRevision;p.settings.resolveConflict('server');const server=p.load().document.profiles[0].name;p.settings.undo();return {base,server,undo:p.load().document.profiles[0].name,undoBase:p.load().sync.baseRevision};});
   expect(state).toEqual({base:'r1',server:'Remote conflict',undo:'Local conflict',undoBase:'r2'});
+ });
+ await check('an interrupted scoped edit restores the exact module and its server revision from the tab journal', async () => {
+  await page.close();
+  await open(true);
+  await page.evaluate(seed=>window.hotPath.startProbe(window.hotPath.prepare(seed).large),encodeDocument(initialDocument()));
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now()+1000));
+  await page.evaluate(() => {
+    const p=window.hotProbe;
+    p.settings.connect({url:'ws://benchmark',token:''});
+    p.transport.onDocument(structuredClone(p.settings.document),'scoped-r1');
+    p.detach();
+    const profile=p.settings.document.profiles[0];
+    const address={scope:'module',profileId:profile.id,moduleId:profile.modules[0].id};
+    p.settings.beginGesture('interrupted slider');
+    p.settings.set('overlay.instance.opacity',address,.35);
+    p.settings.set('overlay.instance.opacity',address,.65);
+  });
+  await page.close();
+  await open(true);
+  const restored=await page.evaluate(() => ({
+    opacity: window.hotProbe.settings.document.profiles[0].modules[0].opacity,
+    profiles: window.hotProbe.settings.document.profiles.length,
+    sync: window.hotProbe.load().sync,
+  }));
+  expect(restored).toEqual({opacity:.65,profiles:50,sync:{pending:true,baseRevision:'scoped-r1',endpoint:'ws://benchmark'}});
  });
  expect(errors).toEqual([]);const target=new URL('../artifacts/hot-path/',import.meta.url);await mkdir(target,{recursive:true});await writeFile(new URL('results.json',target),JSON.stringify({passed:results.length,results,errors},null,2));
 }finally{await context.close();await browser.close();await vite.close();}

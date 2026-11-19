@@ -20,6 +20,11 @@ fn validate_value(value:&Value)->Result<(),ConfigError>{
     }
     if !crate::module_validation::bounded_json(value,0,&mut 0)||serde_json::to_vec(value).map_or(true,|bytes|bytes.len()>262144){return Err(ConfigError::new("native-invalid-config"));}
     if value["auth_token"].as_str().unwrap().chars().any(|c|c.is_whitespace()||c=='\u{feff}'){return Err(ConfigError::field("auth_token"));}
+    if let Some(token) = value.get("obs_token").and_then(Value::as_str) {
+        if token == value["auth_token"].as_str().unwrap() {
+            return Err(ConfigError::field("obs_token"));
+        }
+    }
     if !super::address::valid_host(value["host"].as_str().unwrap()){return Err(ConfigError::new("native-host"));}
     if value["http_enabled"]==true&&value["port"]==value["http_port"]{return Err(ConfigError::new("native-ports"));}
     for field in ["key_whitelist","cpu_affinity"]{let values=value[field].as_array().unwrap();if values.iter().enumerate().any(|(i,v)|values[..i].contains(v)){return Err(ConfigError::field(field));}}
@@ -34,6 +39,7 @@ pub struct Config {
     pub host: String,
     pub port: u16,
     pub auth_token: String,
+    pub obs_token: String,
     pub key_whitelist: Vec<String>,
     pub raw_mouse_min_delta: i32,
     pub send_mouse_move: bool,
@@ -54,6 +60,7 @@ impl Default for Config {
             host: "127.0.0.1".to_string(),
             port: 4455,
             auth_token: generate_token(),
+            obs_token: generate_token(),
             key_whitelist: Vec::new(),
             raw_mouse_min_delta: 0,
             send_mouse_move: true,
@@ -82,10 +89,11 @@ pub fn load(path: &Path) -> LoadedConfig {
         let raw=std::fs::read_to_string(path).map_err(|_|ConfigError::new("native-startup-invalid"))?;
         let value:Value=serde_json::from_str(&raw).map_err(|_|ConfigError::new("native-startup-invalid"))?;
         let needs_token=value.get("auth_token").is_none_or(|v|v=="");
+        let needs_obs_token = value.get("obs_token").is_none();
         let mut config:Config=serde_json::from_value(value).map_err(|_|ConfigError::new("native-startup-invalid"))?;
         if needs_token{config.auth_token=generate_token();}
         config.validate().map_err(|_|ConfigError::new("native-startup-invalid"))?;
-        Ok((config,needs_token))
+        Ok((config, needs_token || needs_obs_token))
     })();
     match loaded{
         Ok((mut config,write))=>{let warning=if write&&save(path,&config).is_err(){config.capture_enabled=false;Some(ConfigError::new("native-startup-storage"))}else{None};LoadedConfig{config,warning}},

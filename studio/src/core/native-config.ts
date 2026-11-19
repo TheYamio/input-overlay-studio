@@ -6,6 +6,7 @@ import {boundedModuleJSON} from './module-envelope.ts';
 export const nativeConfigShape={
  capture_enabled:z.boolean(),host:z.string().min(1).max(253),port:z.number().int().min(1).max(65535),
  auth_token:z.string().min(1).max(256).regex(/^\S+$/u),
+ obs_token:z.string().regex(/^[a-zA-Z0-9]{32}$/).optional(),
  key_whitelist:z.array(z.string().min(1).max(100).regex(/^[a-z0-9_]+$/)).max(512),
  raw_mouse_min_delta:z.number().int().min(0).max(10000),send_mouse_move:z.boolean(),
  cpu_affinity:z.array(z.number().int().min(0).max(63)).max(64),
@@ -22,6 +23,7 @@ export const nativeConfigSchema=nativeConfigStructure.superRefine((value,ctx)=>{
  const add=(code:string,field?:string)=>ctx.addIssue({code:'custom',message:code,path:field?[field]:[],params:{nativeCode:code}});
  if(!boundedModuleJSON(value))add('native-invalid-config');
  if(!validBindHost(value.host))add('native-host','host');
+ if(value.obs_token===value.auth_token)add('native-invalid-field','obs_token');
  if(value.http_enabled&&value.http_port===value.port)add('native-ports','http_port');
  for(const field of ['key_whitelist','cpu_affinity'] as const)if(new Set<string|number>(value[field]).size!==value[field].length)add('native-invalid-field',field);
  for(const field of ['linux_evdev_keyboard_device','linux_raw_mouse_device'] as const)if(!validInputDevice(value[field]))add('native-invalid-field',field);

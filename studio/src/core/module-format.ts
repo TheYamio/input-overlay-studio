@@ -79,9 +79,14 @@ export function upgradeDocumentModules(document:z.infer<typeof currentDocumentSc
 }
 export function moduleConfiguration(module:OverlayModule):ModuleExtension['config']|undefined{return module.extension?.config;}
 
+export function assembleDocument(value:z.infer<typeof currentDocumentSchema>,encode:(module:OverlayModule)=>PersistedModule):PersistedDocument {
+ const document=isolateDocumentLanguages(value);
+ const container=<T extends {modules:OverlayModule[]}>(profile:T)=>({...profile,modules:profile.modules.map(encode)});
+ return {...document,profiles:document.profiles.map(container),presets:document.presets.map(container)};
+}
 export function encodeDocument(value:z.infer<typeof currentDocumentSchema>,registry=moduleConfigurations):PersistedDocument {
- const document=isolateDocumentLanguages(currentDocumentSchema.parse(value));const container=<T extends {modules:OverlayModule[]}>(profile:T)=>({...profile,modules:profile.modules.map(module=>encodeModule(module,registry))});
- const wire=persistedDocumentSchema.parse({...document,version:4,profiles:document.profiles.map(container),presets:document.presets.map(container)});if(utf8Bytes(JSON.stringify(wire))>MAX_DOCUMENT_BYTES)throw Error('Configuration exceeds 1.8 MB. Remove unused images.');return wire;
+ const wire=persistedDocumentSchema.parse(assembleDocument(currentDocumentSchema.parse(value),module=>encodeModule(module,registry)));
+ if(utf8Bytes(JSON.stringify(wire))>MAX_DOCUMENT_BYTES)throw Error('Configuration exceeds 1.8 MB. Remove unused images.');return wire;
 }
 export function projectDocument(value:unknown,fallback:(id:string)=>OverlayModule,registry=moduleConfigurations){
  // Local sync metadata is separate from the strict persisted document contract.

@@ -1,3 +1,4 @@
+import { randomId } from '../uuid.ts';
 import {builtinLanguages} from './runtime';
 import {parseLocalePack,validateTranslation,type LocalePack,type LocalizationRegistry} from './registry';
 import {localePackagesSchema} from './pack-schema';
@@ -8,7 +9,7 @@ export class LanguageLibrary {
  constructor(private preferences:PreferenceSettings,private registry:LocalizationRegistry){}
  import(input:unknown){
   const parsed=parseLocalePack(input);validateTranslation(parsed,this.registry.exportPack('en'));
-  const pack:LocalePack={...parsed,id:crypto.randomUUID(),origin:'custom',name:parsed.name??parsed.locale,translationVersion:parsed.translationVersion??'1.0'};
+  const pack:LocalePack={...parsed,id:randomId(),origin:'custom',name:parsed.name??parsed.locale,translationVersion:parsed.translationVersion??'1.0'};
   const state=this.preferences.getSnapshot(),packs=localePackagesSchema.parse([...state.languagePacks,pack]);
   if(!this.preferences.changeLanguage({locale:state.locale,packageId:state.localePackageId,packs}))throw Error('language-storage');
   return pack;

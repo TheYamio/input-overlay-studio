@@ -1,3 +1,4 @@
+import { randomId } from '../uuid.ts';
 import {setupStateSchema,setupStorageKey,type SetupState} from '../setup';
 import {localePackagesSchema} from '../localization/pack-schema';
 import type {LocalePack} from '../localization/registry';
@@ -49,7 +50,7 @@ export class PreferenceSettings {
     const raw=get(languageStorageKey);
     if(raw){try{const saved=languageStateSchema.parse(JSON.parse(raw));locale=localeId(saved.locale);languagePacks=saved.packs;localePackageId=saved.packageId;if(localePackageId&&!languagePacks.some(p=>p.id===localePackageId&&p.locale.toLowerCase()===locale))throw Error('Missing language package');}catch{this.protectedLanguages=true;locale='en';languagePacks=[];localePackageId=null;}}
     else{try{languagePacks=localePackagesSchema.parse(JSON.parse(get(keys.languagePacks)||'[]'));}catch{/* Keep the original data for recovery. */}}
-    languagePacks=languagePacks.map(input=>({...parseLocalePack(input),id:input.id??crypto.randomUUID(),origin:'custom' as const}));
+    languagePacks=languagePacks.map(input=>({...parseLocalePack(input),id:input.id??randomId(),origin:'custom' as const}));
     if(!raw&&languagePacks.length)localePackageId=languagePacks.find(p=>p.locale===locale)?.id??null;
     locale=restoredStudioLocale(locale,localePackageId!==null);
     if(!raw&&languagePacks.length){
@@ -71,7 +72,7 @@ export class PreferenceSettings {
     if(this.disposed)throw new SettingsError('disposed','Preferences have been disposed.');
     if(key==='setup'&&(this.protectedSetup||!setupStateSchema.safeParse(value).success))return false;
     if(key==='locale'||key==='languagePacks'||key==='localePackageId'){
-      const packs=key==='languagePacks'?localePackagesSchema.parse(value).map(p=>({...parseLocalePack(p),id:p.id??crypto.randomUUID(),origin:'custom' as const})):this.state.languagePacks;
+      const packs=key==='languagePacks'?localePackagesSchema.parse(value).map(p=>({...parseLocalePack(p),id:p.id??randomId(),origin:'custom' as const})):this.state.languagePacks;
       const locale=key==='locale'?localeId(value as string):this.state.locale;
       const packageId=key==='locale'?null:key==='localePackageId'?value as string|null:this.state.localePackageId;
       if(key==='localePackageId'&&packageId&&!packs.some(p=>p.id===packageId))return false;

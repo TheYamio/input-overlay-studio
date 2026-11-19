@@ -77,6 +77,45 @@ try {
     rejectSave = false; await b.getByRole('button', { name: 'Save profile', exact: true }).click();
     await expect.poll(() => document.gameProfiles[0].name).toBe('Retry this draft');
   });
+  await check('same-origin offline tabs keep separate drafts after reload and closing', async () => {
+    const context = await browser.newContext();
+    const openProfiles = async page => {
+      await page.getByRole('button', { name: 'Profiles', exact: true }).click();
+      await expect(name(page)).toBeVisible();
+    };
+    const open = async () => {
+      const page = await context.newPage();
+      page.on('pageerror', error => errors.push(error.message));
+      await page.goto('http://127.0.0.1:5191');
+      await openProfiles(page);
+      return page;
+    };
+    const edit = async (page, value) => {
+      await name(page).fill(value);
+      await name(page).press('Tab');
+      await expect(page.locator('.statusbar')).toContainText('Saved locally');
+    };
+    try {
+      const first = await open();
+      await edit(first, 'Common starting point');
+      const second = await open();
+      await expect(name(second)).toHaveValue('Common starting point');
+      await edit(first, 'First tab draft');
+      await edit(second, 'Second tab draft');
+      await edit(second, 'Second tab latest draft');
+      await Promise.all([first.reload(), second.reload()]);
+      await openProfiles(first);
+      await openProfiles(second);
+      await expect(name(first)).toHaveValue('First tab draft');
+      await expect(name(second)).toHaveValue('Second tab latest draft');
+      await first.close();
+      await second.getByRole('button', { name: 'Settings', exact: true }).click();
+      await second.getByRole('button', { name: 'Open local draft', exact: true }).click();
+      await second.waitForLoadState();
+      await openProfiles(second);
+      await expect(name(second)).toHaveValue('First tab draft');
+    } finally { await context.close(); }
+  });
   expect(errors).toEqual([]);
   await mkdir(new URL('../artifacts/', import.meta.url), { recursive: true });
   await writeFile(new URL('../artifacts/sync-results.json', import.meta.url), JSON.stringify({ results, errors }, null, 2));

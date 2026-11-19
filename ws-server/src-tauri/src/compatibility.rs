@@ -3,10 +3,12 @@ use serde_json::{json, Value};
 use std::sync::LazyLock;
 pub static CONTRACT: LazyLock<Value> = LazyLock::new(|| serde_json::from_str(include_str!("../../../studio/src/core/compatibility/contract.json")).expect("capability contract"));
 
-pub fn auth_response() -> String {
+pub fn auth_response(obs_token: Option<&str>) -> String {
     let mut capabilities=CONTRACT.clone();capabilities["role"]=json!("capture");
-    json!({"type":"auth_response","status":"success","protocol":CONTRACT["protocolVersion"],"state_snapshot":true,
-        "studio_capabilities":capabilities}).to_string()
+    let mut reply = json!({"type":"auth_response","status":"success","protocol":CONTRACT["protocolVersion"],"state_snapshot":true,
+        "studio_capabilities":capabilities});
+    if let Some(token) = obs_token { reply["obs_token"] = json!(token); }
+    reply.to_string()
 }
 pub fn client_can_write(auth:&Value)->bool {
  let client=&auth["studio_client"];

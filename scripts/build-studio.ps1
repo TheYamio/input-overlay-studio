@@ -39,12 +39,17 @@ try {
         if ($clang) { $unwind = Join-Path (Split-Path -Parent $clang.Source) 'libunwind.dll' }
     }
     if (Test-Path -LiteralPath $unwind) { Copy-Item -LiteralPath $unwind -Destination $package }
-    # Keep the portable directory limited to runtime files. Guides, attribution
-    # and dependency licenses remain available in the corresponding tagged sources.
-    foreach ($requiredNotice in @('LICENSE', 'THIRD_PARTY_NOTICES.md', 'docs/LLVM-RUNTIME-LICENSE.txt', 'docs/WEBVIEW2-SDK-LICENSE.txt', 'docs/WEBVIEW2-SDK-NOTICE.txt')) {
+    $requiredNotices = @('LICENSE', 'THIRD_PARTY_NOTICES.md', 'docs/WEBVIEW2-SDK-LICENSE.txt', 'docs/WEBVIEW2-SDK-NOTICE.txt')
+    if (Test-Path -LiteralPath (Join-Path $package 'libunwind.dll')) { $requiredNotices += 'docs/LLVM-RUNTIME-LICENSE.txt' }
+    $noticeSections = foreach ($requiredNotice in $requiredNotices) {
         & git cat-file -e "HEAD:$requiredNotice"
         if ($LASTEXITCODE -ne 0) { throw "Release sources are missing required notice: $requiredNotice" }
+        $notice = Get-Content -LiteralPath (Join-Path $taskRoot $requiredNotice) -Raw
+        "===== $requiredNotice =====`r`n`r`n$($notice.TrimEnd())"
     }
+    $sourceUrl = "https://github.com/TheYamio/input-overlay-studio/tree/v$version"
+    $noticeText = (@("Input Overlay Studio $version", "Corresponding source and build instructions: $sourceUrl") + $noticeSections) -join "`r`n`r`n"
+    Set-Content -LiteralPath (Join-Path $package 'LICENSES.txt') -Value $noticeText -Encoding utf8
     $archive = Join-Path $taskRoot "release/Input-Overlay-Studio-$version-Windows-x64.zip"
     Compress-Archive -LiteralPath $package -DestinationPath $archive -Force
     Write-Output "Packaged: $package"

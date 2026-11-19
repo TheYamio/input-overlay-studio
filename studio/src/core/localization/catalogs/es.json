@@ -5,6 +5,16 @@
   "direction": "ltr",
   "namespaces": {
     "ui": {
+      "s-a1a2ec59c68e": "Otros borradores locales",
+      "s-b283d9336e65": "Sesión del editor guardada",
+      "s-2985e1599973": "No se pudo abrir el borrador. Exporta los cambios actuales e inténtalo de nuevo.",
+      "s-d55a6e901cb6": "Abrir borrador local",
+      "s-f9f5d3675692": "¿Eliminar este borrador local guardado?",
+      "s-8c604ffea3a6": "No se pudo eliminar el borrador local.",
+      "s-6dc220fd6ec5": "Eliminar borrador local",
+      "s-f2c20dad09e0": "Regenerar token de OBS",
+      "s-4db68fbcefcc": "Tras aplicar el nuevo token, copia una URL nueva en cada fuente de OBS.",
+      "s-4c5676d82250": "El servidor de captura no proporcionó un token de OBS. Actualiza el servidor y vuelve a conectar Studio.",
       "s-3f4f0acd1a28": "Pulsación y liberación",
       "s-fd63a2f84e63": "El movimiento, la luz y el tiempo se pueden combinar de forma independiente.Times son en millisecundos.",
       "s-ef8b5b4a2664": "Punto de inicio rápido. Tone el fondo por debajo.",

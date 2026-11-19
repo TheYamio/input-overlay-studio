@@ -5,6 +5,16 @@
   "direction": "ltr",
   "namespaces": {
     "ui": {
+      "s-a1a2ec59c68e": "Diğer yerel taslaklar",
+      "s-b283d9336e65": "Kaydedilen düzenleyici oturumu",
+      "s-2985e1599973": "Taslak açılamadı. Geçerli değişiklikleri dışa aktarıp yeniden deneyin.",
+      "s-d55a6e901cb6": "Yerel taslağı aç",
+      "s-f9f5d3675692": "Bu kayıtlı yerel taslak silinsin mi?",
+      "s-8c604ffea3a6": "Yerel taslak silinemedi.",
+      "s-6dc220fd6ec5": "Yerel taslağı sil",
+      "s-f2c20dad09e0": "OBS belirtecini yenile",
+      "s-4db68fbcefcc": "Yeni belirteci uyguladıktan sonra her OBS kaynağına yeni bir URL kopyalayın.",
+      "s-4c5676d82250": "Yakalama sunucusu bir OBS belirteci sağlamadı. Sunucuyu güncelleyin ve Studio ile yeniden bağlanın.",
       "s-3f4f0acd1a28": "Basma ve bırakma",
       "s-fd63a2f84e63": "Hareket, ışık ve zamanlama bağımsız olarak birleştirilebilir.",
       "s-ef8b5b4a2664": "Hızlı başlangıç noktası. aşağıdaki noktayı tamamlayın.",

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const root = new URL('../../', import.meta.url), data = new URL(`.tools/native-smoke/run-${Date.now()}/`, root);
 await mkdir(data, { recursive: true });
 const exe = process.env.STUDIO_NATIVE_EXE || fileURLToPath(new URL('ws-server/src-tauri/target/release/input-overlay-ws.exe', root));
-await writeFile(new URL('config.json', data), JSON.stringify({ host: '127.0.0.1', port: 4465, auth_token: 'native-smoke-test', http_enabled: true, http_port: 4466, cpu_affinity: [] }));
+await writeFile(new URL('config.json', data), JSON.stringify({ host: '127.0.0.1', port: 4465, auth_token: 'native-smoke-test', obs_token: '0123456789abcdef0123456789abcdef', http_enabled: true, http_port: 4466, cpu_affinity: [] }));
 let child;
 const start = (showUI = false) => { child = spawn(exe, showUI ? [] : ['--tray'], { windowsHide: true, env: { ...process.env, RUST_LOG: 'info', INPUT_OVERLAY_STUDIO_DATA_DIR: fileURLToPath(data), WEBVIEW2_USER_DATA_FOLDER: fileURLToPath(new URL('webview/', data)) }, stdio: 'ignore' }); };
 const stop = async () => { if (!child || child.exitCode !== null) return; const exit = new Promise(resolve => child.once('exit', resolve)); child.kill(); await exit; };
@@ -218,7 +218,7 @@ try {
     await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); await page.getByRole('button', { name: 'Profiles', exact: true }).click(); await expect(page.getByLabel('Profile name', { exact: true })).toHaveValue('Native persisted');
   });
   await check('compiled transparent OBS entry is served locally', async () => {
-    const overlay = await context.newPage(); await overlay.goto('http://127.0.0.1:4466/studio/overlay.html#ws=ws%3A%2F%2F127.0.0.1%3A4465&token=native-smoke-test'); await expect(overlay.locator('.overlay-module')).toHaveCount(5); expect(await overlay.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)'); await overlay.close();
+    const overlay = await context.newPage(); await overlay.goto('http://127.0.0.1:4466/studio/overlay.html#ws=ws%3A%2F%2F127.0.0.1%3A4465&token=0123456789abcdef0123456789abcdef'); await expect(overlay.locator('.overlay-module')).toHaveCount(5); expect(await overlay.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)'); await overlay.close();
   });
   await check('signature layout saves all 81 keys and seven vector shapes, with one-step Undo', async () => {
     const before = parseDocument(await readFile(new URL('studio.json', data), 'utf8')).profiles[0].modules;
@@ -287,7 +287,7 @@ try {
       await runWindow('close');
       await expect.poll(async () => Number((await runWindow('count')).stdout.trim()), { timeout: 15000 }).toBe(0);
       expect(child.exitCode).toBeNull();
-      const overlay = await context.newPage(); await overlay.goto('http://127.0.0.1:4466/studio/overlay.html#ws=ws%3A%2F%2F127.0.0.1%3A4465&token=native-smoke-test'); await expect(overlay.locator('.overlay-module')).toHaveCount(5); await overlay.close();
+      const overlay = await context.newPage(); await overlay.goto('http://127.0.0.1:4466/studio/overlay.html#ws=ws%3A%2F%2F127.0.0.1%3A4465&token=0123456789abcdef0123456789abcdef'); await expect(overlay.locator('.overlay-module')).toHaveCount(5); await overlay.close();
     });
     await new Promise(resolve => setTimeout(resolve, 5000)); const trayBefore = await processResources(child.pid); await new Promise(resolve => setTimeout(resolve, 15000)); const trayAfter = await processResources(child.pid);
     resources.afterClosingEditor = { ...resourceDelta(trayBefore, trayAfter), processes: trayAfter.processes };

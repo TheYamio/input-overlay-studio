@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.6.10 — November 20, 2026
+
+- Fixed Studio and OBS Browser Source startup over LAN HTTP.
+- Added a separate read-only OBS token. Browser Sources clear the overlay when Capture rejects an expired or revoked token.
+- Kept offline drafts separate across tabs, with recovery in **Settings → Other local drafts**.
+- Made module edits and gesture saves faster in large profile libraries while preserving Undo and Redo.
+- Fixed the default Linux data directory and mouse path length calculation.
+- Saved mouse distance only when the total changes and flushed pending input and distance on tray exit.
+
+**Update:** Quit through **Exit** in the tray, extract the new ZIP, and use **Copy OBS URL** to replace the URL in each OBS Browser Source. If you shared an older URL, change the Capture server token as well.
+
 ## v0.6.9 — October 27, 2026
 
 - First-run setup guide with language selection, real input checks and step-by-step OBS connection. Opening connection settings keeps the current step and progress.

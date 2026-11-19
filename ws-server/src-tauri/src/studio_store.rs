@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{io, path::PathBuf};
 use tokio::sync::Mutex;
 use serde_json::Value;
 use std::sync::{Arc,RwLock};
@@ -34,12 +34,17 @@ impl DocumentSnapshot {
 /// A separate file prevents credentials from appearing in profile exports.
 pub struct StudioStore {
     state: RwLock<Arc<DocumentSnapshot>>,
-    pub distance_cm: Mutex<f64>,
+    distance: Mutex<Distance>,
     pub recovery_required: AtomicBool,
     path: PathBuf,
     writers: Mutex<()>,
     distance_writer: Mutex<()>,
     unsupported_original: Option<(u64,String)>,
+}
+
+struct Distance {
+    cm: f64,
+    saved_cm: f64,
 }
 impl StudioStore {
     pub fn new(path: PathBuf) -> Self {
@@ -50,12 +55,12 @@ impl StudioStore {
         let recovery_required = path.exists() && document.is_null() && unsupported_original.is_none();
         let snapshot=DocumentSnapshot::new(document,0,original);
         let reset=snapshot.document["distance"]["resetOnStart"].as_bool().unwrap_or(true);
-        let distance = if snapshot.persist_distance && !reset {
-            std::fs::read_to_string(path.with_file_name("distance.json")).ok()
-                .and_then(|s| serde_json::from_str::<f64>(&s).ok())
-                .filter(|n| n.is_finite() && *n >= 0.0).unwrap_or(0.0)
-        } else { 0.0 };
-        Self { state:RwLock::new(Arc::new(snapshot)), distance_cm: Mutex::new(distance), recovery_required: AtomicBool::new(recovery_required), path, writers: Mutex::new(()), distance_writer: Mutex::new(()),unsupported_original }
+        let saved_cm = std::fs::read_to_string(path.with_file_name("distance.json")).ok()
+            .and_then(|text| serde_json::from_str::<f64>(&text).ok())
+            .filter(|value| value.is_finite() && *value >= 0.0)
+            .unwrap_or(0.0);
+        let cm = if snapshot.persist_distance && !reset { saved_cm } else { 0.0 };
+        Self { state:RwLock::new(Arc::new(snapshot)), distance: Mutex::new(Distance { cm, saved_cm }), recovery_required: AtomicBool::new(recovery_required), path, writers: Mutex::new(()), distance_writer: Mutex::new(()),unsupported_original }
     }
     pub fn current(&self)->Arc<DocumentSnapshot>{self.state.read().unwrap().clone()}
 
@@ -72,21 +77,31 @@ impl StudioStore {
     }
     pub async fn add_distance(&self, counts: f64) -> f64 {
         let coefficient=self.current().cm_per_count;
-        let mut total=self.distance_cm.lock().await;
-        *total += counts * coefficient;
-        *total
+        let mut distance=self.distance.lock().await;
+        distance.cm += counts * coefficient;
+        distance.cm
     }
-    pub async fn persist_distance(&self) {
+    pub async fn distance_cm(&self) -> f64 { self.distance.lock().await.cm }
+    pub async fn reset_distance(&self) { self.distance.lock().await.cm = 0.0; }
+
+    pub async fn persist_distance(&self) -> io::Result<bool> {
         let _writer = self.distance_writer.lock().await;
-        if !self.current().persist_distance { return; }
-        let total = *self.distance_cm.lock().await;
+        if !self.current().persist_distance { return Ok(false); }
+        let total = {
+            let distance = self.distance.lock().await;
+            if distance.cm == distance.saved_cm { return Ok(false); }
+            distance.cm
+        };
         let path = self.path.with_file_name("distance.json");
-        let result = tokio::task::spawn_blocking(move || -> std::io::Result<()> {
+        tokio::task::spawn_blocking(move || {
             let temporary = path.with_extension("tmp");
             std::fs::write(&temporary, total.to_string())?;
             std::fs::rename(temporary, path)
-        }).await;
-        if !matches!(result, Ok(Ok(()))) { tracing::warn!("studio: distance could not be saved"); }
+        }).await.map_err(io::Error::other)??;
+        // Movement can arrive while disk I/O is in flight. Record just the
+        // value that reached disk, leaving any newer value due for another save.
+        self.distance.lock().await.saved_cm = total;
+        Ok(true)
     }
     #[cfg(test)]
     pub async fn snapshot(&self) -> (Value, String, u64) {
@@ -211,6 +226,36 @@ mod tests {
         for file in [path.clone(),path.with_extension("backup.json")]{std::fs::remove_file(file).unwrap();}
     }
     fn config()->Value{crate::module_validation::migrate(serde_json::from_str(include_str!("../schema/default-current.json")).unwrap()).unwrap()}
+    #[tokio::test]
+    async fn distance_writes_only_on_change_and_retries_failed_writes() {
+        let folder = std::env::temp_dir().join(format!("ios-distance-{}", rand::random::<u64>()));
+        std::fs::create_dir(&folder).unwrap();
+        let mut document = config();
+        document["distance"] = serde_json::json!({"persist":true,"resetOnStart":false});
+        let config_path = folder.join("studio.json");
+        let distance_path = folder.join("distance.json");
+        std::fs::write(&config_path, document.to_string()).unwrap();
+        std::fs::write(&distance_path, "42.000").unwrap();
+        let store = StudioStore::new(config_path);
+        assert!(!store.persist_distance().await.unwrap());
+        assert_eq!(std::fs::read_to_string(&distance_path).unwrap(), "42.000");
+
+        let blocker = distance_path.with_extension("tmp");
+        std::fs::create_dir(&blocker).unwrap();
+        store.add_distance(800.0).await;
+        assert!(store.persist_distance().await.is_err());
+        assert_eq!(std::fs::read_to_string(&distance_path).unwrap(), "42.000");
+        std::fs::remove_dir(blocker).unwrap();
+        assert!(store.persist_distance().await.unwrap());
+        assert!(!store.persist_distance().await.unwrap());
+        store.reset_distance().await;
+        assert!(store.persist_distance().await.unwrap());
+        assert_eq!(std::fs::read_to_string(&distance_path).unwrap(), "0");
+        assert!(!store.persist_distance().await.unwrap());
+        std::fs::remove_file(distance_path).unwrap();
+        std::fs::remove_file(folder.join("studio.json")).unwrap();
+        std::fs::remove_dir(folder).unwrap();
+    }
     async fn save(store: &StudioStore, d: Value) { let (_, token, _) = store.snapshot().await; store.set(d, &token).await.unwrap(); }
     #[test]
     fn invalid_configurations_are_rejected() {

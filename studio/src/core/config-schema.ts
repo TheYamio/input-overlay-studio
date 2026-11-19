@@ -64,6 +64,31 @@ export const presetSchema = z.object({ id, name: label.min(1), description: z.st
   if (new Set(p.modules.map(m => m.id)).size !== p.modules.length) ctx.addIssue({ code: 'custom', message: 'Duplicate module IDs' });
   if (!consistentArtworkGroups(p.modules)) ctx.addIssue({ code: 'custom', message: 'Artwork group members must share the same image settings' });
 });
+export function validateModuleReferences(
+  m: OverlayModule,
+  d: {assets: Record<string, unknown>; shapes: Record<string, unknown>},
+  issue: (message: string) => void,
+) {
+  if(m.x+m.w>1920||m.y+m.h>1080)issue('Module bounds exceed the canvas.');
+  for(const reference of m.extension?.resources.assets??[])if(!Object.hasOwn(d.assets,reference))issue('Missing module image resource');
+  for(const reference of m.extension?.resources.shapes??[])if(!Object.hasOwn(d.shapes,reference))issue('Missing module shape resource');
+  if (m.image.assetId && !Object.hasOwn(d.assets, m.image.assetId)) issue('Missing keycap image');
+  if (m.mouseBodyShapeId && !Object.hasOwn(d.shapes, m.mouseBodyShapeId)) issue('Missing mouse body shape');
+  for (const style of [m.appearance, ...m.keys.map(k => k.style), ...Object.values(m.buttonStyles)]) {
+    if (style?.shapeId && !Object.hasOwn(d.shapes, style.shapeId)) issue('Missing custom shape');
+  }
+  if (new Set(m.keys.map(k => k.id)).size !== m.keys.length) issue('Duplicate key IDs');
+}
+
+export function validDocumentUnicode(value: unknown): boolean {
+  if (typeof value === 'string') return validUnicode(value);
+  if (Array.isArray(value)) return value.every(validDocumentUnicode);
+  if (value && typeof value === 'object') {
+    return Object.entries(value).every(([key, child]) => validUnicode(key) && validDocumentUnicode(child));
+  }
+  return true;
+}
+
 export const currentDocumentSchema = z.strictObject({
   languagePacks:localePackagesSchema.default([]),
   shapes: z.record(id, shapeSchema).default({}),
@@ -71,8 +96,7 @@ export const currentDocumentSchema = z.strictObject({
   performance: z.object({ fps: z.enum(['Auto', '30', '60', '120']), quality: z.enum(['Low', 'Medium', 'High']), glowQuality: z.enum(['Off', 'Low', 'High']), reducedMotion: z.boolean() }),
   distance: z.object({ persist: z.boolean(), resetOnStart: z.boolean() }),
 }).superRefine((d, ctx) => {
-  const unicode=(value:unknown):boolean=>typeof value==='string'?validUnicode(value):Array.isArray(value)?value.every(unicode):!!value&&typeof value==='object'?Object.entries(value).every(([key,child])=>validUnicode(key)&&unicode(child)):true;
-  if(!unicode(d))ctx.addIssue({code:'custom',message:'Invalid Unicode text'});
+  if(!validDocumentUnicode(d))ctx.addIssue({code:'custom',message:'Invalid Unicode text'});
   if (new Set(d.gameProfiles.map(p=>p.id)).size!==d.gameProfiles.length) ctx.addIssue({code:'custom',message:'Duplicate game profile IDs'});
   for(const p of d.profiles)if(p.localePackageId&&!d.languagePacks.some(pack=>pack.id===p.localePackageId&&pack.locale.toLowerCase()===p.locale.toLowerCase()))ctx.addIssue({code:'custom',message:'Selected overlay language package does not exist'});
   if (d.profiles.some(p=>!d.gameProfiles.some(g=>g.id===p.gameProfileId))) ctx.addIssue({code:'custom',message:'Linked game profile does not exist'});
@@ -81,16 +105,8 @@ export const currentDocumentSchema = z.strictObject({
   if (new Set(d.presets.map(p => p.id)).size !== d.presets.length) ctx.addIssue({ code: 'custom', message: 'Duplicate preset IDs' });
   if (Object.keys(d.assets).length > 8) ctx.addIssue({ code: 'custom', message: 'At most 8 images per configuration' });
   if (Object.keys(d.shapes).length > 32) ctx.addIssue({ code: 'custom', message: 'At most 32 custom shapes per configuration' });
-  for (const p of [...d.profiles, ...d.presets]) for (const m of p.modules) {
-    if(m.x+m.w>1920||m.y+m.h>1080)ctx.addIssue({code:'custom',message:'Module bounds exceed the canvas.'});
-    for(const reference of m.extension?.resources.assets??[])if(!Object.hasOwn(d.assets,reference))ctx.addIssue({code:'custom',message:'Missing module image resource'});
-    for(const reference of m.extension?.resources.shapes??[])if(!Object.hasOwn(d.shapes,reference))ctx.addIssue({code:'custom',message:'Missing module shape resource'});
-    if (m.image.assetId && !Object.hasOwn(d.assets, m.image.assetId)) ctx.addIssue({ code: 'custom', message: 'Missing keycap image' });
-    if (m.mouseBodyShapeId && !Object.hasOwn(d.shapes, m.mouseBodyShapeId)) ctx.addIssue({ code: 'custom', message: 'Missing mouse body shape' });
-    for (const style of [m.appearance, ...m.keys.map(k => k.style), ...Object.values(m.buttonStyles)]) {
-      if (style?.shapeId && !Object.hasOwn(d.shapes, style.shapeId)) ctx.addIssue({ code: 'custom', message: 'Missing custom shape' });
-    }
-    if (new Set(m.keys.map(k => k.id)).size !== m.keys.length) ctx.addIssue({ code: 'custom', message: 'Duplicate key IDs' });
+  for (const p of [...d.profiles, ...d.presets]) for (const module of p.modules) {
+    validateModuleReferences(module, d, message => ctx.addIssue({code:'custom',message}));
   }
   if (persistedSize(d) > MAX_DOCUMENT_BYTES) ctx.addIssue({ code: 'custom', message: 'Configuration exceeds 1.8 MB. Remove unused images.' });
 });

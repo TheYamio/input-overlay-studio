@@ -4,6 +4,7 @@ import { initialDocument,makeModule,documentSchema,encodeDocument,parseDocument 
 import { decodeModule,encodeModule,moduleAvailable,moduleConfigurations,persistedDocumentSchema } from './module-format';
 import { boundedModuleJSON,moduleKind,ModuleConfigurationRegistry } from './module-envelope';
 import { loadDocument,saveDocument } from './storage';
+import { serializeCheckpoint } from './document-serialization';
 import { pruneAssets } from './skins';
 import { exportPreset,importPreset,usedShapes } from './presets';
 import { copyObject,pasteObject } from './object-clipboard';
@@ -45,6 +46,14 @@ describe('versioned module envelopes',()=>{
  it('preserves future builtin schema versions instead of coercing their config',()=>{
   const wire=encodeDocument(initialDocument()),module=wire.profiles[0].modules[0];module.schemaVersion=3;module.config={future:'unaltered'};
   const view=parseDocument(JSON.stringify(wire));expect(moduleAvailable(view.profiles[0].modules[0])).toBe(false);expect(encodeDocument(view)).toEqual(wire);
+ });
+ it('serializes the same checkpoint as the full encoder for disabled and opaque modules',()=>{
+  const wire=withUnknown();
+  wire.profiles[0].modules[0].enabled=false;
+  wire.profiles[0].modules[1].schemaVersion=99;
+  wire.profiles[0].modules[1].config={future:'preserved'};
+  const view=parseDocument(JSON.stringify(wire));
+  expect(JSON.parse(serializeCheckpoint(view).wireJson)).toEqual(encodeDocument(view));
  });
  it('keeps disabled builtin configs and reactivates the exact original when enabled',()=>{
   const original=encodeModule(makeModule('keyboard')),disabled={...original,enabled:false};const view=decodeModule(disabled,fallback);expect(moduleAvailable(view)).toBe(false);expect(encodeModule(view)).toEqual(disabled);

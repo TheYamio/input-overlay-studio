@@ -14,6 +14,11 @@ pub const WRITE_TIMEOUT:Duration=Duration::from_secs(3);
 pub struct Task(pub tokio::task::JoinHandle<()>);
 impl Drop for Task{fn drop(&mut self){self.0.abort();}}
 impl Task{pub async fn stop(mut self){self.0.abort();let _=(&mut self.0).await;}}
+impl Task {
+    pub async fn join(mut self) -> Result<(), tokio::task::JoinError> {
+        (&mut self.0).await
+    }
+}
 struct Packet {text:Arc<str>,delivery:Option<Delivery>,_bytes:OwnedSemaphorePermit}
 #[derive(Clone)]
 pub struct Outbox {sender:mpsc::Sender<Packet>,bytes:Arc<Semaphore>}

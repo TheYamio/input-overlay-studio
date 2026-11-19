@@ -1138,5 +1138,15 @@
   "s-30f22108cc88": "Imported {{p0}}. Shape and holes scale with the button.",
   "s-3732607b3442": "HTTP server running · port {{p0}}",
   "s-26a4d3d897de": "{{p0}} overridden fields. Reset a field to follow the module again.",
-  "s-8f735b753b65": "Available on {{p0}}. The saved value is preserved."
+  "s-8f735b753b65": "Available on {{p0}}. The saved value is preserved.",
+  "s-a1a2ec59c68e": "Other local drafts",
+  "s-b283d9336e65": "Saved editor session",
+  "s-2985e1599973": "Could not open the draft. Export your current changes and try again.",
+  "s-d55a6e901cb6": "Open local draft",
+  "s-f9f5d3675692": "Delete this saved local draft?",
+  "s-8c604ffea3a6": "Could not delete the local draft.",
+  "s-6dc220fd6ec5": "Delete local draft",
+  "s-f2c20dad09e0": "Regenerate OBS token",
+  "s-4db68fbcefcc": "After applying the new token, copy a fresh URL into each OBS source.",
+  "s-4c5676d82250": "The capture server did not provide an OBS token. Update the capture server and reconnect in Studio."
 }

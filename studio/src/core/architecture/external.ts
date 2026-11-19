@@ -1,3 +1,4 @@
+import { randomId } from '../uuid.ts';
 import {nativeConfigShape} from '../native-config';
 import {setupStateSchema} from '../setup';
 import {localePackagesSchema} from '../localization/pack-schema';
@@ -30,7 +31,7 @@ export const externalDefinitions: readonly SettingDefinition[] = [
   binding:{scope:'capture',store:'native',root:'native',path:[field]},
   label:{key:`settings:capture.server.${name}.label`,fallback:label},
   ui:{control,group:'capture.server',...(control==='custom'?{component:field.startsWith('linux_')?'editor.native-devices' as const:'editor.native-list' as const}:{})},
-  targets:['studio','native'],apply,defaultValue:()=>field==='auth_token'?crypto.randomUUID().replaceAll('-',''):structuredClone(value),
+  targets:['studio','native'],apply,defaultValue:()=>field==='auth_token'?randomId().replaceAll('-',''):structuredClone(value),
   ...(field==='auth_token'?{sensitive:true}:{}),
   ...(field.startsWith('linux_')?{platforms:['linux'] as const}:field==='cpu_affinity'?{platforms:['windows'] as const}:{}),
   help:{key:`settings:capture.server.${name}.help`,fallback:apply==='restart'?'Saved with Apply server settings. Takes effect after restarting capture.':apply==='reconnect'?'Applied with Apply server settings; clients may need to reconnect.':'Applied with Apply server settings.'},

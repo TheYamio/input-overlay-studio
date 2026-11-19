@@ -3,6 +3,7 @@ pub mod stop_signal;
 pub mod analog;
 pub mod config;
 pub mod consts;
+pub mod data_dir;
 pub mod http_server;
 #[cfg(target_os = "linux")]
 pub mod linux;

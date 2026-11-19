@@ -5,6 +5,16 @@
   "direction": "ltr",
   "namespaces": {
     "ui": {
+      "s-a1a2ec59c68e": "Inne wersje robocze lokalne",
+      "s-b283d9336e65": "Zapisana sesja edytora",
+      "s-2985e1599973": "Nie udało się otworzyć wersji roboczej. Wyeksportuj bieżące zmiany i spróbuj ponownie.",
+      "s-d55a6e901cb6": "Otwórz lokalną wersję roboczą",
+      "s-f9f5d3675692": "Usunąć tę zapisaną lokalną wersję roboczą?",
+      "s-8c604ffea3a6": "Nie udało się usunąć lokalnej wersji roboczej.",
+      "s-6dc220fd6ec5": "Usuń lokalną wersję roboczą",
+      "s-f2c20dad09e0": "Wygeneruj nowy token OBS",
+      "s-4db68fbcefcc": "Po zastosowaniu nowego tokenu wklej nowy adres URL do każdego źródła OBS.",
+      "s-4c5676d82250": "Serwer przechwytywania nie udostępnił tokenu OBS. Zaktualizuj serwer i połącz ponownie Studio.",
       "s-3f4f0acd1a28": "Naciśnięcie i zwolnienie",
       "s-fd63a2f84e63": "Ruch, światło i czas można łączyć niezależnie.",
       "s-ef8b5b4a2664": "Szybki punkt wyjściowy. wypełnij poniżej.",

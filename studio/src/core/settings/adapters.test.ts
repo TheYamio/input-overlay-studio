@@ -88,14 +88,20 @@ describe('native persistence boundary',()=>{
 });
 
 describe('browser persistence facade',()=>{
-  it('keeps the original backup when acknowledging an unchanged document',()=>{
+  it('keeps pending changes separate until acknowledgement and backs up the previous revision',()=>{
     const data=new Map<string,string>(), document=initialDocument();data.set('input-overlay-studio.document',JSON.stringify(encodeDocument(document)));
     vi.stubGlobal('localStorage',{getItem:(k:string)=>data.get(k)??null,setItem:(k:string,v:string)=>data.set(k,v),removeItem:(k:string)=>data.delete(k)});
     const transport:SettingsTransport={onStatus:()=>{},onError:()=>{},onDocument:()=>{},onConflict:()=>{},onRecovery:()=>{},onSaved:()=>{},connect:()=>{},stop:()=>{},publish:()=>true};
     const services=createBrowserSettings(transport,()=>{throw Error('no native');}), settings=services.settings;
     settings.connect({url:'ws://127.0.0.1:4455',token:''});transport.onDocument(document,'r1');settings.transaction(d=>{d.profiles[0].name='Changed';});
-    const backup=data.get('input-overlay-studio.document.backup');transport.onSaved(JSON.stringify(settings.document),'r2');
-    expect(data.get('input-overlay-studio.document.backup')).toBe(backup);expect(JSON.parse(backup!).profiles[0].name).toBe(document.profiles[0].name);expect(JSON.parse(data.get('input-overlay-studio.document')!).__studioSync).toMatchObject({pending:false,baseRevision:'r2'});
+    expect(JSON.parse(data.get('input-overlay-studio.document')!).profiles[0].name).toBe(document.profiles[0].name);
+    const pendingKey = [...data.keys()].find(key => key.includes('.editor.'));
+    expect(JSON.parse(data.get(pendingKey!)!).profiles[0].name).toBe('Changed');
+    transport.onSaved(JSON.stringify(settings.document),'r2');
+    expect(data.has(pendingKey!)).toBe(false);
+    const backup=data.get('input-overlay-studio.document.backup');
+    expect(JSON.parse(backup!).profiles[0].name).toBe(document.profiles[0].name);
+    expect(JSON.parse(data.get('input-overlay-studio.document')!).__studioSync).toMatchObject({pending:false,baseRevision:'r2'});
     services.dispose();
   });
 

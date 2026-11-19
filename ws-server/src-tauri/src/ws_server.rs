@@ -1,4 +1,4 @@
-use crate::command_policy::{ClientPermissions,Command,token_matches};
+use crate::command_policy::{ClientPermissions,Command};
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use crate::studio_store::StudioStore;
@@ -11,7 +11,7 @@ use std::time::Duration;
 
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use tokio::sync::{broadcast, mpsc, watch, RwLock,Semaphore};
+use tokio::sync::{broadcast, mpsc, oneshot, watch, RwLock,Semaphore};
 use tokio::task::JoinSet;
 use crate::net_limits::{Writer,Task,RateLimit,MAX_WS_CLIENTS,MAX_MESSAGE_BYTES,WRITE_TIMEOUT};
 use crate::services::address;
@@ -84,8 +84,11 @@ pub fn input_channel() -> (InputSender, InputReceiver) {
     (InputSender{queue:tx,overflow:overflow.clone()},InputReceiver{queue:rx,overflow})
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ServerSignal { Rebind, Shutdown }
+
 pub struct WsState {
-    pub rebind_tx: watch::Sender<()>,
+    pub rebind_tx: watch::Sender<ServerSignal>,
     pub input_tx: InputSender,
 }
 
@@ -152,12 +155,24 @@ async fn distributor(
     bcast_tx: Arc<Broadcasts>,
     config: Arc<RwLock<Config>>,
     studio: Arc<StudioStore>,
+    mut shutdown: oneshot::Receiver<()>,
 ) {
     // Capture already coalesces movement at 125 Hz. Digital events are sent immediately.
     // Waiting on recv avoids the original 1 ms idle polling and second mouse aggregation.
     let mut held = HeldState::default();
     let mut sequence: u64 = 0;
-    while let Some(event) = input_rx.recv().await {
+    let mut draining = false;
+    loop {
+        let event = tokio::select! {
+            biased;
+            _ = &mut shutdown, if !draining => {
+                input_rx.queue.close();
+                draining = true;
+                continue;
+            }
+            event = input_rx.recv() => event,
+        };
+        let Some(event) = event else { break };
         if let InputEvent::SnapshotRequest { reply } = event {
             let cfg = config.read().await;
             if cfg.capture_enabled {
@@ -191,6 +206,11 @@ async fn distributor(
     }
 }
 
+async fn save_distance(studio: &StudioStore) {
+    if let Err(error) = studio.persist_distance().await {
+        tracing::warn!("studio: distance could not be saved: {error}");
+    }
+}
 async fn connection_status_packet(config:&RwLock<Config>,hooks:&ServerHooks,runtimes:&crate::runtime_status::Snapshot)->String {
  let capture_enabled=config.read().await.capture_enabled;let capture_running=(hooks.capture_running)().map(|running|capture_enabled&&running);
  serde_json::json!({"type":"connection_status","sequence":runtimes.sequence,"capture_enabled":capture_enabled,"capture_running":capture_running,"runtimes":{"connected":runtimes.connected,"ready":runtimes.ready,"failed":runtimes.failed,"unresponsive":runtimes.unresponsive}}).to_string()
@@ -199,13 +219,17 @@ async fn connection_status_packet(config:&RwLock<Config>,hooks:&ServerHooks,runt
 async fn handle_connection(
     stream:tokio::net::TcpStream,addr:SocketAddr,config:Arc<RwLock<Config>>,bcast_tx:Arc<Broadcasts>,
     hooks:ServerHooks,status:Arc<Mutex<ServerStatus>>,studio:Arc<StudioStore>,
-    mut rebind_rx:watch::Receiver<()>,input_tx:InputSender,activity:Arc<StudioActivity>,runtimes:Arc<RuntimeStatus>,
+    mut rebind_rx:watch::Receiver<ServerSignal>,input_tx:InputSender,activity:Arc<StudioActivity>,runtimes:Arc<RuntimeStatus>,
 ) {
     let _=stream.set_nodelay(true);
     let limits=WebSocketConfig{max_message_size:Some(MAX_MESSAGE_BYTES),max_frame_size:Some(MAX_MESSAGE_BYTES),write_buffer_size:16384,max_write_buffer_size:2_100_000,..Default::default()};
     let handshake=tokio::time::timeout(Duration::from_secs(10),accept_async_with_config(stream,Some(limits)));
     let ws=tokio::select!{_ = rebind_rx.changed()=>return,result=handshake=>match result{Ok(Ok(ws))=>ws,_=>return}};
-    let (mut sink,mut read)=ws.split();let auth_token=config.read().await.auth_token.clone();
+    let (mut sink,mut read)=ws.split();
+    let (auth_token, obs_token) = {
+        let config = config.read().await;
+        (config.auth_token.clone(), config.obs_token.clone())
+    };
     let mut permissions=ClientPermissions::default();let mut status_client=false;
     let auth=async {
         loop {
@@ -213,12 +237,15 @@ async fn handle_connection(
                 Some(Ok(Message::Text(text))) if text.len()<=8192=>{
                     let Ok(value)=serde_json::from_str::<serde_json::Value>(&text)else{return false;};
                     if value["type"]!="auth"{return false;}
-                    let accepted=token_matches(&auth_token,value["token"].as_str().unwrap_or(""));
-                    let reply=if accepted{crate::compatibility::auth_response()}else{r#"{"type":"auth_response","status":"failed"}"#.into()};
+                    let granted = ClientPermissions::authenticate(&value, &auth_token, &obs_token);
+                    let reply = match &granted {
+                        Some(client) => crate::compatibility::auth_response(client.can_write().then_some(obs_token.as_str())),
+                        None => r#"{"type":"auth_response","status":"failed"}"#.into(),
+                    };
                     if !matches!(tokio::time::timeout(WRITE_TIMEOUT,sink.send(Message::Text(reply))).await,Ok(Ok(()))){return false;}
-                    if !accepted{return false;}
-                    permissions=ClientPermissions::from_auth(&value);
-                    status_client=value["studio_client"]["role"]=="studio"&&value["studio_client"]["features"]["runtime.status"]==1;
+                    let Some(granted) = granted else { return false; };
+                    permissions = granted;
+                    status_client=permissions.can_write()&&value["studio_client"]["features"]["runtime.status"]==1;
                     return true;
                 }
                 Some(Ok(Message::Ping(_)|Message::Pong(_)))=>{},
@@ -287,10 +314,12 @@ async fn handle_connection(
                         let json=current.packet(serde_json::json!({"type":"studio_config","revision":revision,"config_sequence":sequence}));
                         let delivery=runtime_session.as_ref().filter(|_|real).map(|session|session.delivery(&revision));if !outbox.send(json,delivery){break;}
                         if runtime&&real&&!counted{counted=true;let tracker=activity.clone();let _=tokio::task::spawn_blocking(move||tracker.ready(crate::studio_activity::now())).await;}
-                        reply!(serde_json::json!({"type":"distance_total","cm":*studio.distance_cm.lock().await}).to_string());
+                        reply!(serde_json::json!({"type":"distance_total","cm":studio.distance_cm().await}).to_string());
                     }
                     Command::DistanceReset=>{
-                        *studio.distance_cm.lock().await=0.0;bcast_tx.input(r#"{"type":"distance_total","cm":0}"#);studio.persist_distance().await;
+                        studio.reset_distance().await;
+                        bcast_tx.input(r#"{"type":"distance_total","cm":0}"#);
+                        save_distance(&studio).await;
                     }
                     Command::StudioSet=>{
                         if value["document"]["version"]!=4{reply!(serde_json::json!({"type":"studio_error","request_id":request_id,"reason":"incompatible or read-only client"}).to_string());continue;}
@@ -321,7 +350,7 @@ pub async fn run(
     config: Arc<RwLock<Config>>,
     input_rx: InputReceiver,
     status: Arc<Mutex<ServerStatus>>,
-    mut rebind_rx: watch::Receiver<()>,
+    mut rebind_rx: watch::Receiver<ServerSignal>,
     hooks: ServerHooks,
     studio: Arc<StudioStore>,
     input_tx: InputSender,
@@ -331,15 +360,37 @@ pub async fn run(
     let runtimes=RuntimeStatus::new(current.sequence,current.revision.clone());drop(current);
     let _watchdog=runtimes.watchdog();let bcast_tx=Broadcasts::new();let permits=Arc::new(Semaphore::new(MAX_WS_CLIENTS));let mut clients=JoinSet::new();
     let cfg=config.clone();let broadcasts=bcast_tx.clone();let store=studio.clone();
-    let _input_task=Task(tokio::spawn(async move{distributor(input_rx,broadcasts,cfg,store).await;}));
-    let store=studio.clone();let _distance_task=Task(tokio::spawn(async move{let mut timer=tokio::time::interval(Duration::from_secs(3));loop{timer.tick().await;store.persist_distance().await;}}));
+    let (close_input, stop_input) = oneshot::channel();
+    let input_task = Task(tokio::spawn(distributor(input_rx, broadcasts, cfg, store, stop_input)));
+    let (close_timer, mut stop_timer) = oneshot::channel();
+    let store = studio.clone();
+    let distance_task = Task(tokio::spawn(async move {
+        let period = Duration::from_secs(3);
+        let mut timer = tokio::time::interval_at(tokio::time::Instant::now() + period, period);
+        timer.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+        loop {
+            tokio::select! {
+                biased;
+                _ = &mut stop_timer => break,
+                _ = timer.tick() => save_distance(&store).await,
+            }
+        }
+    }));
 
-    loop {
+    'server: loop {
+        if *rebind_rx.borrow() == ServerSignal::Shutdown { break; }
         let (host, port) = {
             let cfg = config.read().await;
             (cfg.host.clone(), cfg.port)
         };
-        let binding=tokio::select!{_ = rebind_rx.changed()=>continue,result=address::bind(&host,port)=>result};
+        let binding = tokio::select! {
+            biased;
+            change = rebind_rx.changed() => {
+                if change.is_err() { break; }
+                continue;
+            }
+            result = address::bind(&host, port) => result,
+        };
 
         match binding {
             Ok(listener) => {
@@ -357,6 +408,11 @@ pub async fn run(
                 loop {
                     while clients.try_join_next().is_some(){}
                     tokio::select! {
+                        biased;
+                        change = rebind_rx.changed() => {
+                            if change.is_err() { break 'server; }
+                            break;
+                        }
                         _ = clients.join_next(),if !clients.is_empty()=>{},
                         conn = listener.accept() => {
                             match conn {
@@ -378,7 +434,6 @@ pub async fn run(
                                 Err(e) => tracing::warn!("accept error: {e}"),
                             }
                         }
-                        _ = rebind_rx.changed() => break,
                     }
                 }
                 // Existing sessions see the rebind signal. Do not abort an
@@ -399,10 +454,18 @@ pub async fn run(
                 let snapshot=status.lock().unwrap().clone();
                 (hooks.changed)(snapshot);
                 //wait for rebind
-                let _ = rebind_rx.changed().await;
+                if rebind_rx.changed().await.is_err() { break; }
             }
         }
     }
+    // All producers have stopped. Finish any accepted commands and queued
+    // movement, then write the final value before the application exits.
+    let _ = close_timer.send(());
+    while clients.join_next().await.is_some() {}
+    let _ = close_input.send(());
+    if let Err(error) = input_task.join().await { tracing::error!("input distributor stopped: {error}"); }
+    if let Err(error) = distance_task.join().await { tracing::error!("distance timer stopped: {error}"); }
+    save_distance(&studio).await;
 }
 
 fn bind_error_kind(e: &std::io::Error) -> &'static str {
@@ -448,6 +511,42 @@ mod tests {
         assert!(tx.send(InputEvent::Reset).is_err());
         assert_eq!(rx.len(), 4096); assert!(rx.recv().await.is_some());
     }
+    #[tokio::test]
+    async fn shutdown_drains_queued_motion_and_saves_before_the_timer() {
+        let folder = std::env::temp_dir().join(format!("ws-exit-{}", rand::random::<u64>()));
+        std::fs::create_dir(&folder).unwrap();
+        let path = folder.join("studio.json");
+        let mut document: serde_json::Value = serde_json::from_str(include_str!("../schema/default-current.json")).unwrap();
+        document["distance"]["persist"] = true.into();
+        document["distance"]["resetOnStart"] = false.into();
+        document["gameProfiles"][0]["dpi"] = 800.into();
+        std::fs::write(&path, document.to_string()).unwrap();
+        let distance_path = folder.join("distance.json");
+        std::fs::write(&distance_path, "42").unwrap();
+        let (input, input_rx) = input_channel();
+        input.send(InputEvent::MouseMove { dx: 0, dy: 0, distance_counts: Some(800.0) }).unwrap();
+        let (signal, rx) = watch::channel(ServerSignal::Rebind);
+        let mut config = Config::default();
+        config.port = 0;
+        let task = tokio::spawn(run(
+            Arc::new(RwLock::new(config)),
+            input_rx,
+            Arc::new(Mutex::new(ServerStatus::default())),
+            rx,
+            ServerHooks::default(),
+            Arc::new(StudioStore::new(path.clone())),
+            input,
+            Arc::new(StudioActivity::new(folder.join("activity.json"))),
+        ));
+        signal.send_replace(ServerSignal::Shutdown);
+        tokio::time::timeout(Duration::from_secs(2), task).await.unwrap().unwrap();
+        let restarted = StudioStore::new(path);
+        assert_eq!(restarted.distance_cm().await, 44.54);
+        for name in ["studio.json", "distance.json", "activity.json"] {
+            std::fs::remove_file(folder.join(name)).unwrap();
+        }
+        std::fs::remove_dir(folder).unwrap();
+    }
     #[tokio::test(flavor="multi_thread",worker_threads=4)]
     async fn healthy_runtime_keeps_input_while_nonreading_runtime_is_evicted(){
         let _=tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).with_test_writer().try_init();
@@ -456,12 +555,30 @@ mod tests {
         use serde_json::{json,Value};
         type Client=WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>;
         async fn next(client:&mut Client,kind:&str)->Value{tokio::time::timeout(Duration::from_secs(5),async{loop{let message=client.next().await.unwrap().unwrap();if let Message::Text(text)=message{let value:Value=serde_json::from_str(&text).unwrap();if value["type"]==kind{return value;}}}}).await.unwrap()}
-        async fn client(port:u16,role:&str)->Client{let (mut client,_)=connect_async(format!("ws://127.0.0.1:{port}")).await.unwrap();let mut descriptor=crate::compatibility::CONTRACT.clone();descriptor["role"]=json!(role);if role=="runtime"{descriptor["document"]["write"]=json!([]);}client.send(Message::Text(json!({"type":"auth","token":"loopback-test","studio_client":descriptor}).to_string())).await.unwrap();assert_eq!(next(&mut client,"auth_response").await["status"],"success");client}
+        const EDITOR_TOKEN: &str = "loopback-test";
+        const OBS_TOKEN: &str = "ObsToken012345678901234567890123";
+        async fn authenticate(port: u16, role: &str, token: &str) -> (Client, Value) {
+            let (mut client, _) = connect_async(format!("ws://127.0.0.1:{port}")).await.unwrap();
+            let mut descriptor = crate::compatibility::CONTRACT.clone();
+            descriptor["role"] = json!(role);
+            if role == "runtime" { descriptor["document"]["write"] = json!([]); }
+            client.send(Message::Text(json!({
+                "type": "auth", "token": token, "studio_client": descriptor,
+            }).to_string())).await.unwrap();
+            let reply = next(&mut client, "auth_response").await;
+            (client, reply)
+        }
+        async fn client(port: u16, role: &str) -> Client {
+            let token = if role == "runtime" { OBS_TOKEN } else { EDITOR_TOKEN };
+            let (client, reply) = authenticate(port, role, token).await;
+            assert_eq!(reply["status"], "success");
+            client
+        }
         let folder=std::env::temp_dir().join(format!("ws-lifecycle-{}",rand::random::<u64>()));std::fs::create_dir(&folder).unwrap();
         let store=Arc::new(StudioStore::new(folder.join("studio.json")));let document:Value=serde_json::from_str(include_str!("../schema/default-current.json")).unwrap();let (_,base,_)=store.snapshot().await;let (revision,_)=store.set(document.clone(),&base).await.unwrap();
-        let mut config=Config::default();config.port=0;config.auth_token="loopback-test".into();config.key_whitelist=vec!["key_w".into()];let config=Arc::new(RwLock::new(config));
-        let status=Arc::new(Mutex::new(ServerStatus::default()));let (rebind,rx)=watch::channel(());let (input,input_rx)=input_channel();let activity=Arc::new(StudioActivity::new(folder.join("activity.json")));
-        let server=Task(tokio::spawn(run(config,input_rx,status.clone(),rx,ServerHooks::default(),store.clone(),input.clone(),activity)));
+        let mut config=Config::default();config.port=0;config.auth_token=EDITOR_TOKEN.into();config.obs_token=OBS_TOKEN.into();config.key_whitelist=vec!["key_w".into()];let config=Arc::new(RwLock::new(config));
+        let status=Arc::new(Mutex::new(ServerStatus::default()));let (rebind,rx)=watch::channel(ServerSignal::Rebind);let (input,input_rx)=input_channel();let activity=Arc::new(StudioActivity::new(folder.join("activity.json")));
+        let server=Task(tokio::spawn(run(config.clone(),input_rx,status.clone(),rx,ServerHooks::default(),store.clone(),input.clone(),activity)));
         tokio::time::timeout(Duration::from_secs(3),async{while !status.lock().unwrap().running{tokio::time::sleep(Duration::from_millis(2)).await;}}).await.unwrap();let port=status.lock().unwrap().port;
         let mut observer=client(port,"studio").await;observer.send(Message::Text(r#"{"type":"studio_get"}"#.into())).await.unwrap();next(&mut observer,"studio_config").await;
         let (mut observer_send,mut observer_read)=observer.split();let latest=Arc::new(Mutex::new(Value::Null));let saved=Arc::new(Mutex::new(Value::Null));let monitor=latest.clone();let saved_monitor=saved.clone();
@@ -480,7 +597,22 @@ mod tests {
         assert!(received.load(Ordering::Relaxed)>before+100);let after=received.load(Ordering::Relaxed);tokio::time::sleep(Duration::from_millis(50)).await;assert!(received.load(Ordering::Relaxed)>after);
         producer.stop().await;let _=input.send(InputEvent::KeyRelease{rawcode:87});tokio::time::timeout(Duration::from_secs(1),async{while pressed.load(Ordering::Relaxed){tokio::time::sleep(Duration::from_millis(2)).await;}}).await.unwrap();
         // Rebind cancels every old connection, including writer tasks and leases.
-        rebind.send(()).unwrap();tokio::time::timeout(Duration::from_secs(2),async{while status.lock().unwrap().client_count!=0{tokio::time::sleep(Duration::from_millis(2)).await;}}).await.unwrap();
+        let replacement = "NewObs01234567890123456789012345";
+        config.write().await.obs_token = replacement.into();
+        rebind.send(ServerSignal::Rebind).unwrap();tokio::time::timeout(Duration::from_secs(2),async{while status.lock().unwrap().client_count!=0{tokio::time::sleep(Duration::from_millis(2)).await;}}).await.unwrap();
+        let new_port = tokio::time::timeout(Duration::from_secs(3), async {
+            loop {
+                let state = status.lock().unwrap().clone();
+                if state.running { break state.port; }
+                tokio::time::sleep(Duration::from_millis(2)).await;
+            }
+        }).await.unwrap();
+        let (_, obsolete) = authenticate(new_port, "runtime", OBS_TOKEN).await;
+        assert_eq!(obsolete["status"], "failed");
+        let (_, refreshed) = authenticate(new_port, "runtime", replacement).await;
+        assert_eq!(refreshed["status"], "success");
+        let (_, editor) = authenticate(new_port, "studio", EDITOR_TOKEN).await;
+        assert_eq!(editor["obs_token"], replacement);
         drop((slow,healthy_task,observer_task,observer_send,server));tokio::time::sleep(Duration::from_millis(20)).await;
         for name in ["studio.json","studio.backup.json","activity.json","activity.tmp"]{let _=std::fs::remove_file(folder.join(name));}let _=std::fs::remove_dir(folder);
     }

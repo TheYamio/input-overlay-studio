@@ -1,8 +1,8 @@
 import type {ConnectionStatus} from '../connection-status';
 import { moduleKind } from '../module-envelope';
 import { commonFields } from '../module-format';
-import { type StudioDocument } from '../config';
-import {checkDocumentSnapshot,documentSnapshot} from '../document-snapshot';
+import type { OverlayModule, StudioDocument } from '../config';
+import {checkDocumentSnapshot,checkModuleEdit,documentSnapshot,markAssetsPruned} from '../document-snapshot';
 import { pruneAssets } from '../skins';
 import type { ConnectionOptions, ConnectionState } from '../connection';
 import type { SyncMetadata } from '../storage';
@@ -58,7 +58,8 @@ type Remote = {document:StudioDocument|null;revision?:string};
 
 export class SettingsService {
   private doc: StudioDocument;
-  private json: string;
+  private cachedJson?: string;
+  private get json() { return this.cachedJson ??= JSON.stringify(this.doc); }
   private history: StudioDocument[]=[];
   private future: StudioDocument[]=[];
   private gesture: {token:unknown;recorded:boolean;operationId:string}|null=null;
@@ -87,7 +88,7 @@ export class SettingsService {
   private localDirty=false;
   private epoch=0;
   constructor(private readonly storage:DocumentStorage, private readonly transport:SettingsTransport, endpoint:string, readonly events=new SettingsEvents(), readonly catalog:Catalog=builtinCatalog,private readonly configurations=moduleConfigurations) {
-    const loaded=storage.load(); this.doc=immutable(documentSnapshot(loaded.document,this.configurations)); this.json=JSON.stringify(this.doc);
+    const loaded=storage.load(); this.doc=immutable(documentSnapshot(loaded.document,this.configurations));
     this.warning=loaded.warning; this.protected=!!loaded.warning;
     this.unsupported=loaded.unsupported ? immutable({...loaded.unsupported}) : null;
     if(this.unsupported)this.saveStatus='Read-only · original preserved';
@@ -131,27 +132,67 @@ export class SettingsService {
     if(this.unsupported) {this.assertWritable();return this.writableDocument();}
     if(this.batchDraft) {
       this.events.assertWritable();if(this.inTransaction)throw new SettingsError('nested-transaction','Use one draft for the entire logical operation.');
-      const next=structuredClone(this.batchDraft);this.inTransaction=true;let result:unknown;
-      try {result=mutate(next);} finally {this.inTransaction=false;}
-      if(result && typeof(result as {then?:unknown}).then==='function')throw new SettingsError('async-transaction','Decode asynchronous data before starting a settings transaction.');
+      const next=structuredClone(this.batchDraft);
+      this.runMutation(next,mutate);
       this.batchDraft=next;return true;
     }
-    this.assertWritable(); const draft=structuredClone(this.doc); let returned:unknown;
+    this.assertWritable();
+    const draft=structuredClone(this.doc);
+    this.runMutation(draft,mutate);
+    return this.finishTransaction(draft,options);
+  }
+  private runMutation(draft:StudioDocument,mutate:(draft:StudioDocument)=>void) {
     this.inTransaction=true;
-    try { returned=mutate(draft); }
+    let result:unknown;
+    try { result=mutate(draft); }
     finally {this.inTransaction=false;}
-    if (returned && typeof (returned as {then?:unknown}).then==='function') throw new SettingsError('async-transaction','Decode asynchronous data before starting a settings transaction.');
+    if (result && typeof (result as {then?:unknown}).then==='function') throw new SettingsError('async-transaction','Decode asynchronous data before starting a settings transaction.');
+  }
+  private finishTransaction(draft:StudioDocument,options:TransactionOptions) {
     pruneAssets(draft);
     const parsed=checkDocumentSnapshot(draft,this.configurations);
-    if (!parsed.success) {this.warning=invalidChange;this.publishView();return false;}
+    if (!parsed.success) return this.rejectEdit();
+    markAssetsPruned(parsed.data);
     const json=JSON.stringify(parsed.data);
-    if (json===this.json) {
+    if (json===this.json) markAssetsPruned(this.doc);
+    return this.commitEdit(json===this.json?this.doc:parsed.data,options,json);
+  }
+  private rejectEdit() {
+    this.warning=invalidChange;
+    this.publishView();
+    return false;
+  }
+  private scopedModuleTransaction(profileId:string,moduleId:string,mutate:(draft:StudioDocument)=>void,options:TransactionOptions) {
+    if (this.batchDraft || this.unsupported) return this.transaction(mutate,options);
+    this.assertWritable();
+    const profileIndex=this.doc.profiles.findIndex(profile=>profile.id===profileId);
+    const profile=this.doc.profiles[profileIndex];
+    const moduleIndex=profile?.modules.findIndex(module=>module.id===moduleId) ?? -1;
+    if (moduleIndex<0) return this.transaction(mutate,options);
+    const modules=profile.modules.slice();
+    modules[moduleIndex]=structuredClone(modules[moduleIndex]);
+    const profiles=this.doc.profiles.slice();
+    profiles[profileIndex]={...profile,modules};
+    const draft={...this.doc,profiles};
+    this.runMutation(draft,mutate);
+    const next=checkModuleEdit(this.doc,profileIndex,moduleIndex,modules[moduleIndex],this.configurations);
+    if (next===undefined) return this.finishTransaction(draft,options);
+    return next===null ? this.rejectEdit() : this.commitEdit(next,options);
+  }
+  editModule(profileId:string,moduleId:string,mutate:(module:OverlayModule)=>void) {
+    return this.scopedModuleTransaction(profileId,moduleId,document=>{
+      const module=document.profiles.find(profile=>profile.id===profileId)?.modules.find(item=>item.id===moduleId);
+      if (module) return mutate(module);
+    },{scopes:['module']});
+  }
+  private commitEdit(next:StudioDocument,options:TransactionOptions,json?:string) {
+    if (next===this.doc) {
       if (options.allowOverwrite) {this.protected=false;this.warning='';this.persist();this.publishView();}
       return true;
     }
     const operationId=this.gesture?.operationId ?? this.events.operation();
     if (!this.gesture?.recorded) {this.pushHistory();if (this.gesture) this.gesture.recorded=true;}
-    this.doc=immutable(parsed.data);this.json=json;this.version++;
+    this.doc=next;this.cachedJson=json;this.version++;
     if (options.allowOverwrite) {this.protected=false;this.warning='';}
     this.persist();this.publishView();this.notifyChange(operationId,options.source||'editor',options.scopes);
     return true;
@@ -167,11 +208,11 @@ export class SettingsService {
   replace(document:StudioDocument,options:TransactionOptions={}) { this.endGesture();return this.transaction(draft=>Object.assign(draft,document),options); }
   undo = () => {
     this.assertWritable();if(!this.writableDocument())return false;this.gesture=null;const previous=this.history.pop();if (!previous) return false;
-    this.future.push(this.doc);this.doc=previous;this.json=JSON.stringify(previous);this.version++;this.persist();this.publishView();this.notifyChange(this.events.operation(),'undo');return true;
+    this.future.push(this.doc);this.doc=previous;this.cachedJson=undefined;this.version++;this.persist();this.publishView();this.notifyChange(this.events.operation(),'undo');return true;
   };
   redo = () => {
     this.assertWritable();if(!this.writableDocument())return false;this.gesture=null;const next=this.future.pop();if (!next) return false;
-    this.history.push(this.doc);this.doc=next;this.json=JSON.stringify(next);this.version++;this.persist();this.publishView();this.notifyChange(this.events.operation(),'redo');return true;
+    this.history.push(this.doc);this.doc=next;this.cachedJson=undefined;this.version++;this.persist();this.publishView();this.notifyChange(this.events.operation(),'redo');return true;
   };
   // Keep the base paired with its server while startup resolves native config.
   // An interim connection to the preference URL must not erase a durable base,
@@ -228,7 +269,7 @@ export class SettingsService {
     this.acceptRevision(revision);
     if (document) {
       clearTimeout(this.timer);
-      if (!same) {this.pushHistory();this.gesture=null;this.doc=document;this.json=JSON.stringify(document);this.version++;}
+      if (!same) {this.pushHistory();this.gesture=null;this.doc=document;this.cachedJson=undefined;this.version++;}
       this.pending=false;this.remote=null;
       if (!this.protected) {try {this.local(false);} catch {this.warning='Local storage is unavailable. Server settings remain available.';}}
       this.saveStatus='Saved to capture server';
@@ -274,7 +315,7 @@ export class SettingsService {
     this.assertWritable();if(!this.writableDocument())return false;const latest=this.remote;if (!latest || choice==='server' && !latest.document) return false;
     this.acceptRevision(latest.revision);this.remote=null;this.gesture=null;
     if (choice==='local') {this.persist();this.publishView();return true;}
-    this.pushHistory();this.doc=latest.document!;this.json=JSON.stringify(this.doc);this.version++;this.pending=false;
+    this.pushHistory();this.doc=latest.document!;this.cachedJson=undefined;this.version++;this.pending=false;
     try {this.local(false);this.saveStatus='Saved to capture server';} catch {this.saveStatus='Local save failed';this.warning='Could not save locally. Export a copy.';}
     this.publishView();this.notifyChange(this.events.operation(),'conflict-server');return true;
   }
@@ -320,12 +361,24 @@ export class SettingsService {
     if (value===undefined && address.scope==='module' && address.element) return this.read(id,{scope:'module',profileId:address.profileId,moduleId:address.moduleId});
     return structuredClone(value);
   }
-  set(id:DefinitionId,address:SettingsAddress,value:unknown) {return this.transaction(draft=>this.write(draft,id,address,value,false),{source:'settings',scopes:[address.scope]});}
+  private changeSettings(changes:readonly {id:DefinitionId;address:SettingsAddress;value:unknown}[],source:string,inheritedReset=false) {
+    const options={source,scopes:[...new Set(changes.map(change=>change.address.scope))]};
+    const mutate=(draft:StudioDocument)=>{
+      for (const change of changes) this.write(draft,change.id,change.address,change.value,inheritedReset);
+    };
+    const address=changes[0]?.address;
+    if (address?.scope==='module' && changes.every(({address:other})=>
+      other.scope==='module' && other.profileId===address.profileId && other.moduleId===address.moduleId)) {
+      return this.scopedModuleTransaction(address.profileId,address.moduleId,mutate,options);
+    }
+    return this.transaction(mutate,options);
+  }
+  set(id:DefinitionId,address:SettingsAddress,value:unknown) {
+    return this.changeSettings([{id,address,value}],'settings');
+  }
   setMany(changes:readonly {id:DefinitionId;address:SettingsAddress;value:unknown}[],options:{preserveGesture?:boolean}={}) {
     if(!options.preserveGesture)this.endGesture();
-    return this.transaction(draft=>{
-      for (const change of changes) this.write(draft,change.id,change.address,change.value,false);
-    },{source:'settings',scopes:[...new Set(changes.map(c=>c.address.scope))]});
+    return this.changeSettings(changes,'settings');
   }
   reset(id:DefinitionId,address:SettingsAddress) {
     const target=this.target(this.doc,id,address), inherited=address.scope==='module' && !!address.element;
@@ -333,7 +386,7 @@ export class SettingsService {
     // selection to its first real profile, without creating a dangling reference.
     const value=inherited ? undefined : id==='studio.document.active-profile' ? this.doc.profiles[0].id : id==='profiles.overlay.game-profile' ? this.doc.gameProfiles[0].id : this.catalog.settings.readDefault(id,{moduleType:target.module?moduleKind(target.module):undefined});
     this.endGesture();
-    return this.transaction(draft=>this.write(draft,id,address,value,inherited),{source:'reset',scopes:[address.scope]});
+    return this.changeSettings([{id,address,value}],'reset',inherited);
   }
   private write(document:StudioDocument,id:DefinitionId,address:SettingsAddress,value:unknown,inheritedReset:boolean) {
     let target=this.target(document,id,address);
