@@ -56,7 +56,7 @@ Choose from 12 built-in interface languages, or import your own translation. You
 1. **[Download the Windows x64 ZIP](https://github.com/TheYamio/input-overlay-studio/releases/latest)** and extract the entire archive.
 2. **Run Input Overlay Studio.** The setup guide helps you choose a layout and check your input. [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) is required.
 3. **Make it yours.** Set your DPI and game sensitivity, then customize your overlay.
-4. **Add it to OBS.** Click **Copy OBS URL**, add a **Browser Source**, and paste the URL. Use **1920 × 1080** for the recommended starting size.
+4. **Add it to OBS.** Open **Connect to OBS** in Studio and copy the URL. Paste it into a **Browser Source** set to **1920 × 1080**.
 
 Keep Studio running while using the overlay. Closing its window leaves it in the system tray; choose **Exit** from the tray menu to stop it.
 

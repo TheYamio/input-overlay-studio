@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.0
+
+- Added a shared **Connect to OBS** panel in the editor and setup guide with Browser Source instructions, URL copying and separate capture, save and source statuses.
+- Kept the source URL masked by default and added a reveal control for manual copying when clipboard access fails.
+- Preserved input checks when going back in the guide. The final step now explains how to verify a key press in OBS and shows what to check while the source is disconnected.
+- Localized the updated connection and verification controls in all 12 built-in languages.
+
+**Update from 0.6.10.** Quit through **Exit** in the system tray, extract the new ZIP and run Studio with the same data and server settings. Existing OBS Browser Sources keep their URLs.
+
 ## v0.6.10 — November 20, 2026
 
 - Fixed Studio and OBS Browser Source startup over LAN HTTP.

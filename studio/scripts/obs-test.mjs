@@ -56,7 +56,8 @@ async function copySourceURL(expectedToken) {
     const page = await context.newPage();
     await page.goto('http://127.0.0.1:4486/studio/index.html');
     await expect(page.locator('[data-connection-part=save]')).toHaveAttribute('data-connection-state', 'Saved to capture server');
-    await page.getByRole('button', { name: 'Copy OBS URL', exact: true }).click();
+    await page.getByRole('button', { name: 'Connect to OBS', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Connect to OBS' }).getByRole('button', { name: 'Copy OBS URL', exact: true }).click();
     await expect.poll(() => page.evaluate(() => typeof window.testSourceURL)).toBe('string');
     const url = new URL(await page.evaluate(() => window.testSourceURL));
     expect(url.pathname).toBe('/studio/overlay.html');

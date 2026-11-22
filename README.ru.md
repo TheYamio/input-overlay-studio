@@ -56,7 +56,7 @@ https://github.com/user-attachments/assets/f6abb13c-c2d8-4a9d-b6cf-de1f52926017
 1. **[Скачай Windows x64 ZIP](https://github.com/TheYamio/input-overlay-studio/releases/latest)** и распакуй весь архив.
 2. **Запусти Input Overlay Studio.** Мастер поможет выбрать расположение и проверить ввод. Для работы нужен [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section).
 3. **Настрой оформление.** Укажи DPI и чувствительность в игре, затем собери свой оверлей.
-4. **Подключи OBS.** Нажми **Copy OBS URL**, добавь **Источник браузера** и вставь ссылку. Рекомендуемый начальный размер — **1920 × 1080**.
+4. **Подключи OBS.** Открой **Подключить к OBS** в Studio, скопируй ссылку и вставь её в источник **Браузер**. Рекомендуемый начальный размер — **1920 × 1080**.
 
 Во время работы оверлея оставляй Studio запущенной. После закрытия окна приложение остаётся в трее; полный выход — **Exit** в меню трея.
 

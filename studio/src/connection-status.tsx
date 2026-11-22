@@ -16,7 +16,7 @@ export function ConnectionIndicators({view}:{view:SettingsSnapshot}){
  const parts=useIndicators(view);
  return <div className="connection-indicators" role="status" aria-live="polite" aria-atomic="true">{parts.map(part=><span key={part.id} className="connection-indicator" data-connection-part={part.id} data-connection-state={part.state} data-tone={part.tone} title={part.help} aria-label={`${part.label}: ${part.text}`}><i aria-hidden="true"/>{part.text}</span>)}</div>;
 }
-export function ConnectionDetails({view}:{view:SettingsSnapshot}){
+export function ConnectionDetails({view,compact=false}:{view:SettingsSnapshot;compact?:boolean}){
  const parts=useIndicators(view),t=useSettingsText();
- return <div className="connection-details"><h4>{t('connection:details.title')}</h4><dl>{parts.map(part=><div key={part.id}><dt>{part.label}</dt><dd data-tone={part.tone}>{part.text}</dd><dd className="hint">{part.help}</dd></div>)}</dl></div>;
+ return <div className="connection-details"><h4>{t('connection:details.title')}</h4><dl>{parts.map(part=><div key={part.id}><dt>{part.label}</dt><dd data-tone={part.tone}>{part.text}</dd>{!compact&&<dd className="hint">{part.help}</dd>}</div>)}</dl></div>;
 }

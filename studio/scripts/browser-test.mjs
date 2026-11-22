@@ -139,7 +139,26 @@ try {
   const overlay = await context.newPage(); overlay.on('pageerror', e => errors.push(e.message));
   await check('OBS source is transparent and editor-free', async () => {
     await page.bringToFront();
-    await page.getByRole('button', { name: /Copy OBS URL/ }).click(); await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('overlay.html'); const url = await page.evaluate(() => navigator.clipboard.readText());
+    const connect = page.getByRole('button', { name: 'Connect to OBS', exact: true });
+    await connect.click();
+    const panel = page.getByRole('dialog', { name: 'Connect to OBS', exact: true });
+    await expect(panel.getByText(/1920/)).toBeVisible();
+    await panel.getByRole('button', { name: 'Copy OBS URL', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('overlay.html');
+    const url = await page.evaluate(() => navigator.clipboard.readText());
+    const address = panel.getByLabel('OBS source URL', { exact: true });
+    await expect(address).toHaveAttribute('type', 'password');
+    await page.evaluate(() => navigator.clipboard.writeText(''));
+    await panel.getByRole('button', { name: 'Show OBS URL' }).click();
+    await address.click();
+    await page.keyboard.press('Control+c');
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(url);
+    await panel.getByRole('button', { name: 'Hide OBS URL' }).click();
+    await expect(address).toHaveAttribute('type', 'password');
+    await panel.screenshot({ path: fileURLToPath(new URL('obs-connection-panel.png', artifacts)) });
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(connect).toBeFocused();
     expect(new URLSearchParams(new URL(url).hash.slice(1)).get('token')).toBe(obsToken);
     if (url.includes('demo=')) throw Error('Demo leaked into OBS URL');
     await overlay.goto(url); await expect(overlay.locator('.overlay-module')).toHaveCount(document.profiles[0].modules.length);

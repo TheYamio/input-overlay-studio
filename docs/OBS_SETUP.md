@@ -5,7 +5,7 @@
 1. Extract the Windows ZIP and run **Input Overlay Studio**. Follow the setup guide to choose a layout and check keyboard, mouse and wheel input.
 2. In **Profiles**, set your game, DPI and sensitivity. For CS2, use your `m_yaw` value. For KovaaK's, choose the matching sensitivity scale, custom yaw or manual cm/360.
 3. Customize the overlay on the Studio canvas. Add modules from the Layers panel, drag to position them, and pull the edges or corners to resize. The right-hand **Properties** panel controls the selected object.
-4. Click **Copy OBS URL**.
+4. Open **Connect to OBS** in the Studio toolbar or follow the OBS step of the setup guide. Click **Copy OBS URL** in the connection panel.
 5. In OBS, add a **Browser Source**, paste the URL, and set its width and height. Start with **1920 × 1080**; other sizes, such as 2560 × 1440, also work. The composition fits the source proportionally with a transparent background.
 6. Select the Browser Source frame rate in OBS. Configure Studio's rendering target under **Settings → Rendering performance**.
 
@@ -38,7 +38,7 @@ Under **Settings → Distance**:
 1. On the gaming PC, open **Settings → Native capture server**. Set the bind host to an address reachable on your LAN, enable HTTP, and apply the settings.
 2. Allow the configured HTTP and WebSocket ports through the firewall. The defaults are 4456 and 4455.
 3. On the OBS PC, open `http://GAME_PC:4456/studio/index.html`. Set the connection URL to `ws://GAME_PC:4455` and enter the gaming PC's token.
-4. Click **Copy OBS URL** and add it as an OBS Browser Source. If clipboard access is unavailable, copy the displayed URL manually from Settings.
+4. Open **Connect to OBS** and click **Copy OBS URL**, then add it as an OBS Browser Source. If clipboard access is unavailable, reveal the URL with **Show OBS URL**, select the field and copy it manually.
 
 ## Connection checks
 

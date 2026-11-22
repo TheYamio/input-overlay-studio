@@ -1,0 +1,41 @@
+.obs-connection-dialog {
+  width: min(620px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-primary);
+  background: var(--surface);
+  box-shadow: 0 24px 70px #060817b3;
+}
+
+.obs-connection-dialog[open] { display: flex; flex-direction: column; }
+.obs-connection-dialog::backdrop { background: #080c20b8; }
+.obs-connection-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.obs-connection-dialog h2 { font-size: 22px; font-weight: 650; overflow-wrap: anywhere; }
+.obs-connection-dialog .setup-close { flex: none; }
+.obs-connection-body { min-height: 0; overflow: auto; padding: 20px 24px 24px; }
+.obs-connection-panel { display: grid; gap: 14px; min-width: 0; overflow-wrap: anywhere; }
+.obs-connection-steps { margin: 0; padding-inline-start: 22px; line-height: 1.55; color: var(--text-secondary); }
+.obs-connection-steps li { padding-inline-start: 4px; margin-bottom: 6px; }
+.obs-connection-address { min-width: 0; display: grid; gap: 10px; }
+.obs-connection-address > button, .obs-connection-settings { justify-self: start; white-space: normal; }
+.obs-connection-url { display: grid; align-items: end; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.obs-connection-panel .obs-connection-url > .field { margin: 0; }
+.obs-connection-url > .obs-url-visibility { min-height: 38px; min-width: 40px; padding: 0; justify-content: center; }
+.obs-connection-panel .connection-details { margin: 0; }
+.obs-connection-panel .connection-details dl { grid-template-columns: repeat(auto-fit, minmax(min(100%, 125px), 1fr)); gap: 12px; }
+.obs-connection-feedback, .obs-connection-error { font-size: 13px; }
+.setup-guide .obs-connection-panel p { margin: 0; }
+.obs-connection-panel .obs-connection-error { color: var(--warning, #e7bd73); }
+
+@media (max-width: 480px) {
+  .obs-connection-dialog > header, .obs-connection-body { padding: 14px; }
+}

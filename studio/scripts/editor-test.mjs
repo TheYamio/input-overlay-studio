@@ -123,16 +123,29 @@ try {
   });
   await check('missing browser overlay page blocks URL copying', async () => {
     await page.evaluate(() => navigator.clipboard.writeText('unchanged'));
-    await page.route('**/overlay.html', route => route.fulfill({ status: 404, body: 'missing' })); await page.getByRole('button', { name: 'Copy OBS URL', exact: true }).first().click();
-    await expect(page.getByRole('alert')).toContainText('overlay page is unavailable'); expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('unchanged'); await page.unroute('**/overlay.html');
+    await page.route('**/overlay.html', route => route.fulfill({ status: 404, body: 'missing' }));
+    await page.locator('.heading-actions').getByRole('button', { name: 'Connect to OBS', exact: true }).click();
+    const panel = page.getByRole('dialog', { name: 'Connect to OBS' });
+    await panel.getByRole('button', { name: 'Copy OBS URL', exact: true }).click();
+    await expect(panel.getByRole('alert')).toContainText('overlay page is unavailable');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('unchanged');
+    await page.keyboard.press('Escape');
+    await page.unroute('**/overlay.html');
   });
   await check('native disabled HTTP and bind errors block copying with specific instructions', async () => {
     const nativeContext = await browser.newContext({ viewport: { width: 1560, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
     await nativeContext.addInitScript(() => { window.__httpFixture = null; window.__TAURI__ = { core: { invoke: async command => { if (['enum_keyboards', 'enum_mice', 'check_linux_perms'].includes(command)) throw Error('unsupported platform'); return command === 'get_config' ? { host: '127.0.0.1', port: 4498, auth_token: 'editor-test', http_enabled: false, http_port: 4456, capture_enabled: true, analog_keyboard: '', key_whitelist: [], raw_mouse_min_delta: 0, send_mouse_move: true, cpu_affinity: [], linux_evdev_keyboard_device: '', linux_raw_mouse_device: '' } : command === 'get_http_status' ? window.__httpFixture : command === 'get_device_status' ? { keyboard_count: 1, mouse_count: 1, capture_running: true } : null; } } }; });
     const native = await nativeContext.newPage(); native.on('pageerror', e => errors.push(e.message)); await native.goto('http://127.0.0.1:5192'); await expect(native.getByText('Capture server connected')).toBeVisible();
-    await native.getByRole('button', { name: 'Copy OBS URL', exact: true }).first().click(); await expect(native.getByRole('alert')).toContainText('HTTP server is disabled');
+    await native.getByRole('button', { name: 'Connect to OBS', exact: true }).click();
+    const panel = native.getByRole('dialog', { name: 'Connect to OBS' });
+    const copy = panel.getByRole('button', { name: 'Copy OBS URL', exact: true });
+    await copy.click();
+    await expect(panel.getByRole('alert')).toContainText('HTTP server is disabled');
     await native.evaluate(() => { window.__httpFixture = { running: false, bind_error: 'inuse', host: '127.0.0.1', port: 4456, overlay_available: true }; });
-    await native.getByRole('button', { name: 'Copy OBS URL', exact: true }).first().click(); await expect(native.getByRole('alert')).toContainText('already in use'); await expect(native.getByLabel('OBS URL', { exact: true })).toHaveValue(''); await nativeContext.close();
+    await copy.click();
+    await expect(panel.getByRole('alert')).toContainText('already in use');
+    await expect(panel.getByLabel('OBS source URL', { exact: true })).toHaveCount(0);
+    await nativeContext.close();
   });
   expect(errors).toEqual([]); await mkdir(new URL('../artifacts/', import.meta.url), { recursive: true });
   await writeFile(new URL('../artifacts/editor-results.json', import.meta.url), JSON.stringify({ results, errors }, null, 2));
