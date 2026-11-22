@@ -1207,6 +1207,8 @@
       "settings.native-startup-storage": "Impossible d’enregistrer les paramètres de capture au démarrage. La capture est désactivée. Vérifiez l’accès au dossier de données et appliquez à nouveau les paramètres."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Toujours centré",
+      "overlay.trail.move-grid.label": "Déplacer la grille avec la souris",
       "overlay.instance.name.label": "Nom du module",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "Déverrouillez le module pour changer sa position ou sa taille.",

@@ -45,7 +45,7 @@ export function makeModule(type: OverlayModule['type'], index = 0, instanceId:st
     appearance: { ...defaultAppearance(), ...(type === 'distance' || type === 'sensitivity' ? { backgroundOpacity: 0, borderWidth: 0 } : {}) }, image: defaultImageSettings(), buttonStyles: {}, buttonGeometry: {}, buttonImages: {}, trailAppearance: defaultTrailAppearance(), wheelDuration: 110, textLayout: 'Horizontal',
     visible: true, locked: false, z: index, accent: '#a5ef6b', background: '#161b20', opacity: 1, radius: 12, effect: 'Soft Press',
     keys: layoutKeys('WASD + modifiers'), layout: 'WASD + modifiers', gap: 8, mouseMode: 'Compact Buttons', buttons: [1, 2, 3, 4, 5, 6, 7], buttonLabels: ['M1', 'M2', 'M3', 'M4', 'M5', '↑', '↓'],
-    trailStyle: 'Fade Trail', position: 'Follow / Recenter', scaleMode: 'DPI Normalized Scale', scale: .65, duration: 1200, thickness: 2, glow: 10, grid: true, center: true, marker: 'Dot', clickEffects: 'Ripple', originX: .5, originY: .5,
+    trailStyle: 'Fade Trail', position: 'Follow / Recenter', scaleMode: 'DPI Normalized Scale', scale: .65, duration: 1200, thickness: 2, glow: 10, grid: true, moveGrid: false, center: true, marker: 'Dot', clickEffects: 'Ripple', originX: .5, originY: .5,
     unit: 'Auto', decimals: 1, caption: 'DISTANCE', sensitivityStyle: 'Standard', showGame: true, showDpi: true, showSens: true, showEdpi: true, showCm: true,
   };
 }

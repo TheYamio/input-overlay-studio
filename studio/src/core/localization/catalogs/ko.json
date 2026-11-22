@@ -1207,6 +1207,8 @@
       "settings.native-startup-storage": "시작할 때 캡처 설정을 저장하지 못했습니다. 캡처가 꺼졌습니다. 데이터 폴더 접근 권한을 확인하고 설정을 다시 적용하세요."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "항상 중앙",
+      "overlay.trail.move-grid.label": "마우스에 따라 격자 이동",
       "overlay.instance.name.label": "모듈 이름",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "모듈을 잠그고 위치 또는 크기를 변경합니다.",

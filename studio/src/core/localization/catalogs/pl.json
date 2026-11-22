@@ -1207,6 +1207,8 @@
       "settings.native-startup-storage": "Nie udało się zapisać ustawień przechwytywania przy uruchamianiu. Przechwytywanie jest wyłączone. Sprawdź dostęp do folderu danych i ponownie zastosuj ustawienia."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Zawsze na środku",
+      "overlay.trail.move-grid.label": "Przesuwaj siatkę wraz z myszą",
       "overlay.instance.name.label": "Nazwa modułu",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "Odblokuj moduł, aby zmienić jego położenie lub rozmiar.",

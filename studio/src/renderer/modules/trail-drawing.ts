@@ -40,17 +40,23 @@ export class Trail {
     if (this.pending) { this.points.push(this.x, this.y, this.lastInput || now, this.speed); this.pending = false; }
     while (this.points.length && now - this.points.data[this.points.index(0) + 2] > m.duration) this.points.length--;
     const dt = Math.min(100, now - (this.lastDraw || now)); this.lastDraw = now;
-    if (m.position === 'Follow / Recenter') {
+    const alwaysCentered = m.position === 'Always-Centered';
+    if (alwaysCentered) {
+      this.cameraX = this.x; this.cameraY = this.y;
+    } else if (m.position === 'Follow / Recenter') {
       const follow = 1 - Math.exp(-dt / astyle.followMs);
       this.cameraX += (this.x - this.cameraX) * follow; this.cameraY += (this.y - this.cameraY) * follow;
     }
     c.clearRect(0, 0, w, h);
     if (m.grid) {
       c.strokeStyle = rgba(astyle.gridColor, astyle.gridOpacity); c.lineWidth = 1; c.beginPath();
-      for (let x = 0; x < w; x += astyle.gridSpacing) { c.moveTo(x, 0); c.lineTo(x, h); }
-      for (let y = 0; y < h; y += astyle.gridSpacing) { c.moveTo(0, y); c.lineTo(w, y); } c.stroke();
+      const spacing = astyle.gridSpacing;
+      const gridX = alwaysCentered && m.moveGrid ? ((-this.cameraX % spacing) + spacing) % spacing : 0;
+      const gridY = alwaysCentered && m.moveGrid ? ((-this.cameraY % spacing) + spacing) % spacing : 0;
+      for (let x = gridX; x < w; x += spacing) { c.moveTo(x, 0); c.lineTo(x, h); }
+      for (let y = gridY; y < h; y += spacing) { c.moveTo(0, y); c.lineTo(w, y); } c.stroke();
     }
-    const ox = w * m.originX, oy = h * m.originY;
+    const ox = w * (alwaysCentered ? .5 : m.originX), oy = h * (alwaysCentered ? .5 : m.originY);
     if (m.center) {
       c.strokeStyle = astyle.centerColor; const size = astyle.centerSize; c.beginPath(); c.moveTo(ox - size, oy); c.lineTo(ox + size, oy); c.moveTo(ox, oy - size); c.lineTo(ox, oy + size); c.stroke();
     }

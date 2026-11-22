@@ -1207,6 +1207,8 @@
       "settings.native-startup-storage": "启动时无法保存捕获设置。捕获已关闭。请检查数据文件夹的访问权限并重新应用设置。"
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "始终居中",
+      "overlay.trail.move-grid.label": "网格随鼠标移动",
       "overlay.instance.name.label": "模块名称",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "打开模块以更改其位置或大小。",

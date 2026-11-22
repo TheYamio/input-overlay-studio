@@ -109,7 +109,7 @@ export function createBuiltinDefinitions() {
   fields(moduleSchema.shape, [
     ['trailStyle','style','Trail style','select'], ['position','position','Position','select'], ['scaleMode','scale-mode','Scale mode','select'], ['scale','scale','Trail scale','number','ratio'],
     ['duration','duration','Trail duration','number','ms'], ['thickness','thickness','Line thickness','number','px'], ['glow','glow','Trail glow','number','px'],
-    ['grid','grid','Show grid','checkbox'], ['center','center','Show center','checkbox'], ['marker','marker','Marker','select'], ['clickEffects','click-effects','Click effects','select'],
+    ['grid','grid','Show grid','checkbox'], ['moveGrid','move-grid','Move grid with mouse','checkbox'], ['center','center','Show center','checkbox'], ['marker','marker','Marker','select'], ['clickEffects','click-effects','Click effects','select'],
     ['originX','origin-x','Origin X','range'], ['originY','origin-y','Origin Y','range'],
   ], 'overlay.trail', instance, [], ['trail']);
   fields(trailAppearanceSchema.shape, [
@@ -152,6 +152,7 @@ export function createBuiltinDefinitions() {
   const depends = (id: DefinitionId, setting: DefinitionId, value: string) => {
     const index = settings.findIndex(s => s.id === id); settings[index] = {...settings[index], visibleWhen:[{setting,test:'equals',value}]};
   };
+  depends('overlay.trail.move-grid','overlay.trail.position','Always-Centered');
   depends('overlay.animation.secondary-color','overlay.animation.lighting','Gradient');
   depends('overlay.animation.gradient-angle','overlay.animation.lighting','Gradient');
   depends('overlay.animation.motion-scale','overlay.animation.motion','Scale');

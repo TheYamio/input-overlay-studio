@@ -321,6 +321,7 @@
             "thickness": 2,
             "glow": 10,
             "grid": true,
+            "moveGrid": false,
             "center": true,
             "marker": "Dot",
             "clickEffects": "Ripple",
