@@ -59,9 +59,9 @@ function ObsConnectionContent({ view, makeUrl, openSettings }: ObsConnectionProp
 
   return <div className="obs-connection-panel" data-obs-panel>
     <ol className="obs-connection-steps">
-      {[1, 2, 3].map(step => <li key={step}>{t(`setup:obsStep${step}`)}</li>)}
-    </ol>
-    <div className="obs-connection-address">
+      <li><p>{t('setup:obsStep1')}</p></li>
+      <li><p>{t('setup:obsStep2')}</p>
+      <div className="obs-connection-address">
       <button className="primary" disabled={busy || !connected || !!blocked} onClick={() => void copy()}>
         <Copy size={16}/>{t('setup:copy')}
       </button>
@@ -76,11 +76,13 @@ function ObsConnectionContent({ view, makeUrl, openSettings }: ObsConnectionProp
           {showUrl ? <EyeOff size={16}/> : <Eye size={16}/>}
         </button>
       </div>}
-      {feedback && <p className="obs-connection-feedback" role="status">{t(`setup:${feedback}`)}</p>}
+      {feedback && <p className="obs-connection-feedback" data-copy-state={feedback} role="status">{t(`setup:${feedback}`)}</p>}
       {error && <p className="obs-connection-error" role="alert">{error}</p>}
       {!connected && <p className="obs-connection-error">{t('setup:connectFirst')}</p>}
       {connected && blocked && <p className="obs-connection-error">{t('setup:obsProfileBlocked')}</p>}
-    </div>
+      </div></li>
+      <li><p>{t('setup:obsStep3')}</p></li>
+    </ol>
     <div role="status" aria-live="polite">
       <ConnectionDetails view={view} compact/>
     </div>
@@ -103,11 +105,11 @@ export function ObsConnectionDialog({ close, ...props }: ObsConnectionProps & { 
     };
   }, []);
 
-  return <dialog ref={dialog} className="obs-connection-dialog" aria-labelledby={title}
+  return <dialog ref={dialog} className="obs-connection-dialog studio-dialog" aria-labelledby={title}
     onCancel={event => { event.preventDefault(); close(); }}>
-    <header>
+    <header className="studio-dialog-header">
       <h2 id={title}>{t('setup:connectOBS')}</h2>
-      <button className="setup-close" aria-label={t('setup:closeOBS')} onClick={close}><X size={20}/></button>
+      <button className="icon-button setup-close" aria-label={t('setup:closeOBS')} onClick={close}><X size={20}/></button>
     </header>
     <div className="obs-connection-body"><ObsConnectionPanel {...props}/></div>
   </dialog>;

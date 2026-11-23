@@ -1,0 +1,137 @@
+/* Shared Studio frame. Each workflow owns its scrolling content. */
+.studio-dialog {
+  --dialog-gutter: clamp(14px, 3vw, 24px);
+  --dialog-backdrop: #080914c4;
+  border-color: var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: 0 22px 64px #060710b0;
+}
+.studio-dialog::backdrop { background: var(--dialog-backdrop); backdrop-filter: blur(3px); }
+.studio-dialog .studio-dialog-header {
+  padding: 14px var(--dialog-gutter);
+  flex-shrink: 0;
+  background: var(--studio-deck);
+  border-bottom: 1px solid var(--border);
+}
+.studio-dialog .studio-dialog-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -.35px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.studio-dialog .studio-dialog-header p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.studio-dialog .studio-dialog-footer {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px var(--dialog-gutter);
+  background: var(--studio-deck);
+  border-top: 1px solid var(--border);
+}
+.studio-dialog .studio-dialog-footer button svg { flex: none; }
+.studio-dialog :is(.setup-body,.obs-connection-body,.preset-dialog-body) {
+  padding: 14px var(--dialog-gutter);
+  overscroll-behavior: contain;
+}
+
+.setup-guide .studio-dialog-header { border-bottom: 0; }
+.setup-guide .setup-steps {
+  padding: 0 var(--dialog-gutter) 10px;
+  gap: 6px;
+  background: var(--studio-deck);
+}
+.setup-steps li { min-height: 38px; padding: 4px 5px; border: 1px solid transparent; border-radius: 7px; }
+.setup-steps li > span { width: 25px; height: 25px; font-variant-numeric: tabular-nums; }
+.setup-steps [aria-current=step] { background: var(--selected-surface); border-color: #574773; }
+.setup-steps [aria-current=step] > span { border-color: var(--accent); }
+.setup-guide .setup-language-selector { padding-bottom: 10px; margin-bottom: 12px; }
+.setup-guide .setup-layout-preview { background-color: #121424; background-image: conic-gradient(#1c2033 25%,transparent 0 50%,#1c2033 0 75%,transparent 0); background-size: 24px 24px; }
+.setup-guide .setup-layout-preview .scene-thumbnail { height: clamp(130px, 28dvh, 220px); }
+.setup-guide .setup-inputs > div { padding: 12px; border-radius: 8px; }
+.setup-guide .setup-footer-meta { align-items: center; }
+.setup-guide .setup-footer-actions { justify-content: flex-end; margin-inline-start: auto; }
+
+.obs-connection-dialog { width: min(660px, calc(100vw - 20px)); }
+.obs-connection-panel .obs-connection-steps { list-style: none; counter-reset: instructions; padding: 0; }
+.obs-connection-steps > li {
+  position: relative;
+  counter-increment: instructions;
+  margin: 0;
+  padding-block: 8px;
+  padding-inline-start: 36px;
+  border-bottom: 1px solid var(--border);
+}
+.obs-connection-steps > li::before {
+  content: counter(instructions);
+  display: grid;
+  place-items: center;
+  position: absolute;
+  top: 7px;
+  inset-inline-start: 0;
+  width: 25px;
+  height: 25px;
+  border-radius: 6px;
+  border: 1px solid #574773;
+  background: var(--selected-surface);
+  color: var(--accent);
+  font-size: 12px;
+}
+.obs-connection-panel .obs-connection-steps p { margin: 0; }
+.obs-connection-panel .obs-connection-address { margin: 9px 0 2px; gap: 8px; }
+.obs-connection-feedback[data-copy-state=copied] { color: var(--positive); }
+.obs-connection-url input { font-family: monospace; direction: ltr; }
+.obs-connection-panel > .hint { margin: 0; }
+
+.studio-dialog.preset-dialog form { gap: 0; }
+.preset-preview-dialog .preset-preview-effect {
+  max-width: 74ch;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.preset-comparison h3 { display: flex; align-items: center; gap: 7px; }
+.preset-comparison h3::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+.expanded-image-dialog.studio-dialog { width: min(1420px,calc(100vw - 24px)); padding: 0; }
+.expanded-image-dialog.studio-dialog[open] { height: min(1000px,94dvh); max-height: calc(100dvh - 24px); }
+.expanded-image-dialog .studio-dialog-header { margin: 0; }
+.expanded-image-dialog .image-editor-body { gap: 0; grid-template-columns: minmax(0,1.7fr) minmax(300px,1fr); }
+.expanded-image-dialog .image-visual-column {
+  padding: 12px var(--dialog-gutter) 18px;
+  background: var(--studio-canvas);
+}
+.expanded-image-dialog .image-editor-grid { gap: 12px; padding: 12px 14px 18px; border-inline-start: 1px solid var(--border); }
+.expanded-image-dialog .image-editor-grid > section { padding: 12px; background: var(--input-surface); border-color: var(--border); }
+.expanded-image-dialog .studio-dialog-footer { flex-wrap: wrap; gap: 4px 12px; }
+.image-dialog-buttons { margin-inline-start: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.expanded-image-dialog > .warning { padding: 5px var(--dialog-gutter); margin: 0; }
+.expanded-image-dialog .image-preview-toolbar { gap: 8px 12px; margin: 0 0 10px; }
+.expanded-image-dialog .image-preview-toolbar > .field { display: flex; flex-direction: row; align-items: center; gap: 8px; min-width: 0; }
+.expanded-image-dialog .image-preview-toolbar select { width: auto; min-width: 84px; }
+.image-preview-toolbar .secondary[aria-pressed=true] { background: var(--selected-surface); color: var(--accent); }
+.image-visual-column .image-placement { width: 100%; aspect-ratio: 800 / 380; border-color: var(--border); }
+
+@media(max-width: 600px) {
+  .studio-dialog .studio-dialog-header h2 { font-size: 20px; }
+  .setup-guide .setup-steps { display: flex; }
+  .setup-steps li { flex-direction: row; align-items: center; min-width: 33px; }
+  .setup-steps li[aria-current=step] { flex: 1; }
+  .setup-steps li:not([aria-current]) b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .setup-guide .setup-inputs { gap: 7px; }
+  .setup-guide .setup-footer-meta { justify-content: space-between; }
+  .expanded-image-dialog .image-editor-grid { border-inline-start: 0; border-top: 1px solid var(--border); }
+}
+@media(max-height: 570px) {
+  .studio-dialog .studio-dialog-header { padding-block: 9px; }
+  .studio-dialog .studio-dialog-footer { padding-block: 7px; }
+  .image-visual-column .image-placement { max-height: 39dvh; }
+}

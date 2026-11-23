@@ -5,6 +5,7 @@ import { capsFor } from './core/skins';
 import { resizeBox, keyLimits, type ResizeDirection } from './core/transform';
 import { eventShortcut } from './core/shortcuts';
 import { TransformHandles } from './transform-handles';
+import { keySelectionLabel } from './selection-labels';
 
 interface Gesture { key: Key; module: OverlayModule; mode: 'move' | 'resize' | 'keyboard'; clientX: number; clientY: number; capScale: number; direction?: ResizeDirection; draft: Key }
 export function KeyCanvas({ module: m, undoShortcuts, scale, selected, select, preview, commit, snap }: { undoShortcuts: string[]; module: OverlayModule; scale: number; selected: string | null; select: (id: string) => void; preview: (module: OverlayModule | null, capScale?: number) => void; commit: (id: string, key: Key) => void; snap: boolean }) {
@@ -44,10 +45,10 @@ export function KeyCanvas({ module: m, undoShortcuts, scale, selected, select, p
   };
   return <div className="key-canvas-handles" style={{ width: m.w, height: m.h }}>
     {m.keys.map(key => {
-      const k = draft?.id === key.id ? draft : key, active = (selected || m.keys[0]?.id) === key.id;
+      const k = draft?.id === key.id ? draft : key, active = selected === key.id, label = keySelectionLabel(key);
       return <div key={k.id} className={`key-hitbox ${active ? 'selected' : ''}`} data-key-id={k.id} style={{ left: k.x * fit, top: k.y * fit, width: Math.max(10, k.w + 8 - m.gap) * fit, height: Math.max(10, k.h + 8 - m.gap) * fit }}>
-        <button aria-label={tr('ui:s-cdcba68a86d4',"Edit key {{p0}}",{p0:String(key.label)})} aria-pressed={active} className="key-select-handle" onPointerDown={e => begin(e, key)} onPointerMove={move} onPointerUp={e => { e.stopPropagation(); finish(); }} onPointerCancel={cancel} onLostPointerCapture={cancel} onDoubleClick={e => e.stopPropagation()} onKeyDown={e => keyboard(e, key)}/>
-        {active && !m.locked && <TransformHandles name={`key ${key.label}`} keyHandle begin={(e, direction) => begin(e, key, direction)} move={move} finish={finish} cancel={cancel} keyboard={(e, direction) => keyboard(e, key, direction)}/>}
+        <button aria-label={tr('ui:s-cdcba68a86d4',"Edit key {{p0}}",{p0:label})} aria-pressed={active} className="key-select-handle" onClick={() => select(key.id)} onPointerDown={e => begin(e, key)} onPointerMove={move} onPointerUp={e => { e.stopPropagation(); finish(); }} onPointerCancel={cancel} onLostPointerCapture={cancel} onDoubleClick={e => e.stopPropagation()} onKeyDown={e => keyboard(e, key)}/>
+        {active && !m.locked && <TransformHandles name={`key ${label}`} keyHandle begin={(e, direction) => begin(e, key, direction)} move={move} finish={finish} cancel={cancel} keyboard={(e, direction) => keyboard(e, key, direction)}/>}
       </div>;
     })}
   </div>;

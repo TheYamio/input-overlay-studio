@@ -20,7 +20,11 @@ export interface AnimationPreviewProps {settings:SettingsService;address:Animati
 export const animationViews=new SettingsComponentRegistry<AnimationPreviewProps>();
 animationViews.register('animation.preview',({settings,address,prefix,mouse})=>{
   const snapshot=useSyncExternalStore(settings.subscribe,settings.getSnapshot);
-  return <AnimationSample style={animationStyle(snapshot.document,address)} prefix={prefix} mouse={mouse}/>;
+  const { element } = address;
+  const module = snapshot.document.profiles.find(profile => profile.id === address.profileId)?.modules.find(module => module.id === address.moduleId);
+  const label = element?.kind === 'key' ? module?.keys.find(key => key.id === element.keyId)?.label
+    : element?.kind === 'mouse-button' ? module?.buttonLabels[element.button - 1] : undefined;
+  return <AnimationSample style={animationStyle(snapshot.document,address)} prefix={prefix} mouse={mouse} label={label}/>;
 });
 
 export function SchemaAnimationControls({settings,address,prefix,mouse=false,catalog=builtinCatalog}:{settings:SettingsService;address:AnimationAddress;prefix:string;mouse?:boolean;catalog?:Catalog}) {
@@ -28,12 +32,12 @@ export function SchemaAnimationControls({settings,address,prefix,mouse=false,cat
   const identity=JSON.stringify([address.profileId,address.moduleId,address.element??null]);
   return <details className="visual-details animation-details" data-settings-group={animationGroup} onToggle={event=>setOpen(event.currentTarget.open)}>
     <summary>{t('animation:title','Press & release')}</summary>
+    {open && Preview && <Preview key={identity} settings={settings} address={address} prefix={prefix} mouse={mouse}/>}
     <p className="hint">{t('animation:intro','Movement, light and timing can be combined independently. Times are in milliseconds.')}</p>
     {animationSections.map(section=><div key={section.id} data-settings-section={section.id}>
       {section.label && <h4 className="animation-section-title">{t(section.label.key,section.label.fallback)}</h4>}
       <div className={section.grid?'field-grid':undefined}><SettingsFields settings={settings} address={address} group={animationGroup} section={section.id} defaultSection="animation.timing" adapter={adapter} specialized={animationComponents} labelPrefix={prefix} catalog={catalog}/></div>
       {section.help.fallback && <p className="hint">{t(section.help.key,section.help.fallback)}</p>}
     </div>)}
-    {open && Preview && <Preview key={identity} settings={settings} address={address} prefix={prefix} mouse={mouse}/>}
   </details>;
 }

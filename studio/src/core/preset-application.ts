@@ -13,3 +13,20 @@ export function applyPresetToDocument(doc:StudioDocument,preset:StudioDocument['
  const used=usedShapes([...doc.profiles,...doc.presets].flatMap(p=>p.modules));
  doc.shapes=Object.fromEntries(Object.entries(doc.shapes).filter(([id])=>!previousShapes.has(id)||used.has(id)));
 }
+
+export interface PresetApplicationPreview {
+  base: StudioDocument;
+  result: StudioDocument;
+  colors: boolean;
+}
+
+export function preparePresetApplication(base: StudioDocument, preset: StudioDocument['presets'][number], colors: boolean, source?: PresetBundle): PresetApplicationPreview {
+  const result = {
+    ...base,
+    profiles: base.profiles.map(profile => profile.id === base.activeProfileId ? { ...profile } : profile),
+    assets: { ...base.assets },
+    shapes: { ...base.shapes }
+  };
+  applyPresetToDocument(result, preset, colors, source);
+  return { base, result, colors };
+}

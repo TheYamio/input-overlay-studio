@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.8.0
+
+- Refined Midnight Iris across Studio, Profiles, Presets, Settings, the setup guide and dialogs. Settings now has quick links to its main sections.
+- Clarified the selected module, key or mouse button across the canvas, Layers and Properties. Grouped editing and view controls in the canvas toolbar and footer.
+- Added light, dark and game screenshot backgrounds to the Studio preview, plus separate Press and Release controls for testing animations.
+- Open **Paint your keycaps** from the selected keyboard and adjust the image in one editor. The preview fits short windows, and the artwork follows rounded corners and SVG cutouts.
+- Unified built-in and saved presets with rendered previews, palettes and descriptions. Compare the current setup with the result before applying colors or a full layout.
+- Moved **Copy OBS URL** into the matching setup step and clarified manual copying. Refined key terminology in the built-in translations.
+
+**Update from 0.7.0.** Choose **Exit** in the system tray, extract the full Windows ZIP and launch Studio with the same data directory and capture settings. Studio reuses your profiles, presets and language. Existing OBS Browser Sources keep their URLs.
+
 ## v0.7.0
 
 - Added a shared **Connect to OBS** panel in the editor and setup guide with Browser Source instructions, URL copying and separate capture, save and source statuses.

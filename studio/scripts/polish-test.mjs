@@ -39,7 +39,7 @@ try{
     await page.setViewportSize({width,height});await page.locator('.preset-library').evaluate(n=>n.scrollTop=0);await page.evaluate(()=>document.fonts.ready);
     await expect(page.locator('.preset-explanation')).toBeVisible();await expect(page.locator('.preset-mode button')).toHaveCount(2);await expect(page.locator('.library-actions button').last()).toBeInViewport();
     const layout=await page.locator('.preset-library').evaluate(n=>{const first=n.querySelector('.library-card'),r=first.getBoundingClientRect();return {overflow:n.scrollWidth>n.clientWidth+1,previewVisible:Math.min(r.bottom,innerHeight)-Math.max(r.top,0)>60};});expect(layout,`${locale} ${width}`).toEqual({overflow:false,previewVisible:true});
-    await page.locator('.preset-mode button').nth(1).click();await expect(page.locator('.preset-apply').first()).toHaveText(await page.evaluate(async()=>{const {trText}=await import('/src/core/localization/messages.ts');return trText('Apply colors');}));await page.locator('.preset-mode button').nth(0).click();
+    await page.locator('.preset-mode button').nth(1).click();await expect(page.locator('.preset-apply').first()).toHaveText(await page.evaluate(async()=>{const {studioLocalization}=await import('/src/core/localization/builtins.ts');return studioLocalization.text('presets:previewColors');}));await page.locator('.preset-mode button').nth(0).click();
    }
    if(locale==='ru')await page.screenshot({path:fileURLToPath(new URL('presets-compact-ru.png',artifacts))});
   }

@@ -5,12 +5,16 @@ import { InputEngine } from './core/input';
 import { Scene } from './renderer/scene';
 
 /** Uses the production renderer, and releases canvases/blob URLs while off-screen. */
-export function SceneThumbnail({ document: d, modules, profile }: { document: StudioDocument; modules: OverlayModule[]; profile: Profile }) {
+export function SceneThumbnail({ document: d, modules, profile, fullCanvas = false }: { document: StudioDocument; modules: OverlayModule[]; profile: Profile; fullCanvas?: boolean }) {
   const moduleUI=useModuleUIRegistry();
   const wrapper = useRef<HTMLDivElement>(null), host = useRef<HTMLDivElement>(null), scene = useRef<Scene | null>(null);
   const [visible, setVisible] = useState(false), [size, setSize] = useState({ w: 200, h: 100 });
-  const shown = modules.filter(m => m.visible), x = Math.max(0, (shown.length ? Math.min(...shown.map(m => m.x)) : 24) - 24), y = Math.max(0, (shown.length ? Math.min(...shown.map(m => m.y)) : 24) - 24);
-  const w = Math.max(1, ...shown.map(m => m.x + m.w + 24 - x)), h = Math.max(1, ...shown.map(m => m.y + m.h + 24 - y)), fit = Math.min(size.w / w, size.h / h);
+  const shown = modules.filter(m => m.visible);
+  const x = fullCanvas ? 0 : Math.max(0, (shown.length ? Math.min(...shown.map(m => m.x)) : 24) - 24);
+  const y = fullCanvas ? 0 : Math.max(0, (shown.length ? Math.min(...shown.map(m => m.y)) : 24) - 24);
+  const w = fullCanvas ? 1920 : Math.max(1, ...shown.map(m => m.x + m.w + 24 - x));
+  const h = fullCanvas ? 1080 : Math.max(1, ...shown.map(m => m.y + m.h + 24 - y));
+  const fit = Math.min(size.w / w, size.h / h);
   useEffect(() => {
     const el = wrapper.current!, observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { rootMargin: '100px' }); observer.observe(el);
     const resize = new ResizeObserver(([entry]) => setSize({ w: entry.contentRect.width, h: entry.contentRect.height })); resize.observe(el);

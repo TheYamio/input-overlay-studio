@@ -130,7 +130,7 @@ try {
     await page.reload(); await expect(page.getByText('Capture server connected')).toBeVisible(); await page.getByRole('button', { name: 'Select Mouse Trail', exact: true }).click(); await expect(page.getByLabel('Style', { exact: true })).toHaveValue('Neon Trail');
   });
   await check('factory themes and saved preset actions', async () => {
-    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: /Colors on my layout/ }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Apply colors', exact: true }).click();
+    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: /Colors on my layout/ }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Preview colors', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Apply colors', exact: true }).click();
     await page.getByRole('button', { name: 'Save current setup', exact: true }).click(); await page.getByLabel('Preset name').fill('Test layout'); await page.getByRole('button', { name: 'Save preset', exact: true }).click(); await expect(page.locator('.saved-preset').getByRole('heading', { name: 'Test layout', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Duplicate preset', exact: true }).click(); await expect(page.locator('.saved-preset')).toHaveCount(2);
     await page.getByRole('button', { name: 'Delete preset', exact: true }).last().click(); await expect(page.locator('.saved-preset')).toHaveCount(1);

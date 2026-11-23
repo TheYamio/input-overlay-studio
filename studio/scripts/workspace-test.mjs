@@ -175,8 +175,9 @@ try {
   await check('artwork actions remain reachable in short and narrow windows', async () => {
     await tab('Artwork').click();
     const png = await page.evaluate(() => { const c=document.createElement('canvas'); c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#8064c4';x.fillRect(0,0,64,64);return c.toDataURL(); });
-    await page.getByLabel('Upload keycap image', { exact: true }).setInputFiles({ name: 'fixture.png', mimeType: 'image/png', buffer: Buffer.from(png.split(',')[1], 'base64') });
     await page.getByRole('button', { name: 'Position & scale image', exact: true }).click();
+    await page.getByLabel('Upload keycap image', { exact: true }).setInputFiles({ name: 'fixture.png', mimeType: 'image/png', buffer: Buffer.from(png.split(',')[1], 'base64') });
+    await expect(page.getByRole('dialog').getByAltText('Keycap artwork')).toBeVisible();
     for (const [width,height] of [[1366,768],[960,540],[375,812]]) {
       await page.setViewportSize({width,height});
       const dialog = page.getByRole('dialog');

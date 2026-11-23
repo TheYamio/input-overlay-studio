@@ -5,11 +5,12 @@ import {builtinVisualFactories} from './renderer/modules/factories';
 import type {ModuleUI} from './core/architecture/module-ui';
 import { makeModule } from './core/config';
 import { KeyCanvas } from './key-canvas';
-import { ArtworkEditor,DistanceEditor,InputPreviewEditor,KeyboardEditor,MouseEditor,SensitivityEditor,TrailEditor } from './module-editors';
+import { DistanceEditor,InputPreviewEditor,KeyboardEditor,MouseEditor,SensitivityEditor,TrailEditor } from './module-editors';
+import { ArtworkPanel } from './artwork-panel';
 
 export function createStudioModuleEnvironment(extra:readonly CompiledModuleManifest[]=[]){
  const ui:Record<string,ModuleUI>={};
- const preview={id:'preview',label:'Preview',component:InputPreviewEditor,order:0},artwork={id:'artwork',label:'Artwork',component:ArtworkEditor,order:1};
+ const preview={id:'preview',label:'Preview',component:InputPreviewEditor,order:0},artwork={id:'artwork',label:'Artwork',component:ArtworkPanel,order:1};
  ui['overlay.keyboard']={icon:Keyboard,create:index=>makeModule('keyboard',index),selection:'keys',canvasEditor:KeyCanvas,preview:true,sections:[{id:'keys',label:'Keys',component:KeyboardEditor,placement:'before-common'},artwork,preview]};
  ui['overlay.mouse']={icon:Mouse,create:index=>makeModule('mouse',index),selection:'buttons',preview:true,sections:[artwork,preview,{id:'specific',label:'Mouse Buttons',component:MouseEditor}]};
  ui['overlay.trail']={icon:Activity,create:index=>makeModule('trail',index),lineColor:true,preferred:true,sections:[{id:'specific',label:'Mouse Trail',component:TrailEditor}]};

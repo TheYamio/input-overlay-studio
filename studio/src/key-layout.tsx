@@ -10,17 +10,18 @@ import { resolvedStyle } from './core/skins';
 import { StyleFields, VNumber, VSelect } from './visual-controls';
 import { KeyRecorder } from './key-binding';
 import { ElementStyleTools } from './style-tools';
+import { keySelectionLabel } from './selection-labels';
 
-function KeyLayoutView({ module: m, change, engine, selected, select, editing, setEditing, assignKey }: { assignKey: (id: string, patch: { code: number; label?: string }) => void; module: OverlayModule; change: (patch: Partial<OverlayModule>) => void; engine: InputEngine; selected: string | null; select: (id: string) => void; editing: boolean; setEditing: (v: boolean) => void }) {
+function KeyLayoutView({ module: m, change, engine, selected, select, assignKey }: { assignKey: (id: string, patch: { code: number; label?: string }) => void; module: OverlayModule; change: (patch: Partial<OverlayModule>) => void; engine: InputEngine; selected: string | null; select: (id: string) => void }) {
   const index = Math.max(0, m.keys.findIndex(k => k.id === selected)), k = m.keys[index];
   const keyChange = (patch: Partial<typeof k>) => change({ keys: m.keys.map(v => v.id === k.id ? { ...v, ...patch } : v), ...((['x', 'y', 'w', 'h', 'code'] as const).some(prop => patch[prop] !== undefined && patch[prop] !== k[prop]) ? { layout: 'Custom' as const } : {}) });
   return <details className="property-section key-layout-panel" open><summary>{tr('ui:s-30229316827c',"KEY LAYOUT")}</summary>
-    <button className={`secondary key-edit-toggle ${editing ? 'active' : ''}`} aria-pressed={editing} onClick={() => setEditing(!editing)}>{editing ? tr('ui:s-aea073fccca8',"Finish editing keys on canvas") : tr('ui:s-0a249d63f9af',"Edit keys on canvas")}</button>
     <p className="hint">{tr('ui:s-40f29aa90917',"Select and drag a key; pull its edges or corners to resize. Arrow keys move by 1, Shift by 10. Esc cancels a drag. The layout fits the module after release.")}</p>
     <VSelect settingId="overlay.keyboard.layout" label={tr('ui:s-a511909161e1',"Layout")} value={m.layout} options={['WASD', 'WASD + modifiers', 'FPS Extended', 'Custom']} change={layout => change({ layout, ...(layout === 'Custom' ? {} : { keys: layoutKeys(layout) }) })}/>
     <VNumber settingId="overlay.keyboard.gap" label={tr('ui:s-23a3a9eefdbb',"Key gap")} value={m.gap} max={30} change={gap => change({ gap })}/>
-    <label className="field"><span>{tr('ui:s-3418de588f7f',"Edit key")}</span><select aria-label={tr('ui:s-3418de588f7f',"Edit key")} value={index} onChange={e => select(m.keys[+e.target.value].id)}>{m.keys.map((v, i) => <option key={v.id} value={i}>{v.label}{tr('ui:s-38c88238c1a8',"· VK")}{v.code}</option>)}</select></label>
+    {k && <label className="field"><span>{tr('ui:s-3418de588f7f',"Edit key")}</span><select aria-label={tr('ui:s-3418de588f7f',"Edit key")} value={index} onChange={e => select(m.keys[+e.target.value].id)}>{m.keys.map((v, i) => <option key={v.id} value={i}>{keySelectionLabel(v)} {tr('ui:s-38c88238c1a8',"· VK")}{v.code}</option>)}</select></label>}
     {k && <div key={k.id} className="selected-key-properties">
+      <h4>{tr('ui:s-61edc007f96d', 'Key · {{p0}}', { p0: keySelectionLabel(k) })}</h4>
       <label className="field"><span>{tr('ui:s-bcb8ed085533',"Key label")}</span><UnicodeInput aria-label={tr('ui:s-bcb8ed085533',"Key label")} value={k.label} maxLength={100} onChange={e => keyChange({ label: e.target.value })}/></label>
       <KeyRecorder engine={engine} assign={key => assignKey(k.id, key)}/>
       <details className="visual-details"><summary>{tr('ui:s-3eabc4878c81',"Advanced key code · VK")}{k.code}</summary><VNumber label={tr('ui:s-a7cd2a3c50cf',"Virtual key code")} value={k.code} min={1} max={255} change={code => keyChange({ code: Math.round(code) })}/></details>

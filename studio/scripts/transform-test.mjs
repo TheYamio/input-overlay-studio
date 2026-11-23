@@ -89,7 +89,8 @@ try {
   });
   await mkdir('artifacts', { recursive: true }); await page.screenshot({path:'artifacts/transform-modules.png'});
   await check('double click opens key editing with eight key handles and anchored resizing', async () => {
-    await hit.dblclick(); await expect(page.locator('.key-hitbox')).toHaveCount(module('keyboard').keys.length); await expect(hit.locator(':scope > [data-resize]')).toHaveCount(0);
+    await hit.dblclick(); await expect(page.locator('.key-hitbox')).toHaveCount(module('keyboard').keys.length);
+    await expect(page.getByRole('group', { name: 'Keyboard', exact: true }).locator(':scope > [data-resize]')).toHaveCount(0);
     await cap(key().label).click(); const handles = page.locator('.key-hitbox.selected [data-resize]'); await expect(handles).toHaveCount(8);
     const initial = structuredClone(key()), before = await history(); await drag(page.locator('.key-hitbox.selected [data-resize=nw]'), 12, 8);
     await expect.poll(() => key().w).not.toBe(initial.w); expect(key().x+key().w).toBeCloseTo(initial.x+initial.w,4); expect(key().y+key().h).toBeCloseTo(initial.y+initial.h,4); expect(await history()).toBe(before+1);

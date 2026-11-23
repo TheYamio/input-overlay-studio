@@ -67,7 +67,7 @@ try {
     expect(parsed.paths).toHaveLength(3); expect(parsed.paths[0].matrix).toEqual([2, 0, 0, 2, 2, 3]); expect(parsed.paths[0].d).toContain('a3 3');
   });
   await check('signature layout loads all 81 keys and the skeleton mouse without labels', async () => {
-    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.locator('.library-card').filter({ has: page.getByRole('heading', { name: 'Yamio preset', exact: true }) }).getByRole('button', { name: 'Use full layout', exact: true }).click();
+    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.locator('.library-card').filter({ has: page.getByRole('heading', { name: 'Yamio preset', exact: true }) }).getByRole('button', { name: 'Preview layout', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Use full layout', exact: true }).click();
     await expect.poll(() => document.profiles[0].modules[0].keys.length).toBe(81);
     expect(Object.keys(document.shapes)).toHaveLength(7);
     await page.getByRole('button', { name: 'Studio', exact: true }).click();

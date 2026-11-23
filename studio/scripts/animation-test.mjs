@@ -128,7 +128,35 @@ try {
     await page.getByLabel('Press delay', { exact: true }).fill('160'); await page.getByLabel('Release delay', { exact: true }).fill('240'); await page.getByLabel('Secondary light color', { exact: true }).fill('#ff00ff');
     await expect.poll(() => document.profiles[0].modules[0].appearance.pressDelay).toBe(160); await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
     const saved = JSON.stringify(document), beforeRevision = revision;
-    await page.getByRole('button', { name: 'Play animation', exact: true }).click(); await expect(details.locator('.animation-sample .overlay-key')).toHaveClass(/pressed/); await expect(details.locator('.animation-sample .overlay-key')).not.toHaveClass(/pressed/);
+    const sample = details.locator('.animation-sample .overlay-key');
+    const press = details.getByRole('button', { name: 'Press', exact: true }), release = details.getByRole('button', { name: 'Release', exact: true });
+    await expect(release).toBeDisabled();
+    const timings = await details.evaluate(async panel => {
+      const key = panel.querySelector('.animation-sample .overlay-key');
+      const phase = pressed => new Promise((resolve, reject) => {
+        const timer = setTimeout(() => { observer.disconnect(); reject(Error('Preview phase did not change')); }, 3000);
+        const observer = new MutationObserver(() => {
+          if (key.classList.contains('pressed') !== pressed) return;
+          observer.disconnect(); clearTimeout(timer); resolve(performance.now());
+        });
+        observer.observe(key, { attributes: true, attributeFilter: ['class'] });
+      });
+      const down = phase(true), pressAt = performance.now();
+      panel.querySelector('button[aria-label="Press"]').click();
+      const pressed = await down;
+      await new Promise(resolve => setTimeout(resolve, 520));
+      const held = key.classList.contains('pressed');
+      const up = phase(false), releaseAt = performance.now();
+      panel.querySelector('button[aria-label="Release"]').click();
+      return { pressDelay: pressed - pressAt, releaseDelay: await up - releaseAt, held };
+    });
+    expect(timings.pressDelay).toBeGreaterThanOrEqual(150);
+    expect(timings.releaseDelay).toBeGreaterThanOrEqual(230);
+    expect(timings.held).toBe(true);
+    await expect(press).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('.preview-viewport .overlay-key.pressed')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Play animation', exact: true }).click();
+    await expect(sample).toHaveClass(/pressed/); await expect(sample).not.toHaveClass(/pressed/);
     expect(JSON.stringify(document)).toBe(saved); expect(revision).toBe(beforeRevision);
     await page.screenshot({ path: fileURLToPath(new URL('animation-controls.png', artifacts)) });
     await page.reload(); await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); expect(document.profiles[0].modules[0].appearance).toMatchObject({ motion: 'Scale', lighting: 'Gradient', pressDelay: 160, releaseDelay: 240, secondaryColor: '#ff00ff' });
@@ -136,6 +164,7 @@ try {
   await check('individual keys inherit timing and can override and reset a single field', async () => {
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click(); await page.getByRole('button', { name: 'Keys', exact: true }).click(); await page.getByLabel('Customize this key', { exact: true }).check();
     const details = page.locator('.properties-panel .animation-details').first(); await details.locator('summary').click();
+    await expect(details.locator('.animation-sample .key-label')).toHaveText(document.profiles[0].modules[0].keys[0].label);
     await page.getByLabel('Key Press delay', { exact: true }).fill('350'); await expect.poll(() => document.profiles[0].modules[0].keys[0].style?.pressDelay).toBe(350);
     await page.getByRole('button', { name: 'Reset Key Press delay to module', exact: true }).click(); await expect.poll(() => document.profiles[0].modules[0].keys[0].style?.pressDelay).toBeUndefined(); await expect(page.getByLabel('Key Press delay', { exact: true })).toHaveValue('160');
   });

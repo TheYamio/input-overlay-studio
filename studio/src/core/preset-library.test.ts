@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { documentSchema, initialDocument, presetSchema } from './config';
 import { factoryPresets } from './factory-presets';
 import { applyPresetColors, presetPalette } from './preset-colors';
+import { preparePresetApplication } from './preset-application';
 import { exportPreset, importPreset, serializePresetBundle } from './presets';
 
 describe('preset library', () => {
@@ -45,6 +46,22 @@ describe('preset library', () => {
     source.keys.forEach(k => k.style = { background: '#abcdef' });
     expect(applyPresetColors(modules, [source])[1]).toEqual(modules[1]);
     expect(presetPalette([source])).toContain('#abcdef');
+  });
+  it('prepares the final resource IDs for a layout without changing the source document', () => {
+    const d = initialDocument(), neon = factoryPresets.find(bundle => bundle.preset.name === 'Neon')!;
+    d.shapes['factory-hex'] = factoryPresets[0].shapes[Object.keys(factoryPresets[0].shapes)[0]];
+    d.profiles[0].modules[0].appearance.shapeId = 'factory-hex';
+    const original = structuredClone(d);
+    const layout = preparePresetApplication(d, neon.preset, false, neon);
+    const shapeId = layout.result.profiles[0].modules[0].keys.find(key => key.style?.shapeId)?.style?.shapeId;
+    expect(shapeId).toBeTruthy();
+    expect(shapeId).not.toBe('factory-hex');
+    expect(layout.result.shapes[shapeId!]).toEqual(neon.shapes['factory-hex']);
+    expect(documentSchema.safeParse(layout.result).success).toBe(true);
+    const colors = preparePresetApplication(d, neon.preset, true, neon);
+    expect(colors.result.profiles[0].modules[0].appearance.shapeId).toBe('factory-hex');
+    expect(colors.result.shapes).toEqual(original.shapes);
+    expect(d).toEqual(original);
   });
   it('roundtrips descriptions and palette semantics while accepting older presets', () => {
     const d = initialDocument(), p = d.profiles[0];

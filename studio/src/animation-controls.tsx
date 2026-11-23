@@ -17,6 +17,7 @@ export function AnimationControls(props:{value:ReturnType<typeof resolvedStyle>;
 function StandaloneAnimationControls({ value: v, prefix, change, mouse = false }: { value: ReturnType<typeof resolvedStyle>; prefix: string; mouse?: boolean; change: (patch: ElementStyle) => void }) {
   const a = animationSettings(v), name = (label: string) => `${trText(prefix)}${trText(label)}`, [open, setOpen] = useState(false);
   return <details className="visual-details animation-details" onToggle={e => setOpen(e.currentTarget.open)}><summary>{tr('ui:s-3f4f0acd1a28',"Press & release")}</summary>
+    {open && <AnimationSample style={v} prefix={prefix} mouse={mouse}/>}
     <p className="hint">{tr('ui:s-fd63a2f84e63',"Movement, light and timing can be combined independently. Times are in milliseconds.")}</p>
     <VSelect label={name('Press effect')} value={v.effect} options={effects} change={effect => { const preset = animationSettings({ effect }); change({ effect, motion: preset.motion, lighting: preset.lighting, easing: 'Ease out', pressDelay: 0, releaseDelay: 0, lightingOpacity: 1, pressDuration: effect === 'Instant' ? 0 : 90, releaseDuration: effect === 'Instant' ? 0 : 140 }); }}/>
     <p className="hint">{tr('ui:s-ef8b5b4a2664',"Quick starting point. Fine-tune it below.")}</p>
@@ -34,6 +35,5 @@ function StandaloneAnimationControls({ value: v, prefix, change, mouse = false }
     <h4 className="animation-section-title">{tr('ui:s-31ea30b2db05',"TIMING · MS")}</h4>
     <div className="field-grid"><VNumber label={name('Press duration')} value={a.pressMs} max={500} change={pressDuration => change({ pressDuration, motion: a.motion, lighting: a.lighting })}/><VNumber label={name('Release duration')} value={a.releaseMs} max={1000} change={releaseDuration => change({ releaseDuration, motion: a.motion, lighting: a.lighting })}/><VNumber label={name('Press delay')} value={a.pressDelay} max={1000} change={pressDelay => change({ pressDelay })}/><VNumber label={name('Release delay')} value={a.releaseDelay} max={2000} change={releaseDelay => change({ releaseDelay })}/></div>
     <p className="hint">{tr('ui:s-2c69b11c10ee',"Delay waits before the visual change; duration controls its speed. Short taps remain visible. Input capture and sensitivity calculations stay immediate.")}</p>
-    {open && <AnimationSample style={v} prefix={prefix} mouse={mouse}/>}
   </details>;
 }

@@ -45,7 +45,7 @@ const stop = async child => { if (child && child.exitCode === null) { const exit
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const hash = text => createHash('sha256').update(text).digest('base64');
 const results = []; const check = async (name, fn) => { await fn(); results.push({ name, passed: true }); console.log(`PASS ${name}`); };
-async function copySourceURL(expectedToken) {
+async function withStudio(use) {
   const studioBrowser = await chromium.launch({ headless: true });
   try {
     const context = await studioBrowser.newContext();
@@ -56,6 +56,11 @@ async function copySourceURL(expectedToken) {
     const page = await context.newPage();
     await page.goto('http://127.0.0.1:4486/studio/index.html');
     await expect(page.locator('[data-connection-part=save]')).toHaveAttribute('data-connection-state', 'Saved to capture server');
+    return await use(page);
+  } finally { await studioBrowser.close(); }
+}
+async function copySourceURL(expectedToken) {
+  return withStudio(async page => {
     await page.getByRole('button', { name: 'Connect to OBS', exact: true }).click();
     await page.getByRole('dialog', { name: 'Connect to OBS' }).getByRole('button', { name: 'Copy OBS URL', exact: true }).click();
     await expect.poll(() => page.evaluate(() => typeof window.testSourceURL)).toBe('string');
@@ -63,7 +68,7 @@ async function copySourceURL(expectedToken) {
     expect(url.pathname).toBe('/studio/overlay.html');
     if (new URLSearchParams(url.hash.slice(1)).get('token') !== expectedToken) throw Error('Studio did not copy the current OBS credential');
     return url;
-  } finally { await studioBrowser.close(); }
+  });
 }
 let serial = 0; const requests = new Map();
 function request(requestType, requestData = {}) {
@@ -175,6 +180,27 @@ try {
     expect(base.transparent / (1920 * 1080)).toBeGreaterThan(.6);
     expect(base.bounds.left).toBeGreaterThan(100); expect(base.bounds.top).toBeGreaterThan(100);
   });
+  await check('changing Studio preview backgrounds leaves the running OBS source transparent', () => withStudio(async page => {
+    const selector = page.getByLabel('Preview background', { exact: true });
+    const canvas = page.locator('.canvas-shell');
+    for (const mode of ['light', 'dark', 'screenshot']) {
+      if (mode === 'screenshot') {
+        const data = await page.evaluate(() => {
+          const canvas = window.document.createElement('canvas'); canvas.width = 320; canvas.height = 180;
+          const paint = canvas.getContext('2d'); paint.fillStyle = '#345a76'; paint.fillRect(0, 0, 320, 180);
+          return canvas.toDataURL().split(',')[1];
+        });
+        await page.getByLabel('Choose screenshot', { exact: true }).setInputFiles({
+          name: 'scene.png', mimeType: 'image/png', buffer: Buffer.from(data, 'base64')
+        });
+        await expect(canvas.locator('.preview-screenshot')).toBeVisible();
+      } else await selector.selectOption(mode);
+      await expect(canvas).toHaveAttribute('data-preview-background', mode);
+      const output = await screenshot(1920, 1080, `obs-preview-${mode}.png`);
+      expect(output.visible).toBeGreaterThan(1000);
+      expect(output.transparent / (1920 * 1080)).toBeGreaterThan(.6);
+    }
+  }));
   await check('actual OBS 2560×1440 source preserves the logical scene proportions', async () => {
     await request('SetInputSettings', { inputName: sourceName, inputSettings: { width: 2560, height: 1440 }, overlay: true }); await delay(1200);
     larger = await screenshot(2560, 1440, 'obs-1440.png');
@@ -189,14 +215,45 @@ try {
     await expect.poll(async () => { const report = await screenshot(2560, 1440, 'obs-keycaps.png'); const p = report.keycapSamples; return p[0][0] > p[1][0] + 30 && p[1][0] > p[2][0] + 30 && p[3][3] === 0; }, { timeout: 10000 }).toBe(true);
     const saved = JSON.parse(await readFile(new URL('studio.json', captureData), 'utf8')); expect(saved.assets.paint.data).toBe(data);
   });
-  await check('actual CEF shares and mirrors artwork across modules with transparent gaps', async () => {
+  await check('Studio and OBS clip shared artwork to gaps, rounded corners and SVG cutouts', async () => {
     const grouped = structuredClone(doc), modules = activeProfile(grouped).modules, keyboard = modules[0], mouse = modules[1]; modules.slice(2).forEach(m => m.visible = false);
     Object.assign(keyboard, { x: 100, y: 200, w: 340, h: 100, keys: [65, 66, 67].map((code, i) => ({ id: String(code), code, label: '', x: i * 60, y: 0, w: 50, h: 50 })) }); Object.assign(mouse, { x: 700, y: 200, w: 300, h: 110 });
     keyboard.appearance.backgroundOpacity = mouse.appearance.backgroundOpacity = 0; keyboard.appearance.borderWidth = mouse.appearance.borderWidth = 0;
+    keyboard.radius = 18;
+    grouped.shapes.ring = {
+      name: 'Ring', viewBox: [0, 0, 100, 100],
+      paths: [{ d: 'M0 0H100V100H0Z M30 30H70V70H30Z', matrix: [1, 0, 0, 1, 0, 0], fill: true, fillRule: 'evenodd', strokeWidth: 0, linecap: 'butt', linejoin: 'miter', opacity: 1 }]
+    };
+    keyboard.keys[2].style = { shapeId: 'ring' };
     keyboard.image = { ...keyboard.image, groupId: 'obs-shared', flipX: false }; mouse.image = structuredClone(keyboard.image);
-    const pixels = async filename => { const response = await request('GetSourceScreenshot', { sourceName, imageFormat: 'png', imageWidth: 1920, imageHeight: 1080 }); await writeFile(new URL(filename, artifacts), Buffer.from(response.imageData.split(',')[1], 'base64')); return decoder.evaluate(async data => { const image = await createImageBitmap(await (await fetch(data)).blob()), c = new OffscreenCanvas(1920, 1080), ctx = c.getContext('2d'); ctx.drawImage(image, 0, 0); return [[135, 215], [725, 215], [500, 230]].map(([x, y]) => [...ctx.getImageData(x, y, 1, 1).data]); }, response.imageData); };
-    await saveNativeDocument(grouped, 20); await expect.poll(async () => { const p = await pixels('obs-shared-artwork.png'); return p[0][0] > p[1][0] + 120 && p[2][3] === 0; }, { timeout: 10000 }).toBe(true);
-    keyboard.image.flipX = mouse.image.flipX = true; await saveNativeDocument(grouped, 21); await expect.poll(async () => { const p = await pixels('obs-shared-flipped.png'); return p[0][2] > p[1][2] + 120 && p[2][3] === 0; }, { timeout: 10000 }).toBe(true);
+    const pixels = async filename => { const response = await request('GetSourceScreenshot', { sourceName, imageFormat: 'png', imageWidth: 1920, imageHeight: 1080 }); await writeFile(new URL(filename, artifacts), Buffer.from(response.imageData.split(',')[1], 'base64')); return decoder.evaluate(async data => { const image = await createImageBitmap(await (await fetch(data)).blob()), c = new OffscreenCanvas(1920, 1080), ctx = c.getContext('2d'); ctx.drawImage(image, 0, 0); return [[135, 215], [725, 215], [500, 230], [103, 203], [210, 250], [390, 250], [357, 250]].map(([x, y]) => [...ctx.getImageData(x, y, 1, 1).data]); }, response.imageData); };
+    const transparent = p => p.slice(2, 6).every(pixel => pixel[3] === 0) && p[6][3] === 255;
+    await saveNativeDocument(grouped, 20);
+    await expect.poll(async () => { const p = await pixels('obs-shared-artwork.png'); return p[0][0] > p[1][0] + 120 && transparent(p); }, { timeout: 10000 }).toBe(true);
+    await withStudio(async page => {
+      await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
+      await page.getByRole('button', { name: 'Paint your keycaps', exact: true }).click();
+      const stage = page.getByRole('dialog').locator('.image-placement');
+      await expect(stage.locator('[data-key="67"].custom-shape .key-art')).toBeVisible();
+      await page.addStyleTag({ content: '.expanded-image-dialog .image-placement.checker { background: #0b1234 !important; }' });
+      const probes = await stage.evaluate(el => {
+        const frame = el.getBoundingClientRect();
+        const [a, b, c] = [65, 66, 67].map(code => el.querySelector(`[data-key="${code}"]`).getBoundingClientRect());
+        return [[a.x + a.width * .04, a.y + a.height * .04], [(a.right + b.left) / 2, a.y + a.height / 2],
+          [c.x + c.width / 2, c.y + c.height / 2], [c.x + c.width * .17, c.y + c.height / 2]]
+          .map(([x, y]) => [Math.floor(x - frame.x), Math.floor(y - frame.y)]);
+      });
+      const png = await stage.screenshot({ path: fileURLToPath(new URL('studio-artwork-masks.png', artifacts)) });
+      const actual = await page.evaluate(async ({ data, probes }) => {
+        const image = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob());
+        const ctx = new OffscreenCanvas(image.width, image.height).getContext('2d');
+        ctx.drawImage(image, 0, 0);
+        return probes.map(([x, y]) => [...ctx.getImageData(x, y, 1, 1).data]);
+      }, { data: png.toString('base64'), probes });
+      expect(actual.slice(0, 3)).toEqual(Array(3).fill([11, 18, 52, 255]));
+      expect(actual[3]).not.toEqual([11, 18, 52, 255]);
+    });
+    keyboard.image.flipX = mouse.image.flipX = true; await saveNativeDocument(grouped, 21); await expect.poll(async () => { const p = await pixels('obs-shared-flipped.png'); return p[0][2] > p[1][2] + 120 && transparent(p); }, { timeout: 10000 }).toBe(true);
     await saveNativeDocument(doc, 22);
   });
   await check('OBS applies sensitivity/profile changes without refreshing the source', async () => {

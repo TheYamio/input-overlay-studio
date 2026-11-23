@@ -80,7 +80,12 @@ try {
   await check('compiled frontend uses the actual Rust server', async () => {
     await page.goto('http://127.0.0.1:4466/studio/index.html'); await expect(page.getByText('Capture server connected')).toBeVisible();
     const releaseVersion = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version;
-    await expect(page.locator('.version')).toContainText(releaseVersion);
+    const { stdout: executableVersion } = await execute('pwsh.exe', [
+      '-NoProfile', '-NonInteractive', '-CommandWithArgs',
+      '(Get-Item -LiteralPath $args[0]).VersionInfo.ProductVersion', exe
+    ], { windowsHide: true });
+    expect(executableVersion.trim()).toBe(releaseVersion);
+    await expect(page).toHaveTitle('Input Overlay Studio');
     await expect.poll(() => page.locator('.brand-mark img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
     const logoResponse = await fetch('http://127.0.0.1:4466/studio/logo.svg');
     expect(logoResponse.status).toBe(200); expect(await logoResponse.text()).toContain('Input Overlay Studio');
@@ -142,7 +147,10 @@ try {
   await check('embedded keycap artwork is accepted and saved by the actual native backend', async () => {
     await page.getByRole('button', { name: 'Studio', exact: true }).click(); await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
     const image = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = c.height = 64; const ctx = c.getContext('2d'); ctx.fillStyle = '#4488ee'; ctx.fillRect(0, 0, 64, 64); return c.toDataURL('image/png'); });
+    await page.getByRole('button', { name: 'Paint your keycaps', exact: true }).click();
     await page.getByLabel('Upload keycap image', { exact: true }).setInputFiles({ name: 'native.png', mimeType: 'image/png', buffer: Buffer.from(image.split(',')[1], 'base64') });
+    await expect(page.getByRole('dialog').getByAltText('Keycap artwork')).toBeVisible();
+    await page.getByRole('dialog').getByRole('button', { name: 'Apply image placement', exact: true }).click();
     await expect.poll(async () => { const d = parseDocument(await readFile(new URL('studio.json', data), 'utf8')), m = d.profiles.find(p => p.id === d.activeProfileId).modules.find(m => m.type === 'keyboard'); return !!d.assets[m.image.assetId]?.data.startsWith('data:image/webp;base64,'); }).toBe(true);
   });
   await check('shared artwork and flips persist through the actual native backend', async () => {
@@ -222,7 +230,7 @@ try {
   });
   await check('signature layout saves all 81 keys and seven vector shapes, with one-step Undo', async () => {
     const before = parseDocument(await readFile(new URL('studio.json', data), 'utf8')).profiles[0].modules;
-    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.locator('.library-card').filter({ has: page.getByRole('heading', { name: 'Yamio preset', exact: true }) }).getByRole('button', { name: 'Use full layout', exact: true }).click();
+    await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.locator('.library-card').filter({ has: page.getByRole('heading', { name: 'Yamio preset', exact: true }) }).getByRole('button', { name: 'Preview layout', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Use full layout', exact: true }).click();
     await expect.poll(async () => parseDocument(await readFile(new URL('studio.json', data), 'utf8')).profiles[0].modules[0].keys.length).toBe(81);
     const saved = parseDocument(await readFile(new URL('studio.json', data), 'utf8'));
     const shapeIds = new Set(saved.profiles[0].modules.flatMap(m => [m.mouseBodyShapeId, m.appearance.shapeId, ...m.keys.map(k => k.style?.shapeId), ...Object.values(m.buttonStyles).map(s => s.shapeId)]).filter(Boolean));
@@ -259,7 +267,7 @@ try {
     const saved = page.locator('.saved-preset').filter({ has: page.getByRole('heading', { name: 'Native palette', exact: true }) });
     await expect(saved.getByText('Iris palette for streaming')).toBeVisible();
     expect(parseDocument(await readFile(new URL('studio.json', data), 'utf8')).profiles[0].modules[0].appearance).toMatchObject({ motion: 'Scale', lighting: 'Gradient', pressDelay: 160, releaseDelay: 240 });
-    await expect(saved.getByRole('button', { name: 'Apply colors', exact: true })).toBeVisible();
+    await expect(saved.getByRole('button', { name: 'Preview colors', exact: true })).toBeVisible();
   });
   await check('native Tauri window starts and Studio bootstraps authentication', async () => {
     await page.close(); await stop(); start(true);

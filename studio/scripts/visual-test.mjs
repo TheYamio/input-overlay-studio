@@ -48,8 +48,10 @@ try {
   });
   const source = await page.evaluate(() => { const c = window.document.createElement('canvas'); c.width = c.height = 256; const ctx = c.getContext('2d'), g = ctx.createLinearGradient(0, 0, 256, 0); g.addColorStop(0, '#ff0000'); g.addColorStop(1, '#0000ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256); return c.toDataURL('image/png'); });
   await check('upload embeds optimized raster artwork and synchronizes it to OBS', async () => {
+    await page.getByRole('button', { name: 'Paint your keycaps', exact: true }).click();
     await page.getByLabel('Upload keycap image', { exact: true }).setInputFiles({ name: 'gradient.png', mimeType: 'image/png', buffer: Buffer.from(source.split(',')[1], 'base64') });
-    await expect(page.getByAltText('Keycap artwork')).toBeVisible(); await page.getByLabel('Image opacity', { exact: true }).fill('1');
+    await expect(page.getByRole('dialog').getByAltText('Keycap artwork')).toBeVisible(); await page.getByLabel('Image opacity', { exact: true }).fill('1');
+    await page.getByRole('button', { name: 'Apply image placement', exact: true }).click();
     await expect.poll(() => keyboard().image.opacity).toBe(1); expect(document.assets[keyboard().image.assetId].data).toMatch(/^data:image\/webp;base64,/);
     overlay = await context.newPage(); overlay.on('pageerror', e => errors.push(e.message)); await overlay.setViewportSize({ width: 1920, height: 1080 });
     await overlay.goto('http://127.0.0.1:5177/overlay.html#ws=ws%3A%2F%2F127.0.0.1%3A4495&token=visual-test');
@@ -83,10 +85,17 @@ try {
   });
   await check('per-key image exclusion and pressed artwork modes preserve labels', async () => {
     await page.getByLabel('Include this key in image', { exact: true }).uncheck(); await expect(overlay.locator('[data-key="87"] .key-art')).toHaveCount(0);
-    await page.getByLabel('Include this key in image', { exact: true }).check(); await page.getByLabel('Image on press', { exact: true }).selectOption('Hide');
+    await page.getByLabel('Include this key in image', { exact: true }).check();
+    const setPress = async value => {
+      await page.getByRole('button', { name: 'Paint your keycaps', exact: true }).click();
+      await page.getByLabel('Image on press', { exact: true }).selectOption(value);
+      await page.getByRole('dialog').getByRole('button', { name: 'Apply image placement', exact: true }).click();
+      await expect.poll(() => keyboard().image.press).toBe(value);
+    };
+    await setPress('Hide');
     broadcast({ event_type: 'key_pressed', rawcode: 87 }); await expect(overlay.locator('[data-key="87"]')).toHaveClass(/pressed/);
     await expect(overlay.locator('[data-key="87"] .key-art')).toHaveCSS('opacity', '0'); await expect(overlay.locator('[data-key="87"] .key-label')).toHaveText('W');
-    broadcast({ event_type: 'input_reset' }); await page.getByLabel('Image on press', { exact: true }).selectOption('Tint');
+    broadcast({ event_type: 'input_reset' }); await setPress('Tint');
   });
   await check('saved preset exports artwork and imports with independent asset identities', async () => {
     await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: 'Save current setup', exact: true }).click(); await page.getByLabel('Preset name').fill('Painted caps'); await page.getByRole('button', { name: 'Save preset', exact: true }).click();
@@ -110,8 +119,10 @@ try {
     await page.getByRole('button', { name: 'Select Keyboard', exact: true }).click();
   });
   await check('non-raster artwork is rejected without replacing the current image', async () => {
+    await page.getByRole('button', { name: 'Paint your keycaps', exact: true }).click();
     const id = keyboard().image.assetId; await page.getByLabel('Upload keycap image', { exact: true }).setInputFiles({ name: 'bad.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>') });
     await expect(page.getByRole('alert').filter({hasText:'PNG, JPEG or WebP'})).toContainText('PNG, JPEG or WebP'); expect(keyboard().image.assetId).toBe(id);
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
   });
   await check('raster optimization preserves source alpha', async () => {
     const alpha = await page.evaluate(async () => {

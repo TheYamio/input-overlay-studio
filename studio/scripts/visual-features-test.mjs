@@ -42,6 +42,7 @@ const field = label => page.getByLabel(label, { exact: true }), select = name =>
 const undo = () => page.getByRole('button', { name: 'Undo', exact: true }).click();
 const dialog = () => page.getByRole('dialog', { name: 'Keycap image placement' });
 const openImage = () => page.getByRole('button', { name: 'Position & scale image', exact: true }).click();
+const applyImage = () => dialog().getByRole('button', { name: 'Apply image placement', exact: true }).click();
 const sample = async (points, filename = 'shared-artwork.png') => {
   const buffer = await overlay.screenshot({ omitBackground: true }); await writeFile(new URL(filename, artifacts), buffer);
   return overlay.evaluate(async ({ data, points }) => { const image = new Image(); image.src = data; await image.decode(); const c = window.document.createElement('canvas'); c.width = image.width; c.height = image.height; const ctx = c.getContext('2d'); ctx.drawImage(image, 0, 0); return points.map(([x, y]) => [...ctx.getImageData(x, y, 1, 1).data]); }, { data: `data:image/png;base64,${buffer.toString('base64')}`, points });
@@ -49,9 +50,91 @@ const sample = async (points, filename = 'shared-artwork.png') => {
 try {
   await page.goto('http://127.0.0.1:5194'); await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await select('Keyboard');
   const data = await page.evaluate(() => { const c = window.document.createElement('canvas'); c.width = 900; c.height = 110; const ctx = c.getContext('2d'), g = ctx.createLinearGradient(0, 0, 900, 0); g.addColorStop(0, '#ff0000'); g.addColorStop(1, '#0000ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, 900, 110); return c.toDataURL('image/png'); });
-  await field('Upload keycap image').setInputFiles({ name: 'shared-gradient.png', mimeType: 'image/png', buffer: Buffer.from(data.split(',')[1], 'base64') }); await expect(page.getByAltText('Keycap artwork')).toBeVisible(); await field('Image opacity').fill('1'); await expect.poll(() => module('keyboard').image.opacity).toBe(1);
+  const artworkFile = { name: 'shared-gradient.png', mimeType: 'image/png', buffer: Buffer.from(data.split(',')[1], 'base64') };
+  const artworkEntry = page.getByRole('button', { name: 'Paint your keycaps', exact: true });
+  await check('selected keyboard opens the complete artwork editor and Cancel discards a new file', async () => {
+    const before = JSON.stringify(document), beforeRevision = revision;
+    await artworkEntry.click();
+    await expect(dialog().locator('.artwork-target')).toContainText('Keyboard');
+    await field('Upload keycap image').setInputFiles(artworkFile);
+    await expect(dialog().getByAltText('Keycap artwork')).toBeVisible();
+    await field('Image scale').fill('1.2'); await field('Image opacity').fill('0.7');
+    await expect(dialog().locator('.key-art')).not.toHaveCount(0);
+    expect(JSON.stringify(document)).toBe(before); expect(revision).toBe(beforeRevision);
+    await dialog().getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(artworkEntry).toBeFocused();
+    await expect(page.locator('.preview-viewport .key-art')).toHaveCount(0);
+    await expect(artworkEntry).toBeVisible();
+  });
+  await check('applying a new image and its settings is one Undo step', async () => {
+    const before = structuredClone(module('keyboard').image);
+    await artworkEntry.click();
+    await field('Upload keycap image').setInputFiles(artworkFile);
+    await expect(dialog().getByAltText('Keycap artwork')).toBeVisible();
+    await field('Image opacity').fill('1'); await applyImage();
+    await expect.poll(() => module('keyboard').image.opacity).toBe(1);
+    const id = module('keyboard').image.assetId;
+    expect(id).toBeTruthy(); expect(document.assets[id].name).toBe('shared-gradient.png');
+    await undo();
+    await expect.poll(() => module('keyboard').image).toEqual(before);
+    expect(document.assets[id]).toBeUndefined();
+    await page.getByRole('button', { name: 'Redo', exact: true }).click();
+    await expect.poll(() => module('keyboard').image.assetId).toBe(id);
+    expect(module('keyboard').image.opacity).toBe(1); expect(document.assets[id]).toBeDefined();
+  });
   await overlay.setViewportSize({ width: 1920, height: 1080 }); await overlay.goto('http://127.0.0.1:5194/overlay.html#token=visual-features&ws=ws%3A%2F%2F127.0.0.1%3A4500');
   await overlay.addStyleTag({ content: '.key-label,.overlay-key:after{visibility:hidden}.key-active{display:none}' });
+  await check('Studio backgrounds and screenshot imports keep the OBS Browser Source transparent', async () => {
+    await expect(overlay.locator('.module-keyboard')).toBeVisible();
+    await expect(page.locator('.statusbar')).toContainText('Saved to capture server');
+    const before = JSON.stringify(document), beforeRevision = revision;
+    const background = field('Preview background'), stage = page.locator('.canvas-shell'), screenshot = stage.locator('.preview-screenshot');
+    for (const [mode, color] of [['light', 'rgb(232, 235, 243)'], ['dark', 'rgb(17, 19, 26)']]) {
+      await background.selectOption(mode);
+      await expect(stage).toHaveCSS('background-color', color);
+      expect((await sample([[10, 10]], `obs-alpha-${mode}.png`))[0][3]).toBe(0);
+    }
+    const imageData = await page.evaluate(() => {
+      const canvas = window.document.createElement('canvas'); canvas.width = 640; canvas.height = 360;
+      const paint = canvas.getContext('2d'); paint.fillStyle = '#366c87'; paint.fillRect(0, 0, 640, 360);
+      paint.fillStyle = '#9db582'; paint.fillRect(320, 170, 320, 190);
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
+    const file = { name: 'game-preview.png', mimeType: 'image/png', buffer: Buffer.from(imageData, 'base64') };
+    const chooserEvent = page.waitForEvent('filechooser');
+    await background.selectOption('screenshot');
+    const chooser = await chooserEvent;
+    await expect(background).toHaveValue('dark');
+    await chooser.setFiles(file);
+    await expect(background).toHaveValue('screenshot');
+    await expect.poll(() => screenshot.evaluate(img => img.complete && img.naturalWidth)).toBe(640);
+    const originalUrl = await screenshot.getAttribute('src');
+    expect(await screenshot.boundingBox()).toEqual(await stage.locator('.overlay-scene').boundingBox());
+    expect((await sample([[10, 10]], 'obs-alpha-screenshot.png'))[0][3]).toBe(0);
+    await expect(overlay.locator('.preview-screenshot')).toHaveCount(0);
+
+    await background.selectOption('transparent');
+    await expect(stage).toHaveClass(/checker/);
+    await expect(screenshot).toHaveCount(0);
+    await background.selectOption('screenshot');
+    await expect(screenshot).toHaveAttribute('src', originalUrl);
+    await field('Choose screenshot').setInputFiles({ name: 'damaged.png', mimeType: 'image/png', buffer: Buffer.from('invalid') });
+    await expect(page.locator('.preview-background-error')).toHaveText('Choose a valid PNG, JPEG or WebP screenshot.');
+    await expect(screenshot).toHaveAttribute('src', originalUrl);
+    await field('Choose screenshot').setInputFiles({ ...file, name: 'replacement.png' });
+    await expect(screenshot).not.toHaveAttribute('src', originalUrl);
+    await expect(page.locator('.preview-background-error')).toHaveCount(0);
+    expect(await page.evaluate(url => window.__activeBlobURLs.has(url), originalUrl)).toBe(false);
+    await page.setViewportSize({ width: 820, height: 900 });
+    await expect(background).toBeVisible();
+    await page.screenshot({ path: fileURLToPath(new URL('preview-background-compact.png', artifacts)) });
+    expect(await page.evaluate(() => window.document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.reload();
+    await expect(background).toHaveValue('transparent');
+    expect(revision).toBe(beforeRevision); expect(JSON.stringify(document)).toBe(before);
+    await page.setViewportSize({ width: 1560, height: 1050 });
+    await select('Keyboard');
+  });
   await check('linking modules synchronizes one image and its adjustments', async () => {
     await page.locator('.artwork-group summary').click(); await field('Share artwork with Mouse Buttons').check();
     await expect.poll(() => module('mouse').image.assetId).toBe(module('keyboard').image.assetId); expect(module('keyboard').image.groupId).toBeTruthy(); expect(module('mouse').image).toEqual(module('keyboard').image);
@@ -91,7 +174,7 @@ try {
     }
   });
   await check('editing either member changes the group and Undo restores every member', async () => {
-    await select('Mouse Buttons'); await field('Image opacity').fill('0.62'); await expect.poll(() => module('keyboard').image.opacity).toBe(.62); expect(module('mouse').image.opacity).toBe(.62);
+    await select('Mouse Buttons'); await openImage(); await field('Image opacity').fill('0.62'); await applyImage(); await expect.poll(() => module('keyboard').image.opacity).toBe(.62); expect(module('mouse').image.opacity).toBe(.62);
     await undo(); await expect.poll(() => module('mouse').image.opacity).toBe(1); expect(module('keyboard').image.opacity).toBe(1); await select('Keyboard');
   });
   await check('the complete image editor previews states and source guides without saving', async () => {
@@ -136,7 +219,7 @@ try {
   await check('unlinking keeps an independent image and Undo restores shared membership', async () => {
     if (!await field('Share artwork with Mouse Buttons').isVisible()) await page.locator('.artwork-group summary').click();
     await field('Share artwork with Mouse Buttons').uncheck(); await expect.poll(() => module('mouse').image.groupId).toBeUndefined(); expect(module('mouse').image.assetId).toBe(module('keyboard').image.assetId);
-    await field('Image opacity').fill('0.8'); await expect.poll(() => module('keyboard').image.opacity).toBe(.8); expect(module('mouse').image.opacity).toBe(1);
+    await openImage(); await field('Image opacity').fill('0.8'); await applyImage(); await expect.poll(() => module('keyboard').image.opacity).toBe(.8); expect(module('mouse').image.opacity).toBe(1);
     await undo(); await expect.poll(() => module('keyboard').image.opacity).toBe(1); await undo(); await expect.poll(() => module('mouse').image.groupId).toBe(module('keyboard').image.groupId);
   });
   await check('preset thumbnails render the saved scene and exports remap group identities', async () => {
@@ -149,18 +232,18 @@ try {
   });
   await check('factory cards show real scenes and restore different complete compositions', async () => {
     await page.getByRole('button', { name: /^All / }).click(); const card = name => page.locator('.preset-large').filter({ has: page.getByRole('heading', { name, exact: true }) }); await card('Essential').scrollIntoViewIfNeeded(); await expect(card('Essential').locator('.scene-thumbnail .module-keyboard')).toBeVisible();
-    const dpi = profile().dpi; await card('Essential').getByRole('button', { name: 'Use full layout', exact: true }).click(); await expect.poll(() => module('keyboard').keys.length).toBe(4); expect(module('trail').visible).toBe(false); expect(profile().dpi).toBe(dpi); const x = module('keyboard').x;
-    await card('Glass').getByRole('button', { name: 'Use full layout', exact: true }).click(); await expect.poll(() => module('mouse').mouseMode).toBe('Mouse Diagram'); expect(module('keyboard').x).not.toBe(x); expect(module('sensitivity').textLayout).toBe('Vertical');
+    const dpi = profile().dpi; await card('Essential').getByRole('button', { name: 'Preview layout', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Use full layout', exact: true }).click(); await expect.poll(() => module('keyboard').keys.length).toBe(4); expect(module('trail').visible).toBe(false); expect(profile().dpi).toBe(dpi); const x = module('keyboard').x;
+    await card('Glass').getByRole('button', { name: 'Preview layout', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Use full layout', exact: true }).click(); await expect.poll(() => module('mouse').mouseMode).toBe('Mouse Diagram'); expect(module('keyboard').x).not.toBe(x); expect(module('sensitivity').textLayout).toBe('Vertical');
     await page.getByRole('button', { name: 'Studio', exact: true }).click(); await undo(); await expect.poll(() => module('keyboard').x).toBe(x);
   });
   await check('theme-only application preserves current geometry and the live layout preview', async () => {
-    const before = profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible]); await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: /Colors on my layout/ }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Apply colors', exact: true }).click(); await expect.poll(() => profile().theme).toBe('Neon'); expect(profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible])).toEqual(before);
+    const before = profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible]); await page.getByRole('button', { name: 'Presets', exact: true }).click(); await page.getByRole('button', { name: /Colors on my layout/ }).click(); await page.locator('.preset-large').filter({ has: page.getByRole('heading', { name: 'Neon', exact: true }) }).getByRole('button', { name: 'Preview colors', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Apply colors', exact: true }).click(); await expect.poll(() => profile().theme).toBe('Neon'); expect(profile().modules.map(m => [m.x, m.y, m.w, m.h, m.visible])).toEqual(before);
     await page.locator('.preset-large').first().scrollIntoViewIfNeeded(); await expect(page.locator('.preset-large').first().locator('.scene-thumbnail .module-keyboard')).toBeVisible();
   });
   await check('preview scenes release their image URLs and reload retains saved groups', async () => {
     await page.getByRole('button', { name: 'Settings', exact: true }).click(); await expect.poll(() => page.evaluate(() => window.__activeBlobURLs.size)).toBe(0);
     await expect(page.locator('.statusbar')).toContainText('Saved to capture server'); await page.reload(); await page.getByRole('button', { name: 'Presets', exact: true }).click(); expect(document.presets[0].modules[0].image.groupId).toBeTruthy(); expect(document.presets[0].modules[0].image.flipX).toBe(true);
-    await page.getByRole('button', { name: /Full layouts/ }).click(); await page.getByRole('button', { name: /^Saved / }).click(); await page.locator('.saved-preset').first().getByRole('button', { name: 'Use full layout', exact: true }).click(); await page.getByRole('button', { name: 'Studio', exact: true }).click(); await select('Keyboard');
+    await page.getByRole('button', { name: /Full layouts/ }).click(); await page.getByRole('button', { name: /^Saved / }).click(); await page.locator('.saved-preset').first().getByRole('button', { name: 'Preview layout', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Use full layout', exact: true }).click(); await page.getByRole('button', { name: 'Studio', exact: true }).click(); await select('Keyboard');
     await expect(field('Preview key state')).toHaveValue('Input'); await page.setViewportSize({ width: 1366, height: 768 }); await openImage(); await expect(dialog()).toBeVisible(); await dialog().getByLabel('Source guide (editor only)', { exact: true }).check();
     expect(await dialog().evaluate(el => el.getBoundingClientRect().height <= innerHeight * .95)).toBe(true); await page.screenshot({ path: fileURLToPath(new URL('visual-workspace-1366.png', artifacts)) }); await dialog().getByRole('button', { name: 'Cancel', exact: true }).click();
     await page.getByRole('button', { name: 'Presets', exact: true }).click(); await expect(page.locator('.preset-large').first().locator('.scene-thumbnail .module-keyboard')).toBeVisible(); await page.screenshot({ path: fileURLToPath(new URL('real-preset-previews.png', artifacts)) });
