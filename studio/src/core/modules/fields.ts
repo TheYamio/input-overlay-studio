@@ -7,8 +7,10 @@ export const builtinConfigFields={
  trail:[...surfaceFields,'trailAppearance','trailStyle','position','scaleMode','scale','duration','thickness','glow','grid','center','marker','clickEffects','originX','originY'],
  mouse:[...surfaceFields,'image','gap','mouseMode','buttons','buttonLabels','buttonStyles','buttonGeometry','buttonImages','wheelDuration','mouseBodyShapeId'],
  keyboard:[...surfaceFields,'image','gap','keys','layout'],
+ counter:[...surfaceFields,'counterMetric','counterWindow','counterCustomSeconds','counterLabel','counterApmLabel','counterKpmLabel','counterCpsLabel','counterIncrementKey','counterDecrementKey','counterPersist'],
+ flicks:[...surfaceFields,'flickThresholdMps','flickWindowSeconds','flickMinimumDistanceCm','flickPauseMs','flickDistanceUnit','flickDistanceDecimals','flickCaption','flickTopLabel','flickSpeedLabel','flickDistanceLabel','flickCountLabel','flickFlameEnabled','flickFlameColor','flickFlameStyle','flickFlameStrength','flickFlameDurationMs'],
 } as const;
 export type BuiltinModuleType=keyof typeof builtinConfigFields;
 
 // One version declaration for canonical codecs, size guards and manifests.
-export const builtinConfigVersions={distance:2,sensitivity:2,trail:2,mouse:2,keyboard:2} as const;
+export const builtinConfigVersions={distance:2,sensitivity:2,trail:2,mouse:2,keyboard:2,counter:1,flicks:1} as const;

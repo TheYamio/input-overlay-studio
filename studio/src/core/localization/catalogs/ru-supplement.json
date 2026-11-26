@@ -1161,7 +1161,31 @@
       "s-a0e0ab67ab08": "Добавьте источник «Браузер», вставьте ссылку, задайте ширину 1920 и высоту 1080. Приложение захвата должно работать в трее. Фон источника прозрачный.",
       "s-0c04fa1829a1": "Ссылка OBS",
       "s-e04d0605c1a3": "Ссылка содержит токен доступа. Экспорт профиля его не включает. Демо работает только в предпросмотре Studio.",
-      "s-8e573400e2ca": "Страница оверлея недоступна. Проверьте HTTP-сервер и его порт перед копированием ссылки OBS."
+      "s-8e573400e2ca": "Страница оверлея недоступна. Проверьте HTTP-сервер и его порт перед копированием ссылки OBS.",
+      "counter.title": "COUNTER",
+      "counter.metric": "Metric",
+      "counter.window": "Counting window",
+      "counter.windowSeconds": "Window (seconds)",
+      "counter.label": "Label",
+      "counter.increment": "Increment key",
+      "counter.decrement": "Decrement key",
+      "counter.persist": "Keep value between launches",
+      "counter.reset": "Reset counter",
+      "counter.assign": "Assign key",
+      "counter.cancel": "Cancel",
+      "counter.pressKey": "Press a key. Esc cancels.",
+      "counter.captureCancelled": "Key assignment cancelled.",
+      "counter.assigned": "Key assigned.",
+      "counter.sessionTotal": "Session mode shows the total number of actions.",
+      "counter.apmHelp": "APM counts key presses, mouse button clicks and wheel steps. KPM counts keys; CPS counts mouse button clicks.",
+      "flicks.title": "Резкие движения мышью",
+      "flicks.threshold": "Минимальная скорость рывка (м/с)",
+      "flicks.unit": "Distance unit",
+      "flicks.help": "Рывок засчитывается, когда скорость мыши достигает порога. Он заканчивается после паузы дольше 100 мс или при развороте мыши в обратную сторону. Клик не нужен. Окно задаёт, как долго рывок учитывается в статистике.",
+      "flicks.window": "Период статистики (секунды)",
+      "flicks.flame": "Показывать вспышку пламени при засчитанном рывке",
+      "flicks.updateCapture": "Обновите сервер захвата, чтобы включить статистику фликов.",
+      "flicks.startCapture": "Включите захват, чтобы собирать статистику."
     },
     "language": {
       "title": "Языки и текст",
@@ -1497,7 +1521,26 @@
       "overlay.trail-appearance.speed-range.help": "Скорость достижения быстрого цвета. Большее значение требует более быстрого движения; градиент задают медленный и быстрый цвета.",
       "overlay.artwork.opacity.help": "Видимость картинки: 0% — невидима, 100% — полностью видима. Фон клавиши и прозрачность модуля также влияют на результат.",
       "overlay.artwork.blend.help": "Обычный сохраняет цвета. Умножение затемняет картинку на фоне клавиш, Экран — осветляет. Попробуйте прозрачность 50% для читаемых подписей.",
-      "render.performance.fps.help": "Предельная частота анимации. 30 использует меньше кадров, чем 60; Auto следует экрану до 120 FPS. Захват ввода работает независимо."
+      "render.performance.fps.help": "Предельная частота анимации. 30 использует меньше кадров, чем 60; Auto следует экрану до 120 FPS. Захват ввода работает независимо.",
+      "overlay.counter.metric.label": "Показатель",
+      "overlay.counter.window.label": "Период подсчёта",
+      "overlay.counter.custom-seconds.label": "Период (секунды)",
+      "overlay.counter.caption.label": "Подпись счётчика",
+      "overlay.counter.increment-key.label": "Клавиша увеличения",
+      "overlay.counter.decrement-key.label": "Клавиша уменьшения",
+      "overlay.counter.persist.label": "Сохранять между запусками",
+      "overlay.counter.metric.option.41-50-4d": "APM",
+      "overlay.counter.metric.option.4b-50-4d": "KPM",
+      "overlay.counter.metric.option.43-50-53": "CPS",
+      "overlay.counter.metric.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.31-30": "10",
+      "overlay.counter.window.option.34-30": "40",
+      "overlay.counter.window.option.36-30": "60",
+      "overlay.counter.window.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.53-65-73-73-69-6f-6e": "Session",
+      "overlay.flicks.minimum-speed.label": "Минимальная скорость рывка (м/с)",
+      "overlay.flicks.window-seconds.label": "Период статистики (секунды)",
+      "overlay.flicks.flame-effect.label": "Вспышка пламени при рывке"
     },
     "modules": {
       "core.capture.label": "Захват",
@@ -1517,7 +1560,11 @@
       "overlay.distance.label": "Дистанция",
       "overlay.distance.description": "Физическое движение в см или м",
       "overlay.sensitivity.label": "Чувствительность",
-      "overlay.sensitivity.description": "Ваша настройка с первого взгляда"
+      "overlay.sensitivity.description": "Ваша настройка с первого взгляда",
+      "overlay.counter.label": "Counter",
+      "overlay.counter.description": "Actions, clicks and custom counts",
+      "overlay.flicks.label": "Резкие движения мышью",
+      "overlay.flicks.description": "Рекорд скорости за сессию и недавние резкие движения"
     },
     "animation": {
       "preset.help": "Быстрый старт. Точная настройка ниже.",
@@ -1637,6 +1684,16 @@
       "diagnostics.label": "Диагностический отчёт",
       "diagnostics.copied": "Диагностический отчёт скопирован.",
       "diagnostics.failed": "Не удалось скопировать. Выделите отчёт и скопируйте его вручную."
+    },
+    "overlay": {
+      "apm": "APM",
+      "kpm": "KPM",
+      "cps": "CPS",
+      "actions": "ДЕЙСТВИЯ",
+      "keystrokes": "КЛАВИШИ",
+      "clicks": "КЛИКИ",
+      "longestFlick": "САМЫЙ ДЛИННЫЙ ФЛИК · 10 С",
+      "peakSpeed": "Пик"
     }
   }
 }

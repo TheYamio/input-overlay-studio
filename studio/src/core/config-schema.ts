@@ -18,7 +18,7 @@ export type Key = z.infer<typeof keySchema>;
 // Private editor projection and frozen v1 migration source. Canonical builtin
 // configuration schemas are independently owned by core/modules/*.ts.
 export const moduleViewSchema = z.object({
-  id, type: z.enum(['keyboard', 'mouse', 'trail', 'distance', 'sensitivity']), name: label,
+  id, type: z.enum(['keyboard', 'mouse', 'trail', 'distance', 'sensitivity', 'counter', 'flicks']), name: label,
   x: z.number().finite().min(0).max(1920), y: z.number().finite().min(0).max(1080),
   w: z.number().min(40).max(1920), h: z.number().min(30).max(1080),
   visible: z.boolean(), locked: z.boolean(), z: z.number().int().min(0).max(1000),
@@ -41,6 +41,8 @@ export const moduleViewSchema = z.object({
   originX: z.number().min(0).max(1), originY: z.number().min(0).max(1),
   unit: z.enum(['Auto', 'cm', 'm']), decimals: z.number().int().min(0).max(3), caption: label,
   sensitivityStyle: z.enum(['Minimal', 'Standard', 'Detailed']), showGame: z.boolean(), showDpi: z.boolean(), showSens: z.boolean(), showEdpi: z.boolean(), showCm: z.boolean(),
+  counterMetric:z.enum(['APM','KPM','CPS','Custom']).default('APM'),counterWindow:z.enum(['10','40','60','Custom','Session']).default('60'),counterCustomSeconds:z.number().int().min(1).max(600).default(60),counterLabel:label.default('Counter'),counterApmLabel:label.default('APM'),counterKpmLabel:label.default('KPM'),counterCpsLabel:label.default('CPS'),counterIncrementKey:z.number().int().min(1).max(255).default(97),counterDecrementKey:z.number().int().min(1).max(255).default(98),counterPersist:z.boolean().default(false),
+  flickThresholdMps:z.number().min(.001).max(5).default(1),flickWindowSeconds:z.number().int().min(1).max(600).default(10),flickMinimumDistanceCm:z.number().min(0).max(10).default(.5),flickPauseMs:z.number().int().min(50).max(300).default(100),flickDistanceUnit:z.enum(['Auto','mm','cm','m','km']).default('cm'),flickDistanceDecimals:z.number().int().min(0).max(3).default(1),flickCaption:label.default('FLICK STATS'),flickTopLabel:label.default('TOP'),flickSpeedLabel:label.default('SPD'),flickDistanceLabel:label.default('DIST'),flickCountLabel:label.default('FLICKS'),flickFlameEnabled:z.boolean().default(true),flickFlameColor:color.default('#ff7a32'),flickFlameStyle:z.enum(['Pulse glow','Burst','Flame']).default('Pulse glow'),flickFlameStrength:z.number().min(.25).max(3).default(1),flickFlameDurationMs:z.number().int().min(100).max(1200).default(360),
 });
 export const moduleSchema=moduleViewSchema.extend({extension:moduleExtensionSchema.optional()});
 export type OverlayModule = z.infer<typeof moduleSchema>;

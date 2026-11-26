@@ -12,8 +12,8 @@ import { SettingsEvents } from '../settings/events';
 const factory={create:vi.fn(()=>({update:()=>{},dispose:()=>{}}))},icon=()=>null,panel=()=>null;
 function extended(){const original=builtinCatalog.modules.get('overlay.distance')!;return createCatalog([...builtinCatalog.modules.all(),{...original,id:'probe.visual',builtinType:'probe',renderer:'probe.runtime',inspector:'probe.inspector',configuration:z.object({...moduleSchema.shape,type:z.literal('probe')})}],builtinCatalog.settings.all());}
 describe('compiled visual implementations',()=>{
- it('registers all five runtimes without constructing them',()=>{
-  const registry=createVisualRuntimeRegistry();expect(registry.all().map(entry=>entry.definition.id)).toEqual(['overlay.keyboard','overlay.mouse','overlay.trail','overlay.distance','overlay.sensitivity']);for(const type of ['keyboard','mouse','trail','distance','sensitivity'])expect(registry.resolve(type)?.factory).toBeDefined();
+ it('registers all built-in runtimes without constructing them',()=>{
+  const registry=createVisualRuntimeRegistry();expect(registry.all().map(entry=>entry.definition.id)).toEqual(['overlay.keyboard','overlay.mouse','overlay.trail','overlay.distance','overlay.sensitivity','overlay.counter','overlay.flicks']);for(const type of ['keyboard','mouse','trail','distance','sensitivity','counter','flicks'])expect(registry.resolve(type)?.factory).toBeDefined();
  });
  it('rejects missing/service/duplicate registrations without modifying existing ones',()=>{
   const registry=new VisualRuntimeRegistry(builtinCatalog);expect(()=>registry.register('missing.visual',factory)).toThrow('Invalid');expect(()=>registry.register('core.capture',factory)).toThrow('Invalid');registry.register('overlay.distance',factory);expect(()=>registry.register('overlay.distance',factory)).toThrow('already registered');expect(registry.all()).toHaveLength(1);
@@ -33,7 +33,7 @@ describe('compiled visual implementations',()=>{
 });
 describe('module UI and factories from registrations',()=>{
  it('discovers builtins in their original library order and creates unchanged v2 modules',()=>{
-  const registry=createModuleUIRegistry();expect(registry.all().map(entry=>entry.definition.builtinType)).toEqual(['keyboard','mouse','trail','distance','sensitivity']);for(const entry of registry.all()){const type=entry.definition.builtinType as OverlayModule['type'],before=makeModule(type,3),after=registry.create(entry.definition.id,3);expect({...after,id:before.id}).toEqual(before);}
+  const registry=createModuleUIRegistry();expect(registry.all().map(entry=>entry.definition.builtinType)).toEqual(['keyboard','mouse','trail','distance','sensitivity','counter','flicks']);for(const entry of registry.all()){const type=entry.definition.builtinType as OverlayModule['type'],before=makeModule(type,3),after=registry.create(entry.definition.id,3);expect({...after,id:before.id}).toEqual(before);}
  });
  it('preserves keyboard/mouse editing capabilities, panel ordering and canvas editor',()=>{
   const registry=createModuleUIRegistry();expect(registry.resolve('keyboard')).toMatchObject({selection:'keys',preview:true});expect(registry.resolve('keyboard')?.canvasEditor).toBeDefined();expect(registry.resolve('keyboard')?.sections.map(panel=>panel.id)).toEqual(['keys','artwork','preview']);expect(registry.resolve('mouse')).toMatchObject({selection:'buttons',preview:true});expect(registry.resolve('trail')?.preferred).toBe(true);

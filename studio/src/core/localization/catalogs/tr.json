@@ -1177,7 +1177,31 @@
       "s-30f22108cc88": "{{p0}} içe aktarıldı. Şekil ve boşluklar tuşla birlikte ölçeklenir.",
       "s-3732607b3442": "HTTP sunucusu çalışıyor · bağlantı noktası {{p0}}",
       "s-26a4d3d897de": "{{p0}} alan özelleştirildi. Modül değerini yeniden kullanmak için alanı sıfırlayın.",
-      "s-8f735b753b65": "{{p0}} üzerinde kullanılabilir. Kaydedilen değer korunur."
+      "s-8f735b753b65": "{{p0}} üzerinde kullanılabilir. Kaydedilen değer korunur.",
+      "counter.title": "COUNTER",
+      "counter.metric": "Metric",
+      "counter.window": "Counting window",
+      "counter.windowSeconds": "Window (seconds)",
+      "counter.label": "Label",
+      "counter.increment": "Increment key",
+      "counter.decrement": "Decrement key",
+      "counter.persist": "Keep value between launches",
+      "counter.reset": "Reset counter",
+      "counter.assign": "Assign key",
+      "counter.cancel": "Cancel",
+      "counter.pressKey": "Press a key. Esc cancels.",
+      "counter.captureCancelled": "Key assignment cancelled.",
+      "counter.assigned": "Key assigned.",
+      "counter.sessionTotal": "Session mode shows the total number of actions.",
+      "counter.apmHelp": "APM counts key presses, mouse button clicks and wheel steps. KPM counts keys; CPS counts mouse button clicks.",
+      "flicks.title": "Mouse Flick Stats",
+      "flicks.threshold": "Minimum flick speed (m/s)",
+      "flicks.unit": "Distance unit",
+      "flicks.help": "A flick counts when mouse speed reaches the minimum. It ends after a pause longer than 100 ms or when the mouse reverses direction. No click is needed. The selected window controls how long it remains in the stats.",
+      "flicks.window": "Statistics window (seconds)",
+      "flicks.flame": "Show flame pulse when a flick is counted",
+      "flicks.updateCapture": "Update the Capture app to use flick statistics.",
+      "flicks.startCapture": "Start capture to collect statistics."
     },
     "language": {
       "title": "Diller ve metin",
@@ -1521,7 +1545,26 @@
       "overlay.trail-appearance.speed-range.help": "Hızlı renge ulaşma hızı. Daha büyük değer daha hızlı hareket gerektirir; iki renk geçişi belirler.",
       "overlay.artwork.opacity.help": "Görünürlük: 0% görünmez, 100% tamamen görünürdür. Tuş yüzeyi ve modül saydamlığı da sonucu etkiler.",
       "overlay.artwork.blend.help": "normal renkleri korur. multiply tuş yüzeyinde koyulaştırır; screen aydınlatır. Etiketler için 50% opaklığı dene.",
-      "render.performance.fps.help": "Animasyon üst sınırı. 30, 60 değerinden az kare kullanır; Auto ekranı en fazla 120 FPS ile izler. Girdi yakalama bağımsızdır."
+      "render.performance.fps.help": "Animasyon üst sınırı. 30, 60 değerinden az kare kullanır; Auto ekranı en fazla 120 FPS ile izler. Girdi yakalama bağımsızdır.",
+      "overlay.counter.metric.label": "Metric",
+      "overlay.counter.window.label": "Counting window",
+      "overlay.counter.custom-seconds.label": "Window (seconds)",
+      "overlay.counter.caption.label": "Counter label",
+      "overlay.counter.increment-key.label": "Increment key",
+      "overlay.counter.decrement-key.label": "Decrement key",
+      "overlay.counter.persist.label": "Keep value between launches",
+      "overlay.counter.metric.option.41-50-4d": "APM",
+      "overlay.counter.metric.option.4b-50-4d": "KPM",
+      "overlay.counter.metric.option.43-50-53": "CPS",
+      "overlay.counter.metric.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.31-30": "10",
+      "overlay.counter.window.option.34-30": "40",
+      "overlay.counter.window.option.36-30": "60",
+      "overlay.counter.window.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.53-65-73-73-69-6f-6e": "Session",
+      "overlay.flicks.minimum-speed.label": "Minimum flick speed (m/s)",
+      "overlay.flicks.window-seconds.label": "Statistics window (seconds)",
+      "overlay.flicks.flame-effect.label": "Flame pulse on flick"
     },
     "modules": {
       "core.capture.label": "Yakalama",
@@ -1541,7 +1584,11 @@
       "overlay.distance.label": "Mesafe",
       "overlay.distance.description": "Fiziksel hareket, cm veya m",
       "overlay.sensitivity.label": "Hassasiyet",
-      "overlay.sensitivity.description": "Bir bakışta ayarlarınız"
+      "overlay.sensitivity.description": "Bir bakışta ayarlarınız",
+      "overlay.counter.label": "Counter",
+      "overlay.counter.description": "Actions, clicks and custom counts",
+      "overlay.flicks.label": "Mouse Flick Stats",
+      "overlay.flicks.description": "Session speed record and recent fast mouse movements"
     },
     "animation": {
       "preset.help": "Hızlı başlangıç noktası. aşağıdaki noktayı tamamlayın.",
@@ -1691,6 +1738,16 @@
       "diagnostics.label": "Tanılama raporu",
       "diagnostics.copied": "Tanılama raporu kopyalandı.",
       "diagnostics.failed": "Kopyalanamadı. Raporu seçip elle kopyala."
+    },
+    "overlay": {
+      "apm": "APM",
+      "kpm": "KPM",
+      "cps": "CPS",
+      "actions": "ACTIONS",
+      "keystrokes": "KEYS",
+      "clicks": "CLICKS",
+      "longestFlick": "LONGEST FLICK · 10 S",
+      "peakSpeed": "Peak"
     }
   }
 }

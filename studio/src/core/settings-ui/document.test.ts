@@ -16,7 +16,7 @@ function fixture(){
  return {doc,service,save,address,read,write};
 }
 describe('all document settings through the schema adapter',()=>{
- it('reads every owned simple field for all five modules without writes or optional defaults',()=>{
+ it('reads every owned simple field for all modules without writes or optional defaults',()=>{
   const f=fixture(),before=f.service.document;
   for(const module of before.profiles[0].modules)for(const id of builtinCatalog.modules.get(`overlay.${module.type}`)!.settings){
    const definition=builtinCatalog.settings.get(id)!;if(definition.ui.control==='custom')continue;

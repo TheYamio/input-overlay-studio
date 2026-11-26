@@ -6,10 +6,10 @@ import { SettingsSchemaRegistry, settingConstraints } from './registry';
 import type { DefinitionId } from './contracts';
 
 describe('legacy built-in adapters', () => {
-  it('discovers the existing five visual modules in their original order', () => {
-    expect(builtinVisualModules.map(m=>m.type)).toEqual(['keyboard','mouse','trail','distance','sensitivity']);
-    expect(builtinVisualModules.map(m=>m.definition.label.fallback)).toEqual(['Keyboard','Mouse Buttons','Mouse Trail','Distance','Sensitivity']);
-    expect(builtinCatalog.modules.all()).toHaveLength(9);
+  it('discovers every built-in visual module in stable order', () => {
+    expect(builtinVisualModules.map(m=>m.type)).toEqual(['keyboard','mouse','trail','distance','sensitivity','counter','flicks']);
+    expect(builtinVisualModules.map(m=>m.definition.label.fallback)).toEqual(['Keyboard','Mouse Buttons','Mouse Trail','Distance','Sensitivity','Counter','Mouse Flick Stats']);
+    expect(builtinCatalog.modules.all()).toHaveLength(11);
     expect(builtinCatalog.modules.all().filter(m=>m.kind==='visual').every(m=>m.configuration===config.moduleSchema)).toBe(true);
   });
   it('builds registries without creating instances or documents', () => {

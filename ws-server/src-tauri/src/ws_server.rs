@@ -155,11 +155,13 @@ async fn distributor(
     bcast_tx: Arc<Broadcasts>,
     config: Arc<RwLock<Config>>,
     studio: Arc<StudioStore>,
+    capture_running: Arc<dyn Fn()->Option<bool>+Send+Sync>,
     mut shutdown: oneshot::Receiver<()>,
 ) {
     // Capture already coalesces movement at 125 Hz. Digital events are sent immediately.
     // Waiting on recv avoids the original 1 ms idle polling and second mouse aggregation.
     let mut held = HeldState::default();
+    let mut stats_timer=tokio::time::interval(Duration::from_millis(250));stats_timer.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     let mut sequence: u64 = 0;
     let mut draining = false;
     loop {
@@ -170,6 +172,7 @@ async fn distributor(
                 draining = true;
                 continue;
             }
+            _ = stats_timer.tick()=>{let enabled=config.read().await.capture_enabled;let running=enabled&&capture_running().unwrap_or(enabled);if let Some(packet)=studio.set_flick_capture_active(running).await{bcast_tx.input(packet);}if let Some(packet)=studio.counter_values().await{bcast_tx.input(packet);}continue;},
             event = input_rx.recv() => event,
         };
         let Some(event) = event else { break };
@@ -193,7 +196,11 @@ async fn distributor(
         let cfg = config.read().await;
         if !is_allowed(&event, &cfg) { continue; }
         drop(cfg);
+        let key_was_down=match &event{InputEvent::KeyPress{rawcode}|InputEvent::AnalogDepth{rawcode,..}=>held.key_down(*rawcode),_=>false};
+        let button_was_down=match &event{InputEvent::MouseButton{button,pressed:true}=>held.button_down(*button),_=>false};
+        if let Some(packet)=studio.update_flick_input(&event,std::time::Instant::now()).await{bcast_tx.input(packet);}
         held.apply(&event); sequence += 1;
+        if let Some(packet)=studio.update_counter_inputs(&event,key_was_down,button_was_down).await{bcast_tx.input(packet);}
         if let Some(mut json) = event_to_json(&event) {
             if let InputEvent::MouseMove { dx, dy, distance_counts } = event {
                 let counts = distance_counts.unwrap_or_else(|| (dx as f64).hypot(dy as f64));
@@ -210,6 +217,7 @@ async fn save_distance(studio: &StudioStore) {
     if let Err(error) = studio.persist_distance().await {
         tracing::warn!("studio: distance could not be saved: {error}");
     }
+    if let Err(error)=studio.persist_counters().await{tracing::warn!("studio: counters could not be saved: {error}");}
 }
 async fn connection_status_packet(config:&RwLock<Config>,hooks:&ServerHooks,runtimes:&crate::runtime_status::Snapshot)->String {
  let capture_enabled=config.read().await.capture_enabled;let capture_running=(hooks.capture_running)().map(|running|capture_enabled&&running);
@@ -315,11 +323,18 @@ async fn handle_connection(
                         let delivery=runtime_session.as_ref().filter(|_|real).map(|session|session.delivery(&revision));if !outbox.send(json,delivery){break;}
                         if runtime&&real&&!counted{counted=true;let tracker=activity.clone();let _=tokio::task::spawn_blocking(move||tracker.ready(crate::studio_activity::now())).await;}
                         reply!(serde_json::json!({"type":"distance_total","cm":studio.distance_cm().await}).to_string());
+                        if let Some(packet)=studio.counter_values().await{reply!(packet);}
+                        if let Some(packet)=studio.flick_values().await{reply!(packet);}
                     }
                     Command::DistanceReset=>{
                         studio.reset_distance().await;
                         bcast_tx.input(r#"{"type":"distance_total","cm":0}"#);
                         save_distance(&studio).await;
+                    }
+                    Command::CounterReset=>{
+                        let Some(profile)=value["profile_id"].as_str().filter(|text|text.len()<=80)else{reply!(serde_json::json!({"type":"studio_error","code":"invalid-counter"}).to_string());continue;};
+                        let Some(module)=value["module_id"].as_str().filter(|text|text.len()<=80)else{reply!(serde_json::json!({"type":"studio_error","code":"invalid-counter"}).to_string());continue;};
+                        match studio.reset_counter(profile,module).await{Ok(packet)=>bcast_tx.input(packet),Err(code)=>reply!(serde_json::json!({"type":"studio_error","code":code}).to_string())}
                     }
                     Command::StudioSet=>{
                         if value["document"]["version"]!=4{reply!(serde_json::json!({"type":"studio_error","request_id":request_id,"reason":"incompatible or read-only client"}).to_string());continue;}
@@ -361,7 +376,8 @@ pub async fn run(
     let _watchdog=runtimes.watchdog();let bcast_tx=Broadcasts::new();let permits=Arc::new(Semaphore::new(MAX_WS_CLIENTS));let mut clients=JoinSet::new();
     let cfg=config.clone();let broadcasts=bcast_tx.clone();let store=studio.clone();
     let (close_input, stop_input) = oneshot::channel();
-    let input_task = Task(tokio::spawn(distributor(input_rx, broadcasts, cfg, store, stop_input)));
+    let capture_running=hooks.capture_running.clone();
+    let input_task = Task(tokio::spawn(distributor(input_rx, broadcasts, cfg, store, capture_running, stop_input)));
     let (close_timer, mut stop_timer) = oneshot::channel();
     let store = studio.clone();
     let distance_task = Task(tokio::spawn(async move {

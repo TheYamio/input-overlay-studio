@@ -5,6 +5,8 @@ studio/artifacts/
 studio/*.tsbuildinfo
 ws-server/src-tauri/web-bundle/
 ws-server/src-tauri/target/
+/.dev-data/
+/tool-downloads/
 **/__pycache__/
 **/*.pyc
 **/*.pyo

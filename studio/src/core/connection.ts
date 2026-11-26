@@ -73,7 +73,7 @@ export class InputConnection {
         this.obsToken = this.authenticated && this.role === 'studio' &&
           typeof value.obs_token === 'string' && /^[a-zA-Z0-9]{32}$/.test(value.obs_token) &&
           value.obs_token !== this.options?.token ? value.obs_token : undefined;
-        this.negotiation=negotiate(value);this.heartbeatSupported=this.negotiation.heartbeat;
+        this.negotiation=negotiate(value);this.heartbeatSupported=this.negotiation.heartbeat;this.engine.flickStatsSupported=this.negotiation.features['input.flick-stats']===1;
         if (!this.authenticated) { this.onStatus('Authentication failed'); this.stopped = true; this.engine.reset(); ws.close(); return; }
         this.attempts = 0; this.lastInputSequence = -1; this.lastConfigSequence = -1; this.engine.reset(); this.onStatus('Connected');
         if (this.negotiation.snapshot) ws.send(JSON.stringify({ type: 'input_snapshot' }));
@@ -103,6 +103,8 @@ export class InputConnection {
       if (value.type === 'distance_total' && typeof value.cm === 'number' && Number.isFinite(value.cm) && value.cm >= 0) {
         this.engine.setDistance(value.cm); return;
       }
+      if(value.type==='counter_values'){const event=decodeInput(value);if(event?.event_type==='counter_values')this.engine.ingest(event);return;}
+      if(value.type==='flick_values'){const event=decodeInput(value);if(event?.event_type==='flick_values')this.engine.ingest(event);return;}
       if (value.type === 'studio_config' || value.type === 'studio_conflict') {
         if (Number.isSafeInteger(value.config_sequence)) {
           const sequence = value.config_sequence as number;
@@ -181,6 +183,7 @@ export class InputConnection {
     this.socket.send(JSON.stringify({type:'runtime_ready',revision,state}));return true;
   }
   resetDistance() { if (this.role==='studio'&&this.authenticated&&!this.negotiation.issue&&this.socket?.readyState===WebSocket.OPEN) this.socket.send(JSON.stringify({ type: 'distance_reset' })); }
+  resetCounter(profileId:string,moduleId:string) { if (this.role==='studio'&&this.authenticated&&!this.negotiation.issue&&this.socket?.readyState===WebSocket.OPEN) this.socket.send(JSON.stringify({type:'counter_reset',profile_id:profileId,module_id:moduleId})); }
   obsOptions(options: ConnectionOptions): ConnectionOptions | undefined {
     if (!this.authenticated || this.socket?.readyState !== WebSocket.OPEN || !this.obsToken ||
         this.options?.url !== options.url || this.options.token !== options.token) return undefined;

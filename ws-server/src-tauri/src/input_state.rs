@@ -20,6 +20,8 @@ impl Default for HeldState {
     fn default() -> Self { Self { keys: [0.0; 256], analog: [false; 256], buttons: [false; 6] } }
 }
 impl HeldState {
+    pub fn key_down(&self, rawcode:u16)->bool{rawcode<256&&self.keys[rawcode as usize]>0.0}
+    pub fn button_down(&self, button:u8)->bool{button<6&&self.buttons[button as usize]}
     pub fn apply(&mut self, event: &InputEvent) {
         match event {
             InputEvent::KeyPress { rawcode } if *rawcode < 256 => self.keys[*rawcode as usize] = 1.0,

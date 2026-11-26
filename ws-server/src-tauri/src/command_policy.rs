@@ -2,7 +2,7 @@
 use serde_json::Value;
 
 #[derive(Clone,Copy,Debug,PartialEq)]
-pub enum Command {InputSnapshot,StudioGet,StudioSet,DistanceReset,RuntimeReady}
+pub enum Command {InputSnapshot,StudioGet,StudioSet,DistanceReset,CounterReset,RuntimeReady}
 #[derive(Clone,Copy)]
 enum Permission {Read,Write,Runtime}
 const COMMANDS:&[(&str,Command,Permission)]=&[
@@ -10,6 +10,7 @@ const COMMANDS:&[(&str,Command,Permission)]=&[
     ("studio_get",Command::StudioGet,Permission::Read),
     ("studio_set",Command::StudioSet,Permission::Write),
     ("distance_reset",Command::DistanceReset,Permission::Write),
+    ("counter_reset",Command::CounterReset,Permission::Write),
     ("runtime_ready",Command::RuntimeReady,Permission::Runtime),
 ];
 #[derive(Default)]
@@ -49,6 +50,6 @@ pub fn token_matches(server:&str,client:&str)->bool{!server.is_empty()&&!server.
         assert_eq!(studio.command("future_write"),Err("unknown-command"));
     }
     #[test]fn incomplete_or_wrong_role_clients_cannot_mutate(){
-        for mut value in [auth("studio"),auth("runtime"),auth("unknown"),json!({})]{value["studio_client"]["document"]["write"]=json!([]);value["token"]=json!("obs");let client=ClientPermissions::authenticate(&value, "editor", "obs").unwrap();for command in ["studio_set","distance_reset"]{assert_eq!(client.command(command),Err("command-forbidden"));}}
+        for mut value in [auth("studio"),auth("runtime"),auth("unknown"),json!({})]{value["studio_client"]["document"]["write"]=json!([]);value["token"]=json!("obs");let client=ClientPermissions::authenticate(&value, "editor", "obs").unwrap();for command in ["studio_set","distance_reset","counter_reset"]{assert_eq!(client.command(command),Err("command-forbidden"));}}
     }
 }

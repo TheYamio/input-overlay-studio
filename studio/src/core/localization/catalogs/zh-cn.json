@@ -1177,7 +1177,31 @@
       "s-30f22108cc88": "已导入 {{p0}}。形状和镂空会随按键一起缩放。",
       "s-3732607b3442": "HTTP 服务器运行中 · 端口 {{p0}}",
       "s-26a4d3d897de": "已单独设置 {{p0}} 个字段。重置字段即可重新使用模块值。",
-      "s-8f735b753b65": "在 {{p0}} 上可用。已保存的值会保留。"
+      "s-8f735b753b65": "在 {{p0}} 上可用。已保存的值会保留。",
+      "counter.title": "COUNTER",
+      "counter.metric": "Metric",
+      "counter.window": "Counting window",
+      "counter.windowSeconds": "Window (seconds)",
+      "counter.label": "Label",
+      "counter.increment": "Increment key",
+      "counter.decrement": "Decrement key",
+      "counter.persist": "Keep value between launches",
+      "counter.reset": "Reset counter",
+      "counter.assign": "Assign key",
+      "counter.cancel": "Cancel",
+      "counter.pressKey": "Press a key. Esc cancels.",
+      "counter.captureCancelled": "Key assignment cancelled.",
+      "counter.assigned": "Key assigned.",
+      "counter.sessionTotal": "Session mode shows the total number of actions.",
+      "counter.apmHelp": "APM counts key presses, mouse button clicks and wheel steps. KPM counts keys; CPS counts mouse button clicks.",
+      "flicks.title": "Mouse Flick Stats",
+      "flicks.threshold": "Minimum flick speed (m/s)",
+      "flicks.unit": "Distance unit",
+      "flicks.help": "A flick counts when mouse speed reaches the minimum. It ends after a pause longer than 100 ms or when the mouse reverses direction. No click is needed. The selected window controls how long it remains in the stats.",
+      "flicks.window": "Statistics window (seconds)",
+      "flicks.flame": "Show flame pulse when a flick is counted",
+      "flicks.updateCapture": "Update the Capture app to use flick statistics.",
+      "flicks.startCapture": "Start capture to collect statistics."
     },
     "language": {
       "title": "语言与文字",
@@ -1521,7 +1545,26 @@
       "overlay.trail-appearance.speed-range.help": "达到快速颜色所需的速度。值越大，需要移动越快；两种颜色定义渐变。",
       "overlay.artwork.opacity.help": "图片可见度：0% 为不可见，100% 为完全可见。按键背景和模块不透明度也会影响结果。",
       "overlay.artwork.blend.help": "normal 保留颜色，multiply 在按键表面上变暗，screen 变亮。可尝试 50% 不透明度来保持标签清晰。",
-      "render.performance.fps.help": "动画帧率上限。30 比 60 使用更少帧；Auto 跟随屏幕，最高 120 FPS。输入捕获独立运行。"
+      "render.performance.fps.help": "动画帧率上限。30 比 60 使用更少帧；Auto 跟随屏幕，最高 120 FPS。输入捕获独立运行。",
+      "overlay.counter.metric.label": "Metric",
+      "overlay.counter.window.label": "Counting window",
+      "overlay.counter.custom-seconds.label": "Window (seconds)",
+      "overlay.counter.caption.label": "Counter label",
+      "overlay.counter.increment-key.label": "Increment key",
+      "overlay.counter.decrement-key.label": "Decrement key",
+      "overlay.counter.persist.label": "Keep value between launches",
+      "overlay.counter.metric.option.41-50-4d": "APM",
+      "overlay.counter.metric.option.4b-50-4d": "KPM",
+      "overlay.counter.metric.option.43-50-53": "CPS",
+      "overlay.counter.metric.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.31-30": "10",
+      "overlay.counter.window.option.34-30": "40",
+      "overlay.counter.window.option.36-30": "60",
+      "overlay.counter.window.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.53-65-73-73-69-6f-6e": "Session",
+      "overlay.flicks.minimum-speed.label": "Minimum flick speed (m/s)",
+      "overlay.flicks.window-seconds.label": "Statistics window (seconds)",
+      "overlay.flicks.flame-effect.label": "Flame pulse on flick"
     },
     "modules": {
       "core.capture.label": "输入捕获",
@@ -1541,7 +1584,11 @@
       "overlay.distance.label": "距离",
       "overlay.distance.description": "物理运动,在cm或m",
       "overlay.sensitivity.label": "灵敏度",
-      "overlay.sensitivity.description": "你的设置在一个眼光"
+      "overlay.sensitivity.description": "你的设置在一个眼光",
+      "overlay.counter.label": "Counter",
+      "overlay.counter.description": "Actions, clicks and custom counts",
+      "overlay.flicks.label": "Mouse Flick Stats",
+      "overlay.flicks.description": "Session speed record and recent fast mouse movements"
     },
     "animation": {
       "preset.help": "快速起点,点击下方。",
@@ -1691,6 +1738,16 @@
       "diagnostics.label": "诊断报告",
       "diagnostics.copied": "诊断报告已复制。",
       "diagnostics.failed": "无法复制。请选择报告后手动复制。"
+    },
+    "overlay": {
+      "apm": "APM",
+      "kpm": "KPM",
+      "cps": "CPS",
+      "actions": "ACTIONS",
+      "keystrokes": "KEYS",
+      "clicks": "CLICKS",
+      "longestFlick": "LONGEST FLICK · 10 S",
+      "peakSpeed": "Peak"
     }
   }
 }

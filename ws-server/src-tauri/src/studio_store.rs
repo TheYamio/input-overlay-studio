@@ -1,4 +1,4 @@
-use std::{io, path::PathBuf};
+use std::{io, path::PathBuf,collections::{HashMap,HashSet,VecDeque},time::{Duration,Instant,SystemTime,UNIX_EPOCH}};
 use tokio::sync::Mutex;
 use serde_json::Value;
 use std::sync::{Arc,RwLock};
@@ -35,10 +35,13 @@ impl DocumentSnapshot {
 pub struct StudioStore {
     state: RwLock<Arc<DocumentSnapshot>>,
     distance: Mutex<Distance>,
+    counters:Mutex<HashMap<String,CounterRecord>>,
+    flicks:Mutex<FlickSession>,
     pub recovery_required: AtomicBool,
     path: PathBuf,
     writers: Mutex<()>,
     distance_writer: Mutex<()>,
+    counter_writer:Mutex<()>,
     unsupported_original: Option<(u64,String)>,
 }
 
@@ -46,6 +49,26 @@ struct Distance {
     cm: f64,
     saved_cm: f64,
 }
+#[derive(Default)]
+struct FlickSession{active:bool,tracks:HashMap<String,FlickTrack>}
+#[derive(Default)]
+struct FlickTrack{last_sample:Option<Instant>,velocity_samples:VecDeque<f64>,current:Option<FlickBurst>,events:VecDeque<FlickEvent>,best_mps:f64,last_flick_mps:f64,pulse:u64}
+#[derive(Clone,Copy)]
+struct FlickBurst{last:Instant,distance_cm:f64,peak_mps:f64,qualified:bool,dx:f64,dy:f64}
+#[derive(Clone,Copy)]
+struct FlickEvent{ended:Instant,distance_cm:f64,peak_mps:f64}
+#[derive(Clone,serde::Serialize,serde::Deserialize,Default)]
+struct CounterRecord{custom:u64,actions:u64,keys:u64,clicks:u64,recent_actions:VecDeque<u64>,recent_keys:VecDeque<u64>,recent_clicks:VecDeque<u64>}
+fn counter_key(profile:&str,module:&str)->String{format!("{profile}\u{1f}{module}")}
+fn flick_key(profile:&str,module:&str)->String{counter_key(profile,module)}
+fn profile_dpi(document:&Value,profile:&Value)->f64{let game=profile["gameProfileId"].as_str();document["gameProfiles"].as_array().and_then(|games|games.iter().find(|item|item["id"].as_str()==game)).and_then(|item|item["dpi"].as_f64()).filter(|dpi|dpi.is_finite()&&*dpi>0.).unwrap_or(800.)}
+fn flick_reversed(current:&FlickBurst,dx:f64,dy:f64)->bool{current.dx.hypot(current.dy)>0.&&dx.hypot(dy)>0.&&(current.dx*dx+current.dy*dy)<0.}
+fn finish_flick(track:&mut FlickTrack,now:Instant,minimum_distance_cm:f64){if let Some(current)=track.current.take(){if current.qualified&&current.distance_cm>=minimum_distance_cm{track.events.push_back(FlickEvent{ended:now,distance_cm:current.distance_cm,peak_mps:current.peak_mps});track.best_mps=track.best_mps.max(current.peak_mps);track.last_flick_mps=current.peak_mps;track.pulse=track.pulse.saturating_add(1);}}}
+fn counter_specs(document:&Value)->HashSet<String>{
+ let mut out=HashSet::new();if let Some(profiles)=document["profiles"].as_array(){for profile in profiles{let pid=profile["id"].as_str().unwrap_or("");for module in profile["modules"].as_array().into_iter().flatten(){if module["type"]=="overlay.counter"&&module["config"]["counterPersist"].as_bool().unwrap_or(false){if let Some(mid)=module["id"].as_str(){out.insert(counter_key(pid,mid));}}}}}out
+}
+fn now_ms()->u64{SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis().min(u64::MAX as u128) as u64}
+fn prune(times:&mut VecDeque<u64>,cutoff:u64){while times.front().is_some_and(|time|*time<cutoff){times.pop_front();}while times.len()>100_000{times.pop_front();}}
 impl StudioStore {
     pub fn new(path: PathBuf) -> Self {
         let original=std::fs::read_to_string(&path).ok();
@@ -60,7 +83,9 @@ impl StudioStore {
             .filter(|value| value.is_finite() && *value >= 0.0)
             .unwrap_or(0.0);
         let cm = if snapshot.persist_distance && !reset { saved_cm } else { 0.0 };
-        Self { state:RwLock::new(Arc::new(snapshot)), distance: Mutex::new(Distance { cm, saved_cm }), recovery_required: AtomicBool::new(recovery_required), path, writers: Mutex::new(()), distance_writer: Mutex::new(()),unsupported_original }
+        let persistent=counter_specs(&snapshot.document);let counters_path=path.with_file_name("counter-state.json");
+        let counters=std::fs::read_to_string(counters_path).ok().and_then(|text|serde_json::from_str::<HashMap<String,CounterRecord>>(&text).ok()).unwrap_or_default().into_iter().filter(|(key,_)|persistent.contains(key)).collect();
+        Self { state:RwLock::new(Arc::new(snapshot)), distance: Mutex::new(Distance { cm, saved_cm }), counters:Mutex::new(counters),flicks:Mutex::new(FlickSession::default()),recovery_required: AtomicBool::new(recovery_required), path, writers: Mutex::new(()), distance_writer: Mutex::new(()),counter_writer:Mutex::new(()),unsupported_original }
     }
     pub fn current(&self)->Arc<DocumentSnapshot>{self.state.read().unwrap().clone()}
 
@@ -83,6 +108,83 @@ impl StudioStore {
     }
     pub async fn distance_cm(&self) -> f64 { self.distance.lock().await.cm }
     pub async fn reset_distance(&self) { self.distance.lock().await.cm = 0.0; }
+
+    pub async fn set_flick_capture_active(&self,active:bool)->Option<String>{
+        {let mut session=self.flicks.lock().await;if session.active!=active{if !active{session.tracks.clear();}session.active=active;}}
+        self.flick_values().await
+    }
+    pub async fn update_flick_input(&self,event:&crate::ws_server::InputEvent,now:Instant)->Option<String>{
+        let crate::ws_server::InputEvent::MouseMove{dx,dy,distance_counts}=event else{if matches!(event,crate::ws_server::InputEvent::Reset){let mut session=self.flicks.lock().await;for track in session.tracks.values_mut(){track.current=None;track.last_sample=None;track.velocity_samples.clear();}}return None;};
+        let snapshot=self.current();let active=snapshot.document["activeProfileId"].as_str().unwrap_or("");let Some(profile)=snapshot.document["profiles"].as_array().and_then(|profiles|profiles.iter().find(|profile|profile["id"]==active))else{return None;};
+        let dpi=profile_dpi(&snapshot.document,profile);let cm_per_count=2.54/dpi;let length=(*distance_counts).unwrap_or_else(||(*dx as f64).hypot(*dy as f64));if !length.is_finite()||length<=0.{return self.flick_values().await;}
+        let mut session=self.flicks.lock().await;if !session.active{return None;}
+        let now_for_values=now;
+        if let Some(modules)=profile["modules"].as_array(){for module in modules.iter().filter(|module|module["type"]=="overlay.flicks"){
+            let (Some(mid),Some(config))=(module["id"].as_str(),module["config"].as_object())else{continue;};let threshold=config.get("flickThresholdMps").and_then(Value::as_f64).unwrap_or(1.).clamp(0.001,5.);let pause_ms=config.get("flickPauseMs").and_then(Value::as_u64).unwrap_or(100).clamp(50,300);let pause=Duration::from_millis(pause_ms);let minimum_distance=config.get("flickMinimumDistanceCm").and_then(Value::as_f64).unwrap_or(0.5).clamp(0.,10.);let key=flick_key(active,mid);let track=session.tracks.entry(key).or_default();
+            if track.current.is_some_and(|current|now.saturating_duration_since(current.last)>pause){finish_flick(track,now,minimum_distance);track.last_sample=None;track.velocity_samples.clear();}
+            let elapsed=track.last_sample.map(|sample|now.saturating_duration_since(sample).as_secs_f64()).unwrap_or(0.);let raw_speed=if elapsed>0.&&elapsed<=pause.as_secs_f64(){length*0.0254/(dpi*elapsed)}else{0.};if raw_speed>0.{track.velocity_samples.push_back(raw_speed);while track.velocity_samples.len()>3{track.velocity_samples.pop_front();}}else{track.velocity_samples.clear();}let speed=if track.velocity_samples.is_empty(){0.}else{track.velocity_samples.iter().sum::<f64>()/track.velocity_samples.len() as f64};let distance_cm=length*cm_per_count;let reversed=track.current.is_some_and(|current|flick_reversed(&current,*dx as f64,*dy as f64));
+            if reversed{finish_flick(track,now,minimum_distance);let qualified=speed>=threshold;track.current=Some(FlickBurst{last:now,distance_cm,peak_mps:speed,qualified,dx:*dx as f64,dy:*dy as f64});}
+            else if let Some(current)=track.current.as_mut(){current.last=now;current.distance_cm+=distance_cm;current.peak_mps=current.peak_mps.max(speed);current.dx+=*dx as f64;current.dy+=*dy as f64;if !current.qualified&&current.peak_mps>=threshold{current.qualified=true;}}
+            else{let qualified=speed>=threshold;track.current=Some(FlickBurst{last:now,distance_cm,peak_mps:speed,qualified,dx:*dx as f64,dy:*dy as f64});}
+            track.last_sample=Some(now);
+        }}
+        drop(session);self.flick_values_at(now_for_values).await
+    }
+    pub async fn flick_values(&self)->Option<String>{self.flick_values_at(Instant::now()).await}
+    async fn flick_values_at(&self,now:Instant)->Option<String>{
+        let snapshot=self.current();let profile_id=snapshot.document["activeProfileId"].as_str().unwrap_or("");let mut values=serde_json::Map::new();let mut session=self.flicks.lock().await;let running=session.active;
+        if let Some(profile)=snapshot.document["profiles"].as_array().and_then(|profiles|profiles.iter().find(|profile|profile["id"]==profile_id)){if let Some(modules)=profile["modules"].as_array(){for module in modules.iter().filter(|module|module["type"]=="overlay.flicks"){
+            let (Some(id),Some(config))=(module["id"].as_str(),module["config"].as_object())else{continue;};let key=flick_key(profile_id,id);let track=session.tracks.entry(key).or_default();let pause_ms=config.get("flickPauseMs").and_then(Value::as_u64).unwrap_or(100).clamp(50,300);let minimum_distance=config.get("flickMinimumDistanceCm").and_then(Value::as_f64).unwrap_or(0.5).clamp(0.,10.);if track.current.is_some_and(|current|now.saturating_duration_since(current.last)>Duration::from_millis(pause_ms)){finish_flick(track,now,minimum_distance);}
+            let window=config.get("flickWindowSeconds").and_then(Value::as_u64).unwrap_or(10).clamp(1,600);let cutoff=now.checked_sub(Duration::from_secs(window)).unwrap_or(now);let retention=now.checked_sub(Duration::from_secs(600)).unwrap_or(now);while track.events.front().is_some_and(|flick|flick.ended<retention){track.events.pop_front();}
+            let mut count=0usize;let mut peak=0f64;let mut path=0f64;let mut history:Vec<f64>=Vec::new();for flick in track.events.iter().filter(|flick|flick.ended>=cutoff){count+=1;peak=peak.max(flick.peak_mps);path+=flick.distance_cm;history.push(flick.peak_mps);}if let Some(current)=track.current.filter(|current|current.qualified&&current.distance_cm>=minimum_distance&&now.saturating_duration_since(current.last)<=Duration::from_millis(pause_ms)){count+=1;peak=peak.max(current.peak_mps);path+=current.distance_cm;history.push(current.peak_mps);}
+            let history_mps:Vec<f64>=history.into_iter().rev().take(16).collect::<Vec<_>>().into_iter().rev().collect();
+            values.insert(id.into(),serde_json::json!({"session_best_mps":track.best_mps,"flick_count":count,"peak_mps":peak,"path_cm":path,"last_flick_mps":track.last_flick_mps,"pulse":track.pulse,"history_mps":history_mps}));
+        }}}
+        if values.is_empty(){return None;}
+        Some(serde_json::json!({"type":"flick_values","profile_id":profile_id,"capture_running":running,"values":values}).to_string())
+    }
+
+    pub async fn update_counter_inputs(&self,event:&crate::ws_server::InputEvent,key_was_down:bool,button_was_down:bool)->Option<String>{
+        let snapshot=self.current();let profile=snapshot.document["activeProfileId"].as_str().unwrap_or("");let now=now_ms();let cutoff=now.saturating_sub(600_000);let mut counters=self.counters.lock().await;
+        if let Some(modules)=snapshot.document["profiles"].as_array().and_then(|profiles|profiles.iter().find(|item|item["id"]==profile)).and_then(|profile|profile["modules"].as_array()){
+            for module in modules.iter().filter(|module|module["type"]=="overlay.counter"){
+                let Some(mid)=module["id"].as_str() else{continue};let config=&module["config"];let key=counter_key(profile,mid);let record=counters.entry(key).or_default();
+                let pressed_key=match event{crate::ws_server::InputEvent::KeyPress{rawcode}if !key_was_down=>Some(*rawcode),crate::ws_server::InputEvent::AnalogDepth{rawcode,depth}if !key_was_down&&*depth>0.0=>Some(*rawcode),_=>None};
+                if let Some(rawcode)=pressed_key{
+                    if config["counterMetric"]=="Custom"{if rawcode as u64==config["counterIncrementKey"].as_u64().unwrap_or(0){record.custom=record.custom.saturating_add(1);}else if rawcode as u64==config["counterDecrementKey"].as_u64().unwrap_or(0){record.custom=record.custom.saturating_sub(1);}}
+                    else{record.actions=record.actions.saturating_add(1);record.keys=record.keys.saturating_add(1);record.recent_actions.push_back(now);record.recent_keys.push_back(now);}
+                }
+                match event{
+                    crate::ws_server::InputEvent::MouseButton{button,pressed:true} if !button_was_down=>{record.actions=record.actions.saturating_add(1);record.clicks=record.clicks.saturating_add(1);record.recent_actions.push_back(now);record.recent_clicks.push_back(now);}
+                    crate::ws_server::InputEvent::MouseScroll{rotation} if *rotation!=0=>{record.actions=record.actions.saturating_add(1);record.recent_actions.push_back(now);}
+                    _=>{}
+                }
+                prune(&mut record.recent_actions,cutoff);prune(&mut record.recent_keys,cutoff);prune(&mut record.recent_clicks,cutoff);
+            }
+        }
+        drop(counters);self.counter_values_locked(&snapshot.document,now).await
+    }
+    pub async fn counter_values(&self)->Option<String>{let snapshot=self.current();self.counter_values_locked(&snapshot.document,now_ms()).await}
+    async fn counter_values_locked(&self,document:&Value,now:u64)->Option<String>{
+        let profile=document["activeProfileId"].as_str().unwrap_or("");let cutoff=now.saturating_sub(600_000);let mut values=serde_json::Map::new();let counters=self.counters.lock().await;
+        if let Some(modules)=document["profiles"].as_array().and_then(|profiles|profiles.iter().find(|item|item["id"]==profile)).and_then(|item|item["modules"].as_array()){
+            for module in modules.iter().filter(|module|module["type"]=="overlay.counter"){
+                let (Some(id),Some(config))=(module["id"].as_str(),module["config"].as_object())else{continue};let key=counter_key(profile,id);let record=counters.get(&key);let metric=config.get("counterMetric").and_then(Value::as_str).unwrap_or("APM");let value=if metric=="Custom"{record.map(|r|r.custom).unwrap_or(0) as f64}else{
+                    let session=config.get("counterWindow").and_then(Value::as_str)==Some("Session");let (total,recent,scale)=match metric{"KPM"=>(record.map(|r|r.keys).unwrap_or(0),record.map(|r|&r.recent_keys),60.0),"CPS"=>(record.map(|r|r.clicks).unwrap_or(0),record.map(|r|&r.recent_clicks),1.0),_=>(record.map(|r|r.actions).unwrap_or(0),record.map(|r|&r.recent_actions),60.0)};
+                    if session{total as f64}else{let seconds=if config.get("counterWindow").and_then(Value::as_str)==Some("Custom"){config.get("counterCustomSeconds").and_then(Value::as_u64).unwrap_or(60)}else{config.get("counterWindow").and_then(Value::as_str).and_then(|value|value.parse::<u64>().ok()).unwrap_or(60)}.clamp(1,600);let count=recent.map(|times|times.iter().filter(|time|**time>=now.saturating_sub(seconds*1000)&&**time>=cutoff).count()).unwrap_or(0);count as f64*scale/seconds as f64}
+                };values.insert(id.into(),serde_json::json!(value));
+            }
+        }
+        if values.is_empty(){None}else{Some(serde_json::json!({"type":"counter_values","profile_id":profile,"values":values}).to_string())}
+    }
+    pub async fn reset_counter(&self,profile_id:&str,module_id:&str)->Result<String,&'static str>{
+        let snapshot=self.current();let Some(module)=snapshot.document["profiles"].as_array().and_then(|profiles|profiles.iter().find(|profile|profile["id"]==profile_id)).and_then(|profile|profile["modules"].as_array()).and_then(|modules|modules.iter().find(|module|module["id"]==module_id&&module["type"]=="overlay.counter"))else{return Err("unknown-counter");};
+        let _=module;self.counters.lock().await.insert(counter_key(profile_id,module_id),CounterRecord::default());self.persist_counters().await.map_err(|_|"counter-storage-error")?;self.counter_values_locked(&snapshot.document,now_ms()).await.ok_or("unknown-counter")
+    }
+    pub async fn persist_counters(&self)->io::Result<bool>{
+        let _writer=self.counter_writer.lock().await;let persistent=counter_specs(&self.current().document);let counters=self.counters.lock().await;let values:HashMap<_,_>=counters.iter().filter(|(key,_)|persistent.contains(*key)).map(|(key,value)|(key.clone(),value.clone())).collect();let path=self.path.with_file_name("counter-state.json");let text=serde_json::to_string(&values)?;
+        tokio::task::spawn_blocking(move||{let temporary=path.with_extension("tmp");std::fs::write(&temporary,text)?;std::fs::rename(temporary,path)}).await.map_err(io::Error::other)??;Ok(true)
+    }
 
     pub async fn persist_distance(&self) -> io::Result<bool> {
         let _writer = self.distance_writer.lock().await;
@@ -349,6 +451,30 @@ mod tests {
         document["activeProfileId"]=serde_json::json!("secondary-overlay");save(&store,document.clone()).await;assert!((store.add_distance(1600.0).await-7.62).abs()<1e-10);
         document["gameProfiles"][0]["dpi"]=serde_json::json!(400);save(&store,document).await;assert!((store.add_distance(1600.0).await-10.16).abs()<1e-10);
         for file in [path.clone(),path.with_extension("backup.json")]{std::fs::remove_file(file).unwrap();}
+    }
+
+    #[tokio::test]
+    async fn flick_capture_counts_fast_reverse_as_two_and_closes_after_configured_pause(){
+        let path=std::env::temp_dir().join(format!("studio-flick-flow-{}.json",rand::random::<u64>()));let store=StudioStore::new(path.clone());let mut document=config();let definitions:Value=serde_json::from_str(include_str!("../schema/module-configurations.json")).unwrap();let definition=&definitions["overlay.flicks"];let mut flat=definition["projection"].clone();flat["flickThresholdMps"]=serde_json::json!(0.1);flat["flickMinimumDistanceCm"]=serde_json::json!(0.0);flat["flickPauseMs"]=serde_json::json!(100);let mut module_config=serde_json::Map::new();for key in definition["schema"]["properties"].as_object().unwrap().keys(){if let Some(value)=flat.get(key){module_config.insert(key.clone(),value.clone());}}let common=document["profiles"][0]["modules"][0]["common"].clone();let module=serde_json::json!({"id":"flick-test","type":"overlay.flicks","schemaVersion":1,"enabled":true,"config":module_config,"common":common,"resources":{"assets":[],"shapes":[]}});document["profiles"][0]["modules"].as_array_mut().unwrap().push(module);assert!(valid_document(&document),"{}",document);save(&store,document).await;store.set_flick_capture_active(true).await;
+        let start=Instant::now();let movement=|dx,counts|crate::ws_server::InputEvent::MouseMove{dx,dy:0,distance_counts:Some(counts)};
+        store.update_flick_input(&movement(1000,1000.),start).await;
+        store.update_flick_input(&movement(100,100.),start+Duration::from_millis(10)).await;
+        let reversed=store.update_flick_input(&movement(-100,100.),start+Duration::from_millis(20)).await.unwrap();let packet:Value=serde_json::from_str(&reversed).unwrap();assert_eq!(packet["values"]["flick-test"]["flick_count"],2);
+        let ended=store.flick_values_at(start+Duration::from_millis(150)).await.unwrap();let packet:Value=serde_json::from_str(&ended).unwrap();assert_eq!(packet["values"]["flick-test"]["flick_count"],2);assert!(packet["values"]["flick-test"]["session_best_mps"].as_f64().unwrap()>0.1);
+        store.set_flick_capture_active(false).await;for file in [path.clone(),path.with_extension("backup.json")]{if file.exists(){std::fs::remove_file(file).unwrap();}}
+    }
+
+    #[test]
+    fn flick_filter_requires_speed_and_minimum_physical_path(){
+        let now=Instant::now();let mut track=FlickTrack::default();
+        track.current=Some(FlickBurst{last:now,distance_cm:0.4,peak_mps:2.0,qualified:true,dx:10.,dy:0.});finish_flick(&mut track,now,0.5);assert!(track.events.is_empty());assert_eq!(track.pulse,0);
+        track.current=Some(FlickBurst{last:now,distance_cm:0.6,peak_mps:2.0,qualified:true,dx:10.,dy:0.});finish_flick(&mut track,now,0.5);assert_eq!(track.events.len(),1);assert_eq!(track.pulse,1);
+        track.current=Some(FlickBurst{last:now,distance_cm:1.0,peak_mps:0.4,qualified:false,dx:10.,dy:0.});finish_flick(&mut track,now,0.5);assert_eq!(track.events.len(),1);
+    }
+    #[test]
+    fn flick_reversal_detects_opposite_bursts_without_splitting_same_direction(){
+        let burst=FlickBurst{last:Instant::now(),distance_cm:1.,peak_mps:2.,qualified:true,dx:10.,dy:2.};
+        assert!(flick_reversed(&burst,-8.,-2.));assert!(!flick_reversed(&burst,8.,1.));assert!(!flick_reversed(&burst,0.,0.));
     }
 
 }

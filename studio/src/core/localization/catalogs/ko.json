@@ -1177,7 +1177,31 @@
       "s-30f22108cc88": "{{p0}} 가져오기 완료. 모양과 구멍은 키 크기에 맞춰 조절됩니다.",
       "s-3732607b3442": "HTTP 서버 실행 중 · 포트 {{p0}}",
       "s-26a4d3d897de": "{{p0}}개 항목이 개별 설정되었습니다. 항목을 초기화하면 모듈 값을 다시 사용합니다.",
-      "s-8f735b753b65": "{{p0}}에서 사용할 수 있습니다. 저장된 값은 유지됩니다."
+      "s-8f735b753b65": "{{p0}}에서 사용할 수 있습니다. 저장된 값은 유지됩니다.",
+      "counter.title": "COUNTER",
+      "counter.metric": "Metric",
+      "counter.window": "Counting window",
+      "counter.windowSeconds": "Window (seconds)",
+      "counter.label": "Label",
+      "counter.increment": "Increment key",
+      "counter.decrement": "Decrement key",
+      "counter.persist": "Keep value between launches",
+      "counter.reset": "Reset counter",
+      "counter.assign": "Assign key",
+      "counter.cancel": "Cancel",
+      "counter.pressKey": "Press a key. Esc cancels.",
+      "counter.captureCancelled": "Key assignment cancelled.",
+      "counter.assigned": "Key assigned.",
+      "counter.sessionTotal": "Session mode shows the total number of actions.",
+      "counter.apmHelp": "APM counts key presses, mouse button clicks and wheel steps. KPM counts keys; CPS counts mouse button clicks.",
+      "flicks.title": "Mouse Flick Stats",
+      "flicks.threshold": "Minimum flick speed (m/s)",
+      "flicks.unit": "Distance unit",
+      "flicks.help": "A flick counts when mouse speed reaches the minimum. It ends after a pause longer than 100 ms or when the mouse reverses direction. No click is needed. The selected window controls how long it remains in the stats.",
+      "flicks.window": "Statistics window (seconds)",
+      "flicks.flame": "Show flame pulse when a flick is counted",
+      "flicks.updateCapture": "Update the Capture app to use flick statistics.",
+      "flicks.startCapture": "Start capture to collect statistics."
     },
     "language": {
       "title": "언어 및 텍스트",
@@ -1521,7 +1545,26 @@
       "overlay.trail-appearance.speed-range.help": "빠른 색상에 도달하는 속도입니다. 값이 클수록 더 빠른 움직임이 필요하며 두 색상이 그라데이션을 정합니다.",
       "overlay.artwork.opacity.help": "이미지 표시 정도입니다. 0%은 보이지 않음, 100%은 완전히 보임입니다. 키 배경과 모듈 불투명도도 영향을 줍니다.",
       "overlay.artwork.blend.help": "normal은 색상을 유지하고 multiply는 키 표면에서 어둡게, screen은 밝게 합니다. 라벨을 위해 불투명도 50%를 시도하세요.",
-      "render.performance.fps.help": "애니메이션 상한입니다. 30은 60보다 프레임을 적게 쓰며 Auto는 화면에 맞춰 최대 120 FPS입니다. 입력 캡처는 독립적입니다."
+      "render.performance.fps.help": "애니메이션 상한입니다. 30은 60보다 프레임을 적게 쓰며 Auto는 화면에 맞춰 최대 120 FPS입니다. 입력 캡처는 독립적입니다.",
+      "overlay.counter.metric.label": "Metric",
+      "overlay.counter.window.label": "Counting window",
+      "overlay.counter.custom-seconds.label": "Window (seconds)",
+      "overlay.counter.caption.label": "Counter label",
+      "overlay.counter.increment-key.label": "Increment key",
+      "overlay.counter.decrement-key.label": "Decrement key",
+      "overlay.counter.persist.label": "Keep value between launches",
+      "overlay.counter.metric.option.41-50-4d": "APM",
+      "overlay.counter.metric.option.4b-50-4d": "KPM",
+      "overlay.counter.metric.option.43-50-53": "CPS",
+      "overlay.counter.metric.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.31-30": "10",
+      "overlay.counter.window.option.34-30": "40",
+      "overlay.counter.window.option.36-30": "60",
+      "overlay.counter.window.option.43-75-73-74-6f-6d": "Custom",
+      "overlay.counter.window.option.53-65-73-73-69-6f-6e": "Session",
+      "overlay.flicks.minimum-speed.label": "Minimum flick speed (m/s)",
+      "overlay.flicks.window-seconds.label": "Statistics window (seconds)",
+      "overlay.flicks.flame-effect.label": "Flame pulse on flick"
     },
     "modules": {
       "core.capture.label": "입력 캡처",
@@ -1541,7 +1584,11 @@
       "overlay.distance.label": "거리",
       "overlay.distance.description": "물리적 움직임, cm 또는 m",
       "overlay.sensitivity.label": "감도",
-      "overlay.sensitivity.description": "당신의 설정은 한눈에"
+      "overlay.sensitivity.description": "당신의 설정은 한눈에",
+      "overlay.counter.label": "Counter",
+      "overlay.counter.description": "Actions, clicks and custom counts",
+      "overlay.flicks.label": "Mouse Flick Stats",
+      "overlay.flicks.description": "Session speed record and recent fast mouse movements"
     },
     "animation": {
       "preset.help": "빠른 출발점. 아래에 깔끔하게 정리하십시오.",
@@ -1691,6 +1738,16 @@
       "diagnostics.label": "진단 보고서",
       "diagnostics.copied": "진단 보고서를 복사했습니다.",
       "diagnostics.failed": "복사할 수 없습니다. 보고서를 선택하여 직접 복사하세요."
+    },
+    "overlay": {
+      "apm": "APM",
+      "kpm": "KPM",
+      "cps": "CPS",
+      "actions": "ACTIONS",
+      "keystrokes": "KEYS",
+      "clicks": "CLICKS",
+      "longestFlick": "LONGEST FLICK · 10 S",
+      "peakSpeed": "Peak"
     }
   }
 }

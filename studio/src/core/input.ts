@@ -4,7 +4,11 @@ export type InputEvent =
   | { event_type: 'mouse_wheel'; rotation: number }
   | { event_type: 'mouse_moved'; dx: number; dy: number; distance_counts?: number; distance_cm?: number }
   | { event_type: 'input_reset' | 'state_restored' }
-  | { event_type: 'distance_changed'; cm: number };
+  | { event_type: 'distance_changed'; cm: number }
+  | { event_type: 'counter_values'; profile_id:string; values:Record<string,number> }
+  | { event_type: 'flick_values'; profile_id:string; capture_running:boolean; values:Record<string,FlickStats> };
+
+export interface FlickStats {sessionBestMps:number;flickCount:number;peakMps:number;pathCm:number;lastFlickMps:number;pulse:number;historyMps:number[]}
 
 export interface InputSnapshot { sequence: number; keys: { rawcode: number; depth: number }[]; buttons: number[] }
 export function decodeSnapshot(value: unknown): InputSnapshot | null {
@@ -27,6 +31,22 @@ export function decodeInput(value: unknown): InputEvent | null {
   if (!value || typeof value !== 'object') return null;
   const e = value as Record<string, unknown>;
   const num = (v: unknown, min: number, max: number) => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;
+  if(e.type==='counter_values'&&typeof e.profile_id==='string'&&e.profile_id.length<=80&&e.values&&typeof e.values==='object'&&!Array.isArray(e.values)){
+    const values=e.values as Record<string,unknown>,entries=Object.entries(values);if(entries.length>32||entries.some(([id,value])=>id.length>80||!num(value,0,1e12)))return null;
+    return {event_type:'counter_values',profile_id:e.profile_id,values:values as Record<string,number>};
+  }
+  if(e.type==='flick_values'&&typeof e.profile_id==='string'&&e.profile_id.length<=80&&typeof e.capture_running==='boolean'&&e.values&&typeof e.values==='object'&&!Array.isArray(e.values)){
+    const entries=Object.entries(e.values as Record<string,unknown>),keys=['session_best_mps','flick_count','peak_mps','path_cm','last_flick_mps','pulse'];
+    const validValue=(value:unknown)=>{
+      if(!value||typeof value!=='object'||Array.isArray(value))return false;
+      const item=value as Record<string,unknown>;
+      if(!keys.every(key=>typeof item[key]==='number'&&Number.isFinite(item[key]))||keys.some(key=>(item[key] as number)<0))return false;
+      const history=item.history_mps;
+      return history===undefined||(Array.isArray(history)&&history.length<=16&&history.every(speed=>typeof speed==='number'&&Number.isFinite(speed)&&speed>=0));
+    };
+    if(entries.length>32||entries.some(([id,value])=>id.length>80||!validValue(value)))return null;
+    return {event_type:'flick_values',profile_id:e.profile_id,capture_running:e.capture_running,values:Object.fromEntries(entries.map(([id,value])=>{const item=value as Record<string,unknown>;return [id,{sessionBestMps:item.session_best_mps as number,flickCount:item.flick_count as number,peakMps:item.peak_mps as number,pathCm:item.path_cm as number,lastFlickMps:item.last_flick_mps as number,pulse:item.pulse as number,historyMps:(item.history_mps as number[]|undefined)??[]}];}))};
+  }
   switch (e.event_type) {
     case 'input_reset': return { event_type: 'input_reset' };
     case 'key_pressed': case 'key_released': case 'analog_depth':
@@ -43,6 +63,10 @@ export class InputEngine {
   readonly keys = new Float32Array(256);
   readonly buttons = new Uint8Array(8);
   readonly listeners = new Set<(e: InputEvent, now: number) => void>();
+  readonly counterValues=new Map<string,Readonly<Record<string,number>>>();
+  readonly flickValues=new Map<string,Readonly<Record<string,FlickStats>>>();
+  flickStatsSupported:boolean|undefined;
+  flickCaptureRunning:boolean|undefined;
   distanceCm = 0;
   revision = 0;
   dpi = 800;
@@ -71,11 +95,15 @@ export class InputEngine {
       case 'input_reset': this.keys.fill(0); this.buttons.fill(0); break;
       case 'state_restored': break;
       case 'distance_changed': this.distanceCm = e.cm; break;
+      case 'counter_values': this.counterValues.set(e.profile_id,Object.freeze({...e.values}));break;
+      case 'flick_values': this.flickValues.set(e.profile_id,Object.freeze({...e.values}));this.flickCaptureRunning=e.capture_running;break;
     }
     this.revision++;
     this.listeners.forEach(fn => fn(e, now));
   }
   reset() { this.ingest({ event_type: 'input_reset' }); }
+  counterValue(profileId:string,moduleId:string){return this.counterValues.get(profileId)?.[moduleId]??0;}
+  flickValue(profileId:string,moduleId:string){return this.flickValues.get(profileId)?.[moduleId]??null;}
 }
 
 export class PointRing {

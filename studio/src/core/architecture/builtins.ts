@@ -10,15 +10,17 @@ import { configureDocumentPresentation } from './presentation';
 
 type ModuleType = OverlayModule['type'];
 type Row<S> = readonly [field: keyof S & string, stableName: string, label: string, control: Control, unit?: SettingUI['unit'], component?: DefinitionId];
-const allTypes: readonly ModuleType[] = ['keyboard','mouse','trail','distance','sensitivity'];
+const allTypes: readonly ModuleType[] = ['keyboard','mouse','trail','distance','sensitivity','counter','flicks'];
 const interactive: readonly ModuleType[] = ['keyboard','mouse'];
-const textTypes: readonly ModuleType[] = ['keyboard','mouse','distance','sensitivity'];
+const textTypes: readonly ModuleType[] = ['keyboard','mouse','distance','sensitivity','counter','flicks'];
 const visualInfo = [
   ['keyboard','Keyboard','Every press, perfectly clear',['input.keyboard']],
   ['mouse','Mouse Buttons','Clicks, scroll & side buttons',['input.mouse-buttons']],
   ['trail','Mouse Trail','Make your movement visible',['input.mouse-motion']],
   ['distance','Distance','Physical movement, in cm or m',['input.distance']],
   ['sensitivity','Sensitivity','Your setup at a glance',['profiles.game']],
+  ['counter','Counter','Actions, clicks and custom counts',['input.keyboard','input.mouse-buttons']],
+  ['flicks','Mouse Flick Stats','Session speed record and recent fast mouse movements',['input.mouse-motion','profiles.game']],
 ] as const;
 function configurationField(schema:z.ZodType,path:readonly string[]):z.ZodType|undefined {
  let current:z.ZodType|undefined=schema;
@@ -34,8 +36,8 @@ function moduleDefault(context: DefaultContext, path: readonly string[]) {
   const type = moduleSchema.shape.type.parse(moduleConfigurations.get(context.moduleType ?? "")?.builtinType ?? context.moduleType);
   return at(makeModule(type), path);
 }
-// Metadata adapts the existing schemas/factories. No new persisted defaults,
-// validation bounds, type enum, migration, input handling or renderer is introduced.
+// Metadata adapts the canonical module schemas and renderer factories. New
+// module fields remain owned by their versioned module configuration schemas.
 export function createBuiltinDefinitions() {
   const settings: SettingDefinition[] = [], byType = new Map(allTypes.map(type => [type, [] as DefinitionId[]]));
   const profileIds: DefinitionId[] = [], globalIds: DefinitionId[] = [];
@@ -127,6 +129,12 @@ export function createBuiltinDefinitions() {
   fields(moduleSchema.shape, [
     ['sensitivityStyle','style','Format','select'], ['showGame','show-game','Show game','checkbox'], ['showDpi','show-dpi','Show DPI','checkbox'], ['showSens','show-sensitivity','Show sensitivity','checkbox'], ['showEdpi','show-edpi','Show eDPI','checkbox'], ['showCm','show-cm','Show cm/360','checkbox'],
   ], 'overlay.sensitivity', instance, [], ['sensitivity']);
+  fields(moduleSchema.shape, [
+    ['counterMetric','metric','Metric','select'], ['counterWindow','window','Window','select'], ['counterCustomSeconds','custom-seconds','Custom window seconds','number'], ['counterLabel','caption','Counter label','text'], ['counterApmLabel','apm-label','APM label','text'], ['counterKpmLabel','kpm-label','KPM label','text'], ['counterCpsLabel','cps-label','CPS label','text'], ['counterIncrementKey','increment-key','Increment key (VK)','number'], ['counterDecrementKey','decrement-key','Decrement key (VK)','number'], ['counterPersist','persist','Keep value between launches','checkbox'],
+  ], 'overlay.counter', instance, [], ['counter']);
+  fields(moduleSchema.shape, [
+    ['flickThresholdMps','minimum-speed','Minimum flick speed (m/s)','number'], ['flickWindowSeconds','window-seconds','Statistics window (seconds)','number'], ['flickMinimumDistanceCm','minimum-distance','Minimum flick distance (cm)','number'], ['flickPauseMs','pause-ms','Pause to end a flick (ms)','number'], ['flickDistanceUnit','distance-unit','Flick distance unit','select'], ['flickDistanceDecimals','distance-decimals','Flick distance decimals','number'], ['flickCaption','caption','Flick module caption','text'], ['flickTopLabel','top-label','TOP label','text'], ['flickSpeedLabel','speed-label','Speed label','text'], ['flickDistanceLabel','distance-label','Distance label','text'], ['flickCountLabel','count-label','Flick count label','text'], ['flickFlameEnabled','flame-effect','Flame pulse on flick','checkbox'], ['flickFlameColor','flame-color','Flick effect color','color'], ['flickFlameStyle','flame-style','Flick effect animation','select'], ['flickFlameStrength','flame-strength','Flame strength','number'], ['flickFlameDurationMs','flame-duration','Flame duration (ms)','number'],
+  ], 'overlay.flicks', instance, [], ['flicks']);
 
   fields(gameProfileSchema.shape, [
     ['name','name','Profile name','text'], ['game','game','Game','select'], ['dpi','dpi','Mouse DPI','number','dpi'], ['sensitivity','sensitivity','In-game sensitivity','number'],

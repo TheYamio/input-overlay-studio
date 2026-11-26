@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8.0.1_elembor
+
+- Added configurable flick effect color and Pulse glow, Burst, and Flame animations.
+- Removed the default frame from Counter and Mouse Flick Stats modules.
+- Added customizable metric labels and flick detection preferences.
+
 ## v0.8.0
 
 - Refined Midnight Iris across Studio, Profiles, Presets, Settings, the setup guide and dialogs. Settings now has quick links to its main sections.

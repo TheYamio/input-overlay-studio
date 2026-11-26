@@ -14,7 +14,9 @@
     "overlay.mouse": 2,
     "overlay.trail": 2,
     "overlay.distance": 2,
-    "overlay.sensitivity": 2
+    "overlay.sensitivity": 2,
+    "overlay.counter": 1,
+    "overlay.flicks": 1
   },
   "features": {
     "config.revisions": 1,
@@ -27,6 +29,7 @@
     "visual.animation": 1,
     "config.module-envelope": 1,
     "profiles.game-links": 1,
-    "visual.localization": 2
+    "visual.localization": 2,
+    "input.flick-stats": 1
   }
 }

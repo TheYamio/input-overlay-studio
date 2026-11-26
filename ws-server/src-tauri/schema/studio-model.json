@@ -421,7 +421,9 @@
                     "mouse",
                     "trail",
                     "distance",
-                    "sensitivity"
+                    "sensitivity",
+                    "counter",
+                    "flicks"
                   ]
                 },
                 "name": {
@@ -1591,6 +1593,165 @@
                 },
                 "showCm": {
                   "type": "boolean"
+                },
+                "counterMetric": {
+                  "default": "APM",
+                  "type": "string",
+                  "enum": [
+                    "APM",
+                    "KPM",
+                    "CPS",
+                    "Custom"
+                  ]
+                },
+                "counterWindow": {
+                  "default": "60",
+                  "type": "string",
+                  "enum": [
+                    "10",
+                    "40",
+                    "60",
+                    "Custom",
+                    "Session"
+                  ]
+                },
+                "counterCustomSeconds": {
+                  "default": 60,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 600
+                },
+                "counterLabel": {
+                  "default": "Counter",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterApmLabel": {
+                  "default": "APM",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterKpmLabel": {
+                  "default": "KPM",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterCpsLabel": {
+                  "default": "CPS",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterIncrementKey": {
+                  "default": 97,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255
+                },
+                "counterDecrementKey": {
+                  "default": 98,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255
+                },
+                "counterPersist": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "flickThresholdMps": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.001,
+                  "maximum": 5
+                },
+                "flickWindowSeconds": {
+                  "default": 10,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 600
+                },
+                "flickMinimumDistanceCm": {
+                  "default": 0.5,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "flickPauseMs": {
+                  "default": 100,
+                  "type": "integer",
+                  "minimum": 50,
+                  "maximum": 300
+                },
+                "flickDistanceUnit": {
+                  "default": "cm",
+                  "type": "string",
+                  "enum": [
+                    "Auto",
+                    "mm",
+                    "cm",
+                    "m",
+                    "km"
+                  ]
+                },
+                "flickDistanceDecimals": {
+                  "default": 1,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                },
+                "flickCaption": {
+                  "default": "FLICK STATS",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickTopLabel": {
+                  "default": "TOP",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickSpeedLabel": {
+                  "default": "SPD",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickDistanceLabel": {
+                  "default": "DIST",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickCountLabel": {
+                  "default": "FLICKS",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickFlameEnabled": {
+                  "default": true,
+                  "type": "boolean"
+                },
+                "flickFlameColor": {
+                  "default": "#ff7a32",
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "flickFlameStyle": {
+                  "default": "Pulse glow",
+                  "type": "string",
+                  "enum": [
+                    "Pulse glow",
+                    "Burst",
+                    "Flame"
+                  ]
+                },
+                "flickFlameStrength": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.25,
+                  "maximum": 3
+                },
+                "flickFlameDurationMs": {
+                  "default": 360,
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 1200
                 }
               },
               "required": [
@@ -1708,7 +1869,9 @@
                     "mouse",
                     "trail",
                     "distance",
-                    "sensitivity"
+                    "sensitivity",
+                    "counter",
+                    "flicks"
                   ]
                 },
                 "name": {
@@ -2878,6 +3041,165 @@
                 },
                 "showCm": {
                   "type": "boolean"
+                },
+                "counterMetric": {
+                  "default": "APM",
+                  "type": "string",
+                  "enum": [
+                    "APM",
+                    "KPM",
+                    "CPS",
+                    "Custom"
+                  ]
+                },
+                "counterWindow": {
+                  "default": "60",
+                  "type": "string",
+                  "enum": [
+                    "10",
+                    "40",
+                    "60",
+                    "Custom",
+                    "Session"
+                  ]
+                },
+                "counterCustomSeconds": {
+                  "default": 60,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 600
+                },
+                "counterLabel": {
+                  "default": "Counter",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterApmLabel": {
+                  "default": "APM",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterKpmLabel": {
+                  "default": "KPM",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterCpsLabel": {
+                  "default": "CPS",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "counterIncrementKey": {
+                  "default": 97,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255
+                },
+                "counterDecrementKey": {
+                  "default": 98,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255
+                },
+                "counterPersist": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "flickThresholdMps": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.001,
+                  "maximum": 5
+                },
+                "flickWindowSeconds": {
+                  "default": 10,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 600
+                },
+                "flickMinimumDistanceCm": {
+                  "default": 0.5,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "flickPauseMs": {
+                  "default": 100,
+                  "type": "integer",
+                  "minimum": 50,
+                  "maximum": 300
+                },
+                "flickDistanceUnit": {
+                  "default": "cm",
+                  "type": "string",
+                  "enum": [
+                    "Auto",
+                    "mm",
+                    "cm",
+                    "m",
+                    "km"
+                  ]
+                },
+                "flickDistanceDecimals": {
+                  "default": 1,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                },
+                "flickCaption": {
+                  "default": "FLICK STATS",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickTopLabel": {
+                  "default": "TOP",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickSpeedLabel": {
+                  "default": "SPD",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickDistanceLabel": {
+                  "default": "DIST",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickCountLabel": {
+                  "default": "FLICKS",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "flickFlameEnabled": {
+                  "default": true,
+                  "type": "boolean"
+                },
+                "flickFlameColor": {
+                  "default": "#ff7a32",
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "flickFlameStyle": {
+                  "default": "Pulse glow",
+                  "type": "string",
+                  "enum": [
+                    "Pulse glow",
+                    "Burst",
+                    "Flame"
+                  ]
+                },
+                "flickFlameStrength": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.25,
+                  "maximum": 3
+                },
+                "flickFlameDurationMs": {
+                  "default": 360,
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 1200
                 }
               },
               "required": [

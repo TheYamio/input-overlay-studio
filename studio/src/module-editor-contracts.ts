@@ -11,5 +11,5 @@ export interface ModuleEditorProps {
  assignKey:(id:string,patch:{code:number;label?:string})=>void;bindingEngine:InputEngine;
  editingKeys:boolean;setEditingKeys:(value:boolean)=>void;selectedKey:string|null;selectKey:(id:string)=>void;
  document:StudioDocument;module:OverlayModule;change:(patch:Partial<OverlayModule>)=>void;
- remove:()=>void;duplicate:()=>void;engine:InputEngine;resetDistance:()=>void;
+ remove:()=>void;duplicate:()=>void;engine:InputEngine;resetDistance:()=>void;resetCounter?:()=>void;
 }
