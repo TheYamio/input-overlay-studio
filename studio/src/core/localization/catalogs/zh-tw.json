@@ -4,6 +4,12 @@
   "name": "繁體中文",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "按下一個鍵…",
+      "unassigned": "未指派",
+      "differentKeys": "請為增加和減少選擇不同的按鍵。",
+      "clearDecrease": "清除減少鍵"
+    },
     "presets": {
       "previewLayout": "預覽配置",
       "previewColors": "預覽色彩",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "啟動時無法儲存擷取設定。擷取已關閉。請檢查資料夾的存取權限並重新套用設定。"
     },
     "settings": {
+      "overlay.counter.mode.label": "計數模式",
+      "overlay.counter.window.label": "統計視窗（秒）",
+      "overlay.counter.increment.label": "增加鍵",
+      "overlay.counter.decrement.label": "減少鍵",
+      "overlay.counter.persist.label": "重新啟動後保留計數",
+      "overlay.counter.caption.label": "標籤",
+      "overlay.flicks.window.label": "統計視窗（秒）",
+      "overlay.flicks.threshold.label": "最低速度（公尺/秒）",
+      "overlay.flicks.minimum-distance.label": "最短距離（公分）",
+      "overlay.flicks.unit.label": "距離單位",
+      "overlay.flicks.caption.label": "標籤",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "自訂",
+      "overlay.flicks.unit.option.63-6d": "公分",
+      "overlay.flicks.unit.option.6d": "公尺",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "始終置中",
       "overlay.trail.move-grid.label": "網格隨滑鼠移動",
       "overlay.instance.name.label": "模組名稱",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "動畫幀率上限。30 比 60 使用更少幀；Auto 跟隨屏幕，最高 120 FPS。輸入捕獲獨立運行。"
     },
     "modules": {
+      "overlay.counter.label": "計數器",
+      "overlay.counter.description": "統計點擊、操作、按鍵或自訂次數",
+      "overlay.flicks.label": "滑鼠甩動統計",
+      "overlay.flicks.description": "統計快速移動次數，並顯示峰值速度和距離",
       "core.capture.label": "輸入捕獲",
       "core.capture.description": "現有捕捉介面卡",
       "core.input.label": "即時輸入",

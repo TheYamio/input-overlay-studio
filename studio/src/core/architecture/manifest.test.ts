@@ -15,8 +15,13 @@ function counter():CompiledModuleManifest{
  return {definition,settings:[],configuration:{type:definition.id,schemaVersion:1,schema},ui:{icon:()=>null,sections:[],create:()=>({...makeModule('distance'),extension:{type:definition.id,schemaVersion:1,enabled:true,config:{caption:'Test',gain:2},resources:{assets:[],shapes:[]}}})},runtime:{create:vi.fn(()=>({update:()=>{},dispose:()=>{}}))}};
 }
 it('installs builtin metadata, migrations, Studio UI and Runtime from coherent manifests',()=>{
- const environment=createStudioModuleEnvironment();expect(environment.runtime.all()).toHaveLength(5);expect(environment.ui.all()).toHaveLength(5);expect(environment.configurations.all()).toHaveLength(5);
- for(const manifest of environment.manifests.filter(item=>item.definition.kind==='visual')){expect(manifest.definition.schemaVersion).toBe(2);expect(manifest.configuration?.migrations).toHaveLength(1);expect(environment.available(manifest.definition.id)).toBe(true);}
+ const environment=createStudioModuleEnvironment();expect(environment.runtime.all()).toHaveLength(7);expect(environment.ui.all()).toHaveLength(7);expect(environment.configurations.all()).toHaveLength(7);
+ for(const manifest of environment.manifests.filter(item=>item.definition.kind==='visual')){
+  const version=manifest.definition.id==='overlay.counter'||manifest.definition.id==='overlay.flicks'?1:2;
+  expect(manifest.definition.schemaVersion).toBe(version);
+  expect(manifest.configuration?.migrations).toHaveLength(version-1);
+  expect(environment.available(manifest.definition.id)).toBe(true);
+ }
 });
 it('publishes an installation once and rolls back every candidate registry on invalid additions',()=>{
  const host=new CompiledModuleHost('studio'),listener=vi.fn();host.subscribe(listener);const source=counter(),environment=host.install(source);expect(listener).toHaveBeenCalledTimes(1);expect(source.runtime!.create).not.toHaveBeenCalled();
@@ -45,7 +50,7 @@ it('does not expose mutable caller metadata or factories after installation',()=
 it('isolates observer failures after a successful installation',()=>{
  const host=new CompiledModuleHost('obs'),listener=vi.fn();host.subscribe(()=>{throw Error('observer');});host.subscribe(listener);expect(()=>host.install(counter())).not.toThrow();expect(listener).toHaveBeenCalledOnce();
 });
-it('installs an OBS package without importing or requiring editor components',()=>{const environment=createVisualModuleEnvironment();expect(environment.ui.all()).toHaveLength(0);expect(environment.runtime.all()).toHaveLength(5);});
+it('installs an OBS package without importing or requiring editor components',()=>{const environment=createVisualModuleEnvironment();expect(environment.ui.all()).toHaveLength(0);expect(environment.runtime.all()).toHaveLength(7);});
 it('connects a new manifest schema, migration and setting to the normal service without global registration',()=>{
  const source=counter(),schema=source.configuration!.schema;
  const setting={id:'test.counter.gain',schemaVersion:1,schema:z.number().min(1).max(4),binding:{scope:'module',store:'document',root:'module',path:['extension','config','gain']},ui:{control:'number',group:'test.counter'},label:{key:'test:gain',fallback:'Gain'},targets:['studio','obs'],apply:'live',defaultValue:()=>2} as const;

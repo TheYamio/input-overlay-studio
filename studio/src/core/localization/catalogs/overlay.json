@@ -1,5 +1,10 @@
 {
   "en": {
+    "counter": "Counter",
+    "flicks": "Flicks",
+    "peakSpeed": "Peak",
+    "path": "Path",
+    "mps": "m/s",
     "game": "GAME",
     "sensitivity": "SENS",
     "unknown": "Unknown scale",
@@ -8,6 +13,11 @@
     "m": "m"
   },
   "ru": {
+    "counter": "Счётчик",
+    "flicks": "Флики",
+    "peakSpeed": "Пик",
+    "path": "Путь",
+    "mps": "м/с",
     "game": "ИГРА",
     "sensitivity": "СЕНСА",
     "unknown": "Неизвестная шкала",
@@ -16,6 +26,11 @@
     "m": "м"
   },
   "zh-cn": {
+    "counter": "计数器",
+    "flicks": "甩动次数",
+    "peakSpeed": "峰值",
+    "path": "距离",
+    "mps": "米/秒",
     "game": "游戏",
     "sensitivity": "灵敏度",
     "unknown": "未知比例",
@@ -24,6 +39,11 @@
     "m": "米"
   },
   "es": {
+    "counter": "Contador",
+    "flicks": "Movimientos rápidos",
+    "peakSpeed": "Pico",
+    "path": "Distancia",
+    "mps": "m/s",
     "game": "JUEGO",
     "sensitivity": "SENS",
     "unknown": "Escala desconocida",
@@ -32,6 +52,11 @@
     "m": "m"
   },
   "pt-br": {
+    "counter": "Contador",
+    "flicks": "Flicks",
+    "peakSpeed": "Pico",
+    "path": "Distância",
+    "mps": "m/s",
     "game": "JOGO",
     "sensitivity": "SENS",
     "unknown": "Escala desconhecida",
@@ -40,6 +65,11 @@
     "m": "m"
   },
   "de": {
+    "counter": "Zähler",
+    "flicks": "Flicks",
+    "peakSpeed": "Spitze",
+    "path": "Strecke",
+    "mps": "m/s",
     "game": "SPIEL",
     "sensitivity": "SENS",
     "unknown": "Unbekannte Skala",
@@ -48,6 +78,11 @@
     "m": "m"
   },
   "fr": {
+    "counter": "Compteur",
+    "flicks": "Mouvements rapides",
+    "peakSpeed": "Pic",
+    "path": "Distance",
+    "mps": "m/s",
     "game": "JEU",
     "sensitivity": "SENS",
     "unknown": "Échelle inconnue",
@@ -56,6 +91,11 @@
     "m": "m"
   },
   "pl": {
+    "counter": "Licznik",
+    "flicks": "Szybkie ruchy",
+    "peakSpeed": "Maks.",
+    "path": "Dystans",
+    "mps": "m/s",
     "game": "GRA",
     "sensitivity": "CZUŁOŚĆ",
     "unknown": "Nieznana skala",
@@ -64,6 +104,11 @@
     "m": "m"
   },
   "ja": {
+    "counter": "カウンター",
+    "flicks": "フリック",
+    "peakSpeed": "最高速度",
+    "path": "距離",
+    "mps": "m/s",
     "game": "ゲーム",
     "sensitivity": "感度",
     "unknown": "不明なスケール",
@@ -72,6 +117,11 @@
     "m": "m"
   },
   "ko": {
+    "counter": "카운터",
+    "flicks": "플릭",
+    "peakSpeed": "최고 속도",
+    "path": "거리",
+    "mps": "m/s",
     "game": "게임",
     "sensitivity": "감도",
     "unknown": "알 수 없는 배율",
@@ -80,6 +130,11 @@
     "m": "m"
   },
   "tr": {
+    "counter": "Sayaç",
+    "flicks": "Hızlı hareketler",
+    "peakSpeed": "Tepe",
+    "path": "Mesafe",
+    "mps": "m/sn",
     "game": "OYUN",
     "sensitivity": "HASSASİYET",
     "unknown": "Bilinmeyen ölçek",
@@ -88,6 +143,11 @@
     "m": "m"
   },
   "zh-tw": {
+    "counter": "計數器",
+    "flicks": "甩動次數",
+    "peakSpeed": "峰值",
+    "path": "距離",
+    "mps": "公尺/秒",
     "game": "遊戲",
     "sensitivity": "靈敏度",
     "unknown": "未知比例",

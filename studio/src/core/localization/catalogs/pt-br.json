@@ -4,6 +4,12 @@
   "name": "Português (Brasil)",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "Pressione uma tecla…",
+      "unassigned": "Não atribuída",
+      "differentKeys": "Escolha teclas diferentes para aumentar e diminuir.",
+      "clearDecrease": "Remover a tecla para diminuir"
+    },
     "presets": {
       "previewLayout": "Prévia do layout",
       "previewColors": "Prévia das cores",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "Não foi possível salvar as configurações de captura na inicialização. A captura está desativada. Verifique o acesso à pasta de dados e aplique as configurações novamente."
     },
     "settings": {
+      "overlay.counter.mode.label": "Modo do contador",
+      "overlay.counter.window.label": "Janela de tempo (s)",
+      "overlay.counter.increment.label": "Tecla para aumentar",
+      "overlay.counter.decrement.label": "Tecla para diminuir",
+      "overlay.counter.persist.label": "Manter a contagem entre sessões",
+      "overlay.counter.caption.label": "Legenda",
+      "overlay.flicks.window.label": "Janela de tempo (s)",
+      "overlay.flicks.threshold.label": "Velocidade mínima (m/s)",
+      "overlay.flicks.minimum-distance.label": "Distância mínima (cm)",
+      "overlay.flicks.unit.label": "Unidade de distância",
+      "overlay.flicks.caption.label": "Legenda",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "Personalizado",
+      "overlay.flicks.unit.option.63-6d": "cm",
+      "overlay.flicks.unit.option.6d": "m",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Sempre centralizado",
       "overlay.trail.move-grid.label": "Mover a grade com o mouse",
       "overlay.instance.name.label": "Nome do módulo",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "Limite de animação. 30 usa menos quadros que 60; Auto segue a tela até 120 FPS. A captura é independente."
     },
     "modules": {
+      "overlay.counter.label": "Contador",
+      "overlay.counter.description": "Cliques, ações, teclas pressionadas ou contagem personalizada",
+      "overlay.flicks.label": "Estatísticas de flicks",
+      "overlay.flicks.description": "Conte movimentos rápidos e veja a velocidade máxima e a distância",
       "core.capture.label": "Captura",
       "core.capture.description": "Adaptador de captura existente",
       "core.input.label": "Entrada real",

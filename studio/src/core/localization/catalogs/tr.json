@@ -4,6 +4,12 @@
   "name": "Türkçe",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "Bir tuşa basın…",
+      "unassigned": "Atanmamış",
+      "differentKeys": "Artırma ve azaltma için farklı tuşlar seçin.",
+      "clearDecrease": "Azaltma tuşunu temizle"
+    },
     "presets": {
       "previewLayout": "Düzen önizlemesi",
       "previewColors": "Renk önizlemesi",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "Başlangıçta yakalama ayarları kaydedilemedi. Yakalama kapatıldı. Veri klasörüne erişimi kontrol edip ayarları yeniden uygulayın."
     },
     "settings": {
+      "overlay.counter.mode.label": "Sayaç modu",
+      "overlay.counter.window.label": "Zaman aralığı (sn)",
+      "overlay.counter.increment.label": "Artırma tuşu",
+      "overlay.counter.decrement.label": "Azaltma tuşu",
+      "overlay.counter.persist.label": "Sayımı oturumlar arasında sakla",
+      "overlay.counter.caption.label": "Etiket",
+      "overlay.flicks.window.label": "Zaman aralığı (sn)",
+      "overlay.flicks.threshold.label": "En düşük hız (m/sn)",
+      "overlay.flicks.minimum-distance.label": "En kısa mesafe (cm)",
+      "overlay.flicks.unit.label": "Mesafe birimi",
+      "overlay.flicks.caption.label": "Etiket",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "Özel",
+      "overlay.flicks.unit.option.63-6d": "cm",
+      "overlay.flicks.unit.option.6d": "m",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Her zaman ortada",
       "overlay.trail.move-grid.label": "Izgarayı fareyle hareket ettir",
       "overlay.instance.name.label": "Modül adı",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "Animasyon üst sınırı. 30, 60 değerinden az kare kullanır; Auto ekranı en fazla 120 FPS ile izler. Girdi yakalama bağımsızdır."
     },
     "modules": {
+      "overlay.counter.label": "Sayaç",
+      "overlay.counter.description": "Tıklama, işlem, tuş vuruşu veya özel sayım",
+      "overlay.flicks.label": "Hızlı fare hareketi istatistikleri",
+      "overlay.flicks.description": "Hızlı hareketleri sayın, en yüksek hızı ve mesafeyi görün",
       "core.capture.label": "Yakalama",
       "core.capture.description": "Mevcut Adaptör",
       "core.input.label": "Gerçek giriş",

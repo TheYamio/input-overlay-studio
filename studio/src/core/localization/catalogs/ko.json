@@ -4,6 +4,12 @@
   "name": "한국어",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "키를 누르세요…",
+      "unassigned": "지정되지 않음",
+      "differentKeys": "증가와 감소에 서로 다른 키를 지정하세요.",
+      "clearDecrease": "감소 키 설정 해제"
+    },
     "presets": {
       "previewLayout": "레이아웃 미리보기",
       "previewColors": "색상 미리보기",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "시작할 때 캡처 설정을 저장하지 못했습니다. 캡처가 꺼졌습니다. 데이터 폴더 접근 권한을 확인하고 설정을 다시 적용하세요."
     },
     "settings": {
+      "overlay.counter.mode.label": "카운터 모드",
+      "overlay.counter.window.label": "집계 구간(초)",
+      "overlay.counter.increment.label": "증가 키",
+      "overlay.counter.decrement.label": "감소 키",
+      "overlay.counter.persist.label": "다시 실행해도 횟수 유지",
+      "overlay.counter.caption.label": "레이블",
+      "overlay.flicks.window.label": "집계 구간(초)",
+      "overlay.flicks.threshold.label": "최소 속도(m/s)",
+      "overlay.flicks.minimum-distance.label": "최소 이동 거리(cm)",
+      "overlay.flicks.unit.label": "거리 단위",
+      "overlay.flicks.caption.label": "레이블",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "사용자 지정",
+      "overlay.flicks.unit.option.63-6d": "cm",
+      "overlay.flicks.unit.option.6d": "m",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "항상 중앙",
       "overlay.trail.move-grid.label": "마우스에 따라 격자 이동",
       "overlay.instance.name.label": "모듈 이름",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "애니메이션 상한입니다. 30은 60보다 프레임을 적게 쓰며 Auto는 화면에 맞춰 최대 120 FPS입니다. 입력 캡처는 독립적입니다."
     },
     "modules": {
+      "overlay.counter.label": "카운터",
+      "overlay.counter.description": "클릭, 동작, 키 입력 또는 사용자 지정 횟수를 집계",
+      "overlay.flicks.label": "마우스 플릭 통계",
+      "overlay.flicks.description": "빠른 움직임 횟수, 최고 속도 및 이동 거리를 표시",
       "core.capture.label": "입력 캡처",
       "core.capture.description": "기존 캡처 어댑터",
       "core.input.label": "실제 입력",

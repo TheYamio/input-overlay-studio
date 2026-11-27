@@ -421,7 +421,9 @@
                     "mouse",
                     "trail",
                     "distance",
-                    "sensitivity"
+                    "sensitivity",
+                    "counter",
+                    "flicks"
                   ]
                 },
                 "name": {
@@ -1596,6 +1598,64 @@
                 },
                 "showCm": {
                   "type": "boolean"
+                },
+                "counterMode": {
+                  "default": "CPS",
+                  "type": "string",
+                  "enum": [
+                    "CPS",
+                    "APM",
+                    "KPM",
+                    "Custom"
+                  ]
+                },
+                "counterWindow": {
+                  "default": 5,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60
+                },
+                "counterIncrement": {
+                  "default": 107,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255
+                },
+                "counterDecrement": {
+                  "default": 109,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "counterPersist": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "flickWindow": {
+                  "default": 10,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60
+                },
+                "flickThreshold": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 10
+                },
+                "flickMinDistance": {
+                  "default": 0.5,
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 20
+                },
+                "flickUnit": {
+                  "default": "cm",
+                  "type": "string",
+                  "enum": [
+                    "cm",
+                    "m"
+                  ]
                 }
               },
               "required": [
@@ -1713,7 +1773,9 @@
                     "mouse",
                     "trail",
                     "distance",
-                    "sensitivity"
+                    "sensitivity",
+                    "counter",
+                    "flicks"
                   ]
                 },
                 "name": {
@@ -2888,6 +2950,64 @@
                 },
                 "showCm": {
                   "type": "boolean"
+                },
+                "counterMode": {
+                  "default": "CPS",
+                  "type": "string",
+                  "enum": [
+                    "CPS",
+                    "APM",
+                    "KPM",
+                    "Custom"
+                  ]
+                },
+                "counterWindow": {
+                  "default": 5,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60
+                },
+                "counterIncrement": {
+                  "default": 107,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255
+                },
+                "counterDecrement": {
+                  "default": 109,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "counterPersist": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "flickWindow": {
+                  "default": 10,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60
+                },
+                "flickThreshold": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 10
+                },
+                "flickMinDistance": {
+                  "default": 0.5,
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 20
+                },
+                "flickUnit": {
+                  "default": "cm",
+                  "type": "string",
+                  "enum": [
+                    "cm",
+                    "m"
+                  ]
                 }
               },
               "required": [

@@ -1,4 +1,4 @@
-import { Activity,Keyboard,Mouse,MoveUpRight,Target } from 'lucide-react';
+import { Activity,Hash,Keyboard,Mouse,MoveUpRight,Target,Zap } from 'lucide-react';
 import {CompiledModuleHost,type CompiledModuleManifest} from './core/architecture/manifest';
 import {builtinManifests} from './core/architecture/builtin-manifests';
 import {builtinVisualFactories} from './renderer/modules/factories';
@@ -7,6 +7,7 @@ import { makeModule } from './core/config';
 import { KeyCanvas } from './key-canvas';
 import { DistanceEditor,InputPreviewEditor,KeyboardEditor,MouseEditor,SensitivityEditor,TrailEditor } from './module-editors';
 import { ArtworkPanel } from './artwork-panel';
+import { CounterEditor, FlicksEditor } from './statistics-editor';
 
 export function createStudioModuleEnvironment(extra:readonly CompiledModuleManifest[]=[]){
  const ui:Record<string,ModuleUI>={};
@@ -16,6 +17,8 @@ export function createStudioModuleEnvironment(extra:readonly CompiledModuleManif
  ui['overlay.trail']={icon:Activity,create:index=>makeModule('trail',index),lineColor:true,preferred:true,sections:[{id:'specific',label:'Mouse Trail',component:TrailEditor}]};
  ui['overlay.distance']={icon:MoveUpRight,create:index=>makeModule('distance',index),sections:[{id:'specific',label:'Distance',component:DistanceEditor}]};
  ui['overlay.sensitivity']={icon:Target,create:index=>makeModule('sensitivity',index),sections:[{id:'specific',label:'Sensitivity',component:SensitivityEditor}]};
+ ui['overlay.counter']={icon:Hash,create:index=>makeModule('counter',index),sections:[{id:'specific',label:'Counter',component:CounterEditor}]};
+ ui['overlay.flicks']={icon:Zap,create:index=>makeModule('flicks',index),sections:[{id:'specific',label:'Mouse Flick Stats',component:FlicksEditor}]};
  return new CompiledModuleHost('studio').install(...builtinManifests(builtinVisualFactories,ui),...extra);
 }
 export function createModuleUIRegistry(){return createStudioModuleEnvironment().ui;}

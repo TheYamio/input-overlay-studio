@@ -4,6 +4,12 @@
   "name": "Deutsch",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "Taste drücken…",
+      "unassigned": "Nicht zugewiesen",
+      "differentKeys": "Wähle unterschiedliche Tasten zum Erhöhen und Verringern.",
+      "clearDecrease": "Taste zum Verringern entfernen"
+    },
     "presets": {
       "previewLayout": "Layoutvorschau",
       "previewColors": "Farbvorschau",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "Die Aufnahmeeinstellungen konnten beim Start nicht gespeichert werden. Die Aufnahme ist deaktiviert. Prüfe den Zugriff auf den Datenordner und wende die Einstellungen erneut an."
     },
     "settings": {
+      "overlay.counter.mode.label": "Zählermodus",
+      "overlay.counter.window.label": "Zeitfenster (s)",
+      "overlay.counter.increment.label": "Taste zum Erhöhen",
+      "overlay.counter.decrement.label": "Taste zum Verringern",
+      "overlay.counter.persist.label": "Zählerstand zwischen Starts speichern",
+      "overlay.counter.caption.label": "Beschriftung",
+      "overlay.flicks.window.label": "Zeitfenster (s)",
+      "overlay.flicks.threshold.label": "Mindestgeschwindigkeit (m/s)",
+      "overlay.flicks.minimum-distance.label": "Mindeststrecke (cm)",
+      "overlay.flicks.unit.label": "Entfernungseinheit",
+      "overlay.flicks.caption.label": "Beschriftung",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "Benutzerdefiniert",
+      "overlay.flicks.unit.option.63-6d": "cm",
+      "overlay.flicks.unit.option.6d": "m",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Immer zentriert",
       "overlay.trail.move-grid.label": "Raster mit der Maus bewegen",
       "overlay.instance.name.label": "Modulname",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "Maximale Animationsrate. 30 nutzt weniger Bilder als 60; Auto folgt dem Bildschirm bis 120 FPS. Die Eingabeerfassung bleibt unabhängig."
     },
     "modules": {
+      "overlay.counter.label": "Zähler",
+      "overlay.counter.description": "Klicks, Aktionen, Tastenanschläge oder eigener Zähler",
+      "overlay.flicks.label": "Maus-Flick-Statistik",
+      "overlay.flicks.description": "Schnelle Bewegungen zählen und Spitzengeschwindigkeit sowie Strecke anzeigen",
       "core.capture.label": "Eingabeerfassung",
       "core.capture.description": "bestehender Adapter",
       "core.input.label": "Live-Eingabe",

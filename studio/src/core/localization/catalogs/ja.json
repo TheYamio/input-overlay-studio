@@ -4,6 +4,12 @@
   "name": "日本語",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "キーを押してください…",
+      "unassigned": "未割り当て",
+      "differentKeys": "増加と減少には異なるキーを選んでください。",
+      "clearDecrease": "減少キーの割り当てを解除"
+    },
     "presets": {
       "previewLayout": "レイアウトのプレビュー",
       "previewColors": "色のプレビュー",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "起動時にキャプチャ設定を保存できませんでした。キャプチャは無効です。データフォルダーへのアクセスを確認し、設定を再適用してください。"
     },
     "settings": {
+      "overlay.counter.mode.label": "カウンターモード",
+      "overlay.counter.window.label": "集計時間（秒）",
+      "overlay.counter.increment.label": "増加キー",
+      "overlay.counter.decrement.label": "減少キー",
+      "overlay.counter.persist.label": "再起動後も回数を保持",
+      "overlay.counter.caption.label": "ラベル",
+      "overlay.flicks.window.label": "集計時間（秒）",
+      "overlay.flicks.threshold.label": "最低速度（m/s）",
+      "overlay.flicks.minimum-distance.label": "最短移動距離（cm）",
+      "overlay.flicks.unit.label": "距離の単位",
+      "overlay.flicks.caption.label": "ラベル",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "カスタム",
+      "overlay.flicks.unit.option.63-6d": "cm",
+      "overlay.flicks.unit.option.6d": "m",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "常に中央",
       "overlay.trail.move-grid.label": "マウスに合わせてグリッドを移動",
       "overlay.instance.name.label": "モジュール名",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "アニメーションの上限です。30は60より描画枚数が少なく、Autoは画面に合わせ最大120 FPSです。入力取得は独立しています。"
     },
     "modules": {
+      "overlay.counter.label": "カウンター",
+      "overlay.counter.description": "クリック、アクション、キー入力、または任意の回数を計測",
+      "overlay.flicks.label": "マウスフリック統計",
+      "overlay.flicks.description": "高速な動きの回数、最高速度、移動距離を表示",
       "core.capture.label": "入力キャプチャ",
       "core.capture.description": "既存のキャプチャアダプター",
       "core.input.label": "実際の入力",

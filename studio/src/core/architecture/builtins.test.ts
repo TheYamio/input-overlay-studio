@@ -6,10 +6,10 @@ import { SettingsSchemaRegistry, settingConstraints } from './registry';
 import type { DefinitionId } from './contracts';
 
 describe('legacy built-in adapters', () => {
-  it('discovers the existing five visual modules in their original order', () => {
-    expect(builtinVisualModules.map(m=>m.type)).toEqual(['keyboard','mouse','trail','distance','sensitivity']);
-    expect(builtinVisualModules.map(m=>m.definition.label.fallback)).toEqual(['Keyboard','Mouse Buttons','Mouse Trail','Distance','Sensitivity']);
-    expect(builtinCatalog.modules.all()).toHaveLength(9);
+  it('discovers the built-in visual modules in library order', () => {
+    expect(builtinVisualModules.map(m=>m.type)).toEqual(['keyboard','mouse','trail','distance','sensitivity','counter','flicks']);
+    expect(builtinVisualModules.map(m=>m.definition.label.fallback)).toEqual(['Keyboard','Mouse Buttons','Mouse Trail','Distance','Sensitivity','Counter','Mouse Flick Stats']);
+    expect(builtinCatalog.modules.all()).toHaveLength(11);
     expect(builtinCatalog.modules.all().filter(m=>m.kind==='visual').every(m=>m.configuration===config.moduleSchema)).toBe(true);
   });
   it('builds registries without creating instances or documents', () => {
@@ -25,7 +25,7 @@ describe('legacy built-in adapters', () => {
     }
     expect(()=>createBuiltinModule('missing' as config.OverlayModule['type'])).toThrow('Unregistered');
   });
-  it('describes every editable v2 module field without registering identity as a setting', () => {
+  it('describes every editable built-in field without registering identity as a setting', () => {
     const settings=builtinCatalog.settings.all().filter(s=>s.binding.scope==='module');
     const leaves=new Set(settings.map(s=>s.binding.path.join('.')));
     for (const field of Object.keys(config.moduleSchema.shape)) {

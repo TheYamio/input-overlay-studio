@@ -42,7 +42,9 @@ pub fn valid(d:&Value)->bool{
     let version=m["schemaVersion"].as_u64().unwrap().to_string();
     let schema=&definition["versions"][&version];let known=!definition.is_null()&&!schema.is_null();
     let mut flat=if known{
-     if !validate(&m["config"],schema){return false;}let mut config=m["config"].clone();crate::studio_validation::apply_defaults(&mut config,schema);canonical[key][index]["modules"][module_index]["config"]=config.clone();
+     if !validate(&m["config"],schema){return false;}let mut config=m["config"].clone();crate::studio_validation::apply_defaults(&mut config,schema);
+     if m["type"]=="overlay.counter" && config["counterMode"]=="Custom" && config["counterIncrement"]==config["counterDecrement"] { return false; }
+     canonical[key][index]["modules"][module_index]["config"]=config.clone();
      let mut view=definition["projection"].clone();view.as_object_mut().unwrap().extend(config.as_object().unwrap().clone());view["type"]=definition["builtinType"].clone();view
     }else{seed["profiles"][0]["modules"][3].clone()};
     flat.as_object_mut().unwrap().extend(m["common"].as_object().unwrap().clone());flat["id"]=m["id"].clone();

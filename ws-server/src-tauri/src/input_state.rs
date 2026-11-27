@@ -20,6 +20,12 @@ impl Default for HeldState {
     fn default() -> Self { Self { keys: [0.0; 256], analog: [false; 256], buttons: [false; 6] } }
 }
 impl HeldState {
+    pub(crate) fn key_down(&self, code: u16) -> bool {
+        self.keys.get(usize::from(code)).is_some_and(|depth| *depth > 0.0)
+    }
+    pub(crate) fn button_down(&self, button: u8) -> bool {
+        self.buttons.get(usize::from(button)).copied().unwrap_or(false)
+    }
     pub fn apply(&mut self, event: &InputEvent) {
         match event {
             InputEvent::KeyPress { rawcode } if *rawcode < 256 => self.keys[*rawcode as usize] = 1.0,

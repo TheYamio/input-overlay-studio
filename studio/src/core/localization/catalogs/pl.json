@@ -4,6 +4,12 @@
   "name": "Polski",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "Naciśnij klawisz…",
+      "unassigned": "Nieprzypisany",
+      "differentKeys": "Wybierz różne klawisze zwiększania i zmniejszania.",
+      "clearDecrease": "Usuń przypisanie klawisza zmniejszania"
+    },
     "presets": {
       "previewLayout": "Podgląd układu",
       "previewColors": "Podgląd kolorów",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "Nie udało się zapisać ustawień przechwytywania przy uruchamianiu. Przechwytywanie jest wyłączone. Sprawdź dostęp do folderu danych i ponownie zastosuj ustawienia."
     },
     "settings": {
+      "overlay.counter.mode.label": "Tryb licznika",
+      "overlay.counter.window.label": "Okno czasowe (s)",
+      "overlay.counter.increment.label": "Klawisz zwiększania",
+      "overlay.counter.decrement.label": "Klawisz zmniejszania",
+      "overlay.counter.persist.label": "Zachowaj wynik między uruchomieniami",
+      "overlay.counter.caption.label": "Etykieta",
+      "overlay.flicks.window.label": "Okno czasowe (s)",
+      "overlay.flicks.threshold.label": "Minimalna prędkość (m/s)",
+      "overlay.flicks.minimum-distance.label": "Minimalny dystans (cm)",
+      "overlay.flicks.unit.label": "Jednostka odległości",
+      "overlay.flicks.caption.label": "Etykieta",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "Własny",
+      "overlay.flicks.unit.option.63-6d": "cm",
+      "overlay.flicks.unit.option.6d": "m",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Zawsze na środku",
       "overlay.trail.move-grid.label": "Przesuwaj siatkę wraz z myszą",
       "overlay.instance.name.label": "Nazwa modułu",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "Limit animacji. 30 używa mniej klatek niż 60; Auto podąża za ekranem do 120 FPS. Przechwytywanie wejścia jest niezależne."
     },
     "modules": {
+      "overlay.counter.label": "Licznik",
+      "overlay.counter.description": "Kliknięcia, akcje, naciśnięcia klawiszy lub własne zliczanie",
+      "overlay.flicks.label": "Statystyki szybkich ruchów myszy",
+      "overlay.flicks.description": "Zliczaj szybkie ruchy i wyświetlaj ich maksymalną prędkość oraz dystans",
       "core.capture.label": "Przechwytywanie",
       "core.capture.description": "Dostępny adapter",
       "core.input.label": "Rzeczywiste wejście",

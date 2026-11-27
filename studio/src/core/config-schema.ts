@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { shapeSchema } from './shapes.ts';
 import { consistentArtworkGroups } from './artwork-groups.ts';
 import { MAX_DOCUMENT_BYTES } from './limits.ts';
+import { counterFields, flickFields } from './modules/statistics.ts';
 import { appearanceSchema, assetSchema, defaultAppearance, defaultImageSettings, defaultTrailAppearance, elementStyleSchema, imageSettingsSchema, mouseGeometrySchema, trailAppearanceSchema } from './visual.ts';
 const positive = z.number().finite().positive().max(1e9);
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -18,7 +19,7 @@ export type Key = z.infer<typeof keySchema>;
 // Private editor projection and frozen v1 migration source. Canonical builtin
 // configuration schemas are independently owned by core/modules/*.ts.
 export const moduleViewSchema = z.object({
-  id, type: z.enum(['keyboard', 'mouse', 'trail', 'distance', 'sensitivity']), name: label,
+  id, type: z.enum(['keyboard', 'mouse', 'trail', 'distance', 'sensitivity', 'counter', 'flicks']), name: label,
   x: z.number().finite().min(0).max(1920), y: z.number().finite().min(0).max(1080),
   w: z.number().min(40).max(1920), h: z.number().min(30).max(1080),
   visible: z.boolean(), locked: z.boolean(), z: z.number().int().min(0).max(1000),
@@ -41,6 +42,7 @@ export const moduleViewSchema = z.object({
   originX: z.number().min(0).max(1), originY: z.number().min(0).max(1),
   unit: z.enum(['Auto', 'cm', 'm']), decimals: z.number().int().min(0).max(3), caption: label,
   sensitivityStyle: z.enum(['Minimal', 'Standard', 'Detailed']), showGame: z.boolean(), showDpi: z.boolean(), showSens: z.boolean(), showEdpi: z.boolean(), showCm: z.boolean(),
+  ...counterFields, ...flickFields,
 });
 export const moduleSchema=moduleViewSchema.extend({extension:moduleExtensionSchema.optional()});
 export type OverlayModule = z.infer<typeof moduleSchema>;

@@ -9,6 +9,7 @@ export function configureDocumentPresentation(settings:SettingDefinition[]){
   'overlay.trail.thickness':.5,'overlay.trail.scale':.01,
   'overlay.trail.origin-x':.01,'overlay.trail.origin-y':.01,
   'overlay.trail-appearance.speed-range':.1,
+  'overlay.flicks.threshold':.1,'overlay.flicks.minimum-distance':.1,
   'profiles.game.sensitivity':.01,'profiles.game.yaw':.001,
  };
  for(let i=0;i<settings.length;i++){

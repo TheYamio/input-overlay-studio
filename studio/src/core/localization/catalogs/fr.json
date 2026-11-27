@@ -4,6 +4,12 @@
   "name": "Français",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "Appuyez sur une touche…",
+      "unassigned": "Non attribuée",
+      "differentKeys": "Choisissez des touches différentes pour augmenter et diminuer.",
+      "clearDecrease": "Effacer la touche de diminution"
+    },
     "presets": {
       "previewLayout": "Aperçu de la disposition",
       "previewColors": "Aperçu des couleurs",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "Impossible d’enregistrer les paramètres de capture au démarrage. La capture est désactivée. Vérifiez l’accès au dossier de données et appliquez à nouveau les paramètres."
     },
     "settings": {
+      "overlay.counter.mode.label": "Mode du compteur",
+      "overlay.counter.window.label": "Fenêtre glissante (s)",
+      "overlay.counter.increment.label": "Touche d’augmentation",
+      "overlay.counter.decrement.label": "Touche de diminution",
+      "overlay.counter.persist.label": "Conserver le total entre les sessions",
+      "overlay.counter.caption.label": "Libellé",
+      "overlay.flicks.window.label": "Fenêtre glissante (s)",
+      "overlay.flicks.threshold.label": "Vitesse minimale (m/s)",
+      "overlay.flicks.minimum-distance.label": "Distance minimale (cm)",
+      "overlay.flicks.unit.label": "Unité de distance",
+      "overlay.flicks.caption.label": "Libellé",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "Personnalisé",
+      "overlay.flicks.unit.option.63-6d": "cm",
+      "overlay.flicks.unit.option.6d": "m",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Toujours centré",
       "overlay.trail.move-grid.label": "Déplacer la grille avec la souris",
       "overlay.instance.name.label": "Nom du module",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "Fréquence maximale d’animation. 30 utilise moins d’images que 60 ; Auto suit l’écran jusqu’à 120 FPS. La capture reste indépendante."
     },
     "modules": {
+      "overlay.counter.label": "Compteur",
+      "overlay.counter.description": "Clics, actions, frappes ou comptage personnalisé",
+      "overlay.flicks.label": "Statistiques des mouvements rapides",
+      "overlay.flicks.description": "Comptez les mouvements rapides et affichez leur vitesse de pointe et leur distance",
       "core.capture.label": "Capture",
       "core.capture.description": "Adaptateur de capture existant",
       "core.input.label": "Entrée réelle",

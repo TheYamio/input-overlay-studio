@@ -1,9 +1,11 @@
+import type { InputStatistics } from './input-statistics';
+
 export type InputEvent =
   | { event_type: 'key_pressed' | 'key_released' | 'analog_depth'; rawcode: number; depth?: number }
   | { event_type: 'mouse_pressed' | 'mouse_released'; button: number }
   | { event_type: 'mouse_wheel'; rotation: number }
   | { event_type: 'mouse_moved'; dx: number; dy: number; distance_counts?: number; distance_cm?: number }
-  | { event_type: 'input_reset' | 'state_restored' }
+  | { event_type: 'input_reset' | 'state_restored' | 'statistics_changed' }
   | { event_type: 'distance_changed'; cm: number };
 
 export interface InputSnapshot { sequence: number; keys: { rawcode: number; depth: number }[]; buttons: number[] }
@@ -44,11 +46,17 @@ export class InputEngine {
   readonly buttons = new Uint8Array(8);
   readonly listeners = new Set<(e: InputEvent, now: number) => void>();
   distanceCm = 0;
+  statistics?: InputStatistics;
   revision = 0;
   dpi = 800;
   lastWheel = 0;
   setDistance(cm: number) {
     this.ingest({ event_type: 'distance_changed', cm });
+  }
+  setStatistics(value?: InputStatistics) {
+    if (this.statistics === value) return;
+    this.statistics = value;
+    this.ingest({ event_type: 'statistics_changed' });
   }
   applySnapshot(snapshot: InputSnapshot) {
     this.keys.fill(0); this.buttons.fill(0);
@@ -69,7 +77,7 @@ export class InputEngine {
         else this.distanceCm += (e.distance_counts ?? Math.hypot(e.dx, e.dy)) * 2.54 / this.dpi;
         break;
       case 'input_reset': this.keys.fill(0); this.buttons.fill(0); break;
-      case 'state_restored': break;
+      case 'state_restored': case 'statistics_changed': break;
       case 'distance_changed': this.distanceCm = e.cm; break;
     }
     this.revision++;

@@ -7,6 +7,7 @@ mod external_links;
 mod artwork;
 mod motion;
 mod studio_store;
+mod statistics;
 mod studio_validation;
 mod module_validation;
 mod compatibility;

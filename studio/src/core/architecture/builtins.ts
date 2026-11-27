@@ -10,15 +10,17 @@ import { configureDocumentPresentation } from './presentation';
 
 type ModuleType = OverlayModule['type'];
 type Row<S> = readonly [field: keyof S & string, stableName: string, label: string, control: Control, unit?: SettingUI['unit'], component?: DefinitionId];
-const allTypes: readonly ModuleType[] = ['keyboard','mouse','trail','distance','sensitivity'];
+const allTypes: readonly ModuleType[] = ['keyboard','mouse','trail','distance','sensitivity','counter','flicks'];
 const interactive: readonly ModuleType[] = ['keyboard','mouse'];
-const textTypes: readonly ModuleType[] = ['keyboard','mouse','distance','sensitivity'];
+const textTypes: readonly ModuleType[] = ['keyboard','mouse','distance','sensitivity','counter','flicks'];
 const visualInfo = [
   ['keyboard','Keyboard','Every press, perfectly clear',['input.keyboard']],
   ['mouse','Mouse Buttons','Clicks, scroll & side buttons',['input.mouse-buttons']],
   ['trail','Mouse Trail','Make your movement visible',['input.mouse-motion']],
   ['distance','Distance','Physical movement, in cm or m',['input.distance']],
   ['sensitivity','Sensitivity','Your setup at a glance',['profiles.game']],
+  ['counter','Counter','Clicks, actions, keystrokes or a custom tally',['input.statistics']],
+  ['flicks','Mouse Flick Stats','Count fast movements and show their peak speed and distance',['input.statistics']],
 ] as const;
 function configurationField(schema:z.ZodType,path:readonly string[]):z.ZodType|undefined {
  let current:z.ZodType|undefined=schema;
@@ -34,8 +36,7 @@ function moduleDefault(context: DefaultContext, path: readonly string[]) {
   const type = moduleSchema.shape.type.parse(moduleConfigurations.get(context.moduleType ?? "")?.builtinType ?? context.moduleType);
   return at(makeModule(type), path);
 }
-// Metadata adapts the existing schemas/factories. No new persisted defaults,
-// validation bounds, type enum, migration, input handling or renderer is introduced.
+// Adapt the module schemas to the shared settings controls.
 export function createBuiltinDefinitions() {
   const settings: SettingDefinition[] = [], byType = new Map(allTypes.map(type => [type, [] as DefinitionId[]]));
   const profileIds: DefinitionId[] = [], globalIds: DefinitionId[] = [];
@@ -120,13 +121,28 @@ export function createBuiltinDefinitions() {
   ], 'overlay.trail-appearance', instance, ['trailAppearance'], ['trail']);
   fields(moduleSchema.shape, [
     ['textLayout','text-layout','Text layout','select'],
-  ], 'overlay.text', instance, [], ['distance','sensitivity']);
+  ], 'overlay.text', instance, [], ['distance','sensitivity','counter','flicks']);
   fields(moduleSchema.shape, [
     ['unit','unit','Distance unit','select'], ['decimals','decimals','Decimal places','number'], ['caption','caption','Caption','text'],
   ], 'overlay.distance', instance, [], ['distance']);
   fields(moduleSchema.shape, [
     ['sensitivityStyle','style','Format','select'], ['showGame','show-game','Show game','checkbox'], ['showDpi','show-dpi','Show DPI','checkbox'], ['showSens','show-sensitivity','Show sensitivity','checkbox'], ['showEdpi','show-edpi','Show eDPI','checkbox'], ['showCm','show-cm','Show cm/360','checkbox'],
   ], 'overlay.sensitivity', instance, [], ['sensitivity']);
+  fields(moduleSchema.shape, [
+    ['counterMode','mode','Counter mode','select'],
+    ['counterWindow','window','Rolling window (s)','number'],
+    ['counterIncrement','increment','Increase key','number'],
+    ['counterDecrement','decrement','Decrease key','number'],
+    ['counterPersist','persist','Keep tally between launches','checkbox'],
+    ['caption','caption','Caption','text'],
+  ], 'overlay.counter', instance, [], ['counter']);
+  fields(moduleSchema.shape, [
+    ['flickWindow','window','Rolling window (s)','number'],
+    ['flickThreshold','threshold','Minimum speed (m/s)','number'],
+    ['flickMinDistance','minimum-distance','Minimum travel (cm)','number','cm'],
+    ['flickUnit','unit','Distance unit','select'],
+    ['caption','caption','Caption','text'],
+  ], 'overlay.flicks', instance, [], ['flicks']);
 
   fields(gameProfileSchema.shape, [
     ['name','name','Profile name','text'], ['game','game','Game','select'], ['dpi','dpi','Mouse DPI','number','dpi'], ['sensitivity','sensitivity','In-game sensitivity','number'],
@@ -153,6 +169,9 @@ export function createBuiltinDefinitions() {
     const index = settings.findIndex(s => s.id === id); settings[index] = {...settings[index], visibleWhen:[{setting,test:'equals',value}]};
   };
   depends('overlay.trail.move-grid','overlay.trail.position','Always-Centered');
+  depends('overlay.counter.increment','overlay.counter.mode','Custom');
+  depends('overlay.counter.decrement','overlay.counter.mode','Custom');
+  depends('overlay.counter.persist','overlay.counter.mode','Custom');
   depends('overlay.animation.secondary-color','overlay.animation.lighting','Gradient');
   depends('overlay.animation.gradient-angle','overlay.animation.lighting','Gradient');
   depends('overlay.animation.motion-scale','overlay.animation.motion','Scale');
@@ -178,7 +197,7 @@ export function createBuiltinDefinitions() {
   });
   const modules: ModuleDefinition[] = [
     service('core.capture','Capture',['capture.native'],[],externalDefinitions.filter(s=>s.binding.store==='native').map(s=>s.id),['studio','native']),
-    service('core.input','Input',['input.keyboard','input.mouse-buttons','input.mouse-motion','input.distance'],['core.capture'],globalIds.filter(id => id.startsWith('capture.')),['studio','obs','native']),
+    service('core.input','Input',['input.keyboard','input.mouse-buttons','input.mouse-motion','input.distance','input.statistics'],['core.capture'],globalIds.filter(id => id.startsWith('capture.')),['studio','obs','native']),
     service('core.profiles','Profiles',['profiles.game','profiles.overlay'],[],profileIds.concat(globalIds.filter(id => id.startsWith('studio.')),externalDefinitions.filter(s=>s.binding.store==='preferences').map(s=>s.id)),['studio','obs','native']),
     service('core.renderer','Renderer',['render.scene'],['core.input','core.profiles'],globalIds.filter(id => id.startsWith('render.')),['studio','obs']),
     ...visualInfo.map(([type,name,description,requires]): ModuleDefinition => ({

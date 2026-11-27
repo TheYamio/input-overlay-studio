@@ -63,6 +63,7 @@ impl StudioStore {
         Self { state:RwLock::new(Arc::new(snapshot)), distance: Mutex::new(Distance { cm, saved_cm }), recovery_required: AtomicBool::new(recovery_required), path, writers: Mutex::new(()), distance_writer: Mutex::new(()),unsupported_original }
     }
     pub fn current(&self)->Arc<DocumentSnapshot>{self.state.read().unwrap().clone()}
+    pub(crate) fn counter_totals_path(&self) -> PathBuf { self.path.with_file_name("counter-totals.json") }
 
     pub fn unsupported_reply(&self) -> Option<String> {
         self.unsupported_original.as_ref().map(|(version,text)|{

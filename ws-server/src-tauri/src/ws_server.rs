@@ -2,6 +2,7 @@ use crate::command_policy::{ClientPermissions,Command};
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use crate::studio_store::StudioStore;
+use crate::statistics::{self, StatisticsInput};
 use crate::studio_activity::StudioActivity;
 struct RuntimeLease(Option<Arc<StudioActivity>>);
 impl Drop for RuntimeLease{fn drop(&mut self){if let Some(activity)=&self.0{activity.disconnected();}}}
@@ -22,11 +23,31 @@ use tokio_tungstenite::tungstenite::Message;
 use crate::runtime_status::{RuntimeStatus, Outcome};
 #[derive(Clone)]
 struct Configuration {json:Arc<str>,revision:String,sequence:u64}
-struct Broadcasts {input:broadcast::Sender<Arc<str>>,configuration:watch::Sender<Option<Arc<Configuration>>>}
+struct Broadcasts {
+    input: broadcast::Sender<Arc<str>>,
+    configuration: watch::Sender<Option<Arc<Configuration>>>,
+    statistics_config: watch::Sender<u64>,
+    statistics: watch::Sender<Option<Arc<str>>>,
+}
 impl Broadcasts {
- fn new()->Arc<Self>{let (input,_)=broadcast::channel(1024);let (configuration,_)=watch::channel(None);Arc::new(Self{input,configuration})}
+ fn new()->Arc<Self>{
+     let (input,_)=broadcast::channel(1024);
+     let (configuration,_)=watch::channel(None);
+     let (statistics_config,_)=watch::channel(0);
+     let (statistics,_)=watch::channel(None);
+     Arc::new(Self{input,configuration,statistics_config,statistics})
+ }
  fn input(&self,json:impl Into<Arc<str>>){let json=json.into();if json.len()<=1024{let _=self.input.send(json);}}
- fn configuration(&self,json:String,revision:String,sequence:u64){if json.len()>MAX_MESSAGE_BYTES{return;}let packet=Arc::new(Configuration{json:Arc::from(json),revision,sequence});self.configuration.send_if_modified(|current|{if current.as_ref().is_some_and(|old|old.sequence>=sequence){return false;}*current=Some(packet);true});}
+ fn configuration(&self,json:String,revision:String,sequence:u64){
+    if json.len()>MAX_MESSAGE_BYTES{return;}
+    let packet=Arc::new(Configuration{json:Arc::from(json),revision,sequence});
+    self.configuration.send_if_modified(|current|{if current.as_ref().is_some_and(|old|old.sequence>=sequence){return false;}*current=Some(packet);true});
+    self.statistics_config.send_if_modified(|current| {
+        if *current >= sequence { return false; }
+        *current = sequence;
+        true
+    });
+ }
 }
 #[derive(Clone)]
 pub struct ServerHooks {pub changed:Arc<dyn Fn(ServerStatus)+Send+Sync>,pub capture_running:Arc<dyn Fn()->Option<bool>+Send+Sync>}
@@ -155,6 +176,7 @@ async fn distributor(
     bcast_tx: Arc<Broadcasts>,
     config: Arc<RwLock<Config>>,
     studio: Arc<StudioStore>,
+    statistics: StatisticsInput,
     mut shutdown: oneshot::Receiver<()>,
 ) {
     // Capture already coalesces movement at 125 Hz. Digital events are sent immediately.
@@ -186,6 +208,7 @@ async fn distributor(
         }
         if input_rx.overflow.swap(false, Ordering::Relaxed) {
             while input_rx.queue.try_recv().is_ok() {}
+            statistics.record(&InputEvent::Reset, &held);
             held.apply(&InputEvent::Reset); sequence += 1;
             bcast_tx.input(format!(r#"{{"event_type":"input_reset","sequence":{sequence}}}"#));
             continue;
@@ -193,6 +216,7 @@ async fn distributor(
         let cfg = config.read().await;
         if !is_allowed(&event, &cfg) { continue; }
         drop(cfg);
+        statistics.record(&event, &held);
         held.apply(&event); sequence += 1;
         if let Some(mut json) = event_to_json(&event) {
             if let InputEvent::MouseMove { dx, dy, distance_counts } = event {
@@ -230,7 +254,7 @@ async fn handle_connection(
         let config = config.read().await;
         (config.auth_token.clone(), config.obs_token.clone())
     };
-    let mut permissions=ClientPermissions::default();let mut status_client=false;
+    let mut permissions=ClientPermissions::default();let mut status_client=false;let mut statistics_client=false;
     let auth=async {
         loop {
             match read.next().await {
@@ -246,6 +270,7 @@ async fn handle_connection(
                     let Some(granted) = granted else { return false; };
                     permissions = granted;
                     status_client=permissions.can_write()&&value["studio_client"]["features"]["runtime.status"]==1;
+                    statistics_client=(permissions.can_write()||permissions.runtime)&&value["studio_client"]["features"]["input.statistics"]==1;
                     return true;
                 }
                 Some(Ok(Message::Ping(_)|Message::Pong(_)))=>{},
@@ -264,6 +289,7 @@ async fn handle_connection(
     let mut writer=Writer::start(sink);let outbox=writer.outbox.clone();
     let mut runtime_changes=runtimes.subscribe();let mut last_status=String::new();let mut counted=false;
     let mut input=bcast_tx.input.subscribe();let mut configurations=bcast_tx.configuration.subscribe();
+    let mut statistics=bcast_tx.statistics.subscribe();
     let mut heartbeat=tokio::time::interval(Duration::from_secs(3));heartbeat.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     let mut requests=RateLimit::new(256,128);let mut snapshots=RateLimit::new(4,2);let mut documents=RateLimit::new(32,8);
     macro_rules! reply {($text:expr)=>{if !outbox.send($text,None){break;}};}
@@ -280,6 +306,11 @@ async fn handle_connection(
                 if status_client{let snapshot=runtime_changes.borrow_and_update().clone();let packet=connection_status_packet(&config,&hooks,&snapshot).await;if packet!=last_status{reply!(packet.clone());last_status=packet;}}
             }
             message=input.recv()=>match message{Ok(json)=>{reply!(json);},Err(_)=>break},
+            changed=statistics.changed(),if statistics_client=>{
+                if changed.is_err(){break;}
+                let packet=statistics.borrow_and_update().clone();
+                if let Some(packet)=packet{reply!(packet);}
+            }
             changed=configurations.changed()=>{
                 if changed.is_err(){break;}
                 let packet=configurations.borrow_and_update().clone();
@@ -315,6 +346,10 @@ async fn handle_connection(
                         let delivery=runtime_session.as_ref().filter(|_|real).map(|session|session.delivery(&revision));if !outbox.send(json,delivery){break;}
                         if runtime&&real&&!counted{counted=true;let tracker=activity.clone();let _=tokio::task::spawn_blocking(move||tracker.ready(crate::studio_activity::now())).await;}
                         reply!(serde_json::json!({"type":"distance_total","cm":studio.distance_cm().await}).to_string());
+                        if statistics_client {
+                            let packet=statistics.borrow_and_update().clone();
+                            if let Some(packet)=packet { reply!(packet); }
+                        }
                     }
                     Command::DistanceReset=>{
                         studio.reset_distance().await;
@@ -361,7 +396,9 @@ pub async fn run(
     let _watchdog=runtimes.watchdog();let bcast_tx=Broadcasts::new();let permits=Arc::new(Semaphore::new(MAX_WS_CLIENTS));let mut clients=JoinSet::new();
     let cfg=config.clone();let broadcasts=bcast_tx.clone();let store=studio.clone();
     let (close_input, stop_input) = oneshot::channel();
-    let input_task = Task(tokio::spawn(distributor(input_rx, broadcasts, cfg, store, stop_input)));
+    let (statistics, statistics_task) = statistics::start(studio.clone(), bcast_tx.statistics_config.subscribe(), bcast_tx.statistics.clone());
+    let statistics_task = Task(statistics_task);
+    let input_task = Task(tokio::spawn(distributor(input_rx, broadcasts, cfg, store, statistics, stop_input)));
     let (close_timer, mut stop_timer) = oneshot::channel();
     let store = studio.clone();
     let distance_task = Task(tokio::spawn(async move {
@@ -464,6 +501,7 @@ pub async fn run(
     while clients.join_next().await.is_some() {}
     let _ = close_input.send(());
     if let Err(error) = input_task.join().await { tracing::error!("input distributor stopped: {error}"); }
+    if let Err(error) = statistics_task.join().await { tracing::error!("input statistics stopped: {error}"); }
     if let Err(error) = distance_task.join().await { tracing::error!("distance timer stopped: {error}"); }
     save_distance(&studio).await;
 }
@@ -543,6 +581,136 @@ mod tests {
         let restarted = StudioStore::new(path);
         assert_eq!(restarted.distance_cm().await, 44.54);
         for name in ["studio.json", "distance.json", "activity.json"] {
+            std::fs::remove_file(folder.join(name)).unwrap();
+        }
+        std::fs::remove_dir(folder).unwrap();
+    }
+    #[tokio::test]
+    async fn statistics_follow_capture_without_rewriting_idle_counters() {
+        use serde_json::{json, Value};
+        use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
+        type Client = WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>;
+        async fn receive(client: &mut Client, predicate: impl Fn(&Value) -> bool) -> Value {
+            tokio::time::timeout(Duration::from_secs(5), async {
+                while let Some(Ok(Message::Text(text))) = client.next().await {
+                    let value: Value = serde_json::from_str(&text).unwrap();
+                    if predicate(&value) { return value; }
+                }
+                panic!("client disconnected before receiving the expected message");
+            }).await.unwrap()
+        }
+        async fn connect(port: u16, role: &str, token: &str) -> Client {
+            let (mut client, _) = connect_async(format!("ws://127.0.0.1:{port}")).await.unwrap();
+            let mut contract = crate::compatibility::CONTRACT.clone();
+            contract["role"] = json!(role);
+            if role == "runtime" { contract["document"]["write"] = json!([]); }
+            client.send(Message::Text(json!({"type":"auth","token":token,"studio_client":contract}).to_string())).await.unwrap();
+            let response = receive(&mut client, |v| v["type"] == "auth_response").await;
+            assert_eq!(response["status"], "success");
+            client.send(Message::Text(r#"{"type":"studio_get"}"#.into())).await.unwrap();
+            receive(&mut client, |v| v["type"] == "studio_config").await;
+            client
+        }
+
+        let folder = std::env::temp_dir().join(format!("ws-statistics-{}", rand::random::<u64>()));
+        std::fs::create_dir(&folder).unwrap();
+        let path = folder.join("studio.json");
+        let mut document: Value = serde_json::from_str(include_str!("../schema/default-current.json")).unwrap();
+        let profile = &mut document["profiles"][0];
+        let common = profile["modules"][0]["common"].clone();
+        let stats_module = |id: &str, kind: &str, config: Value| json!({
+            "id":id,"type":kind,"schemaVersion":1,"enabled":true,"common":common,"config":config,
+            "resources":{"assets":[],"shapes":[]}
+        });
+        let surface = json!({"accent":"#a5ef6b","background":"#161b20","radius":12,"effect":"Soft Press"});
+        let mut custom = surface.clone();
+        custom["counterMode"] = json!("Custom");
+        custom["counterIncrement"] = json!(65);
+        custom["counterPersist"] = json!(true);
+        profile["modules"].as_array_mut().unwrap().extend([
+            stats_module("custom","overlay.counter",custom),
+            stats_module("flicks","overlay.flicks",surface),
+        ]);
+        assert!(crate::studio_store::valid_document(&document));
+        std::fs::write(&path, document.to_string()).unwrap();
+        let (input, input_rx) = input_channel();
+        let (signal, rebind) = watch::channel(ServerSignal::Rebind);
+        let status = Arc::new(Mutex::new(ServerStatus::default()));
+        let config = Config { port: 0, capture_enabled: true, send_mouse_move: true,
+            auth_token: "statistics-editor".into(), obs_token: "abcdefghijklmnopqrstuvwxyzABCDEF".into(), ..Config::default() };
+        let task = Task(tokio::spawn(run(Arc::new(RwLock::new(config)), input_rx, status.clone(), rebind,
+            ServerHooks::default(), Arc::new(StudioStore::new(path)), input.clone(),
+            Arc::new(StudioActivity::new(folder.join("activity.json"))))));
+        let port = tokio::time::timeout(Duration::from_secs(4), async {
+            loop {
+                if let Some(port) = {let s = status.lock().unwrap(); s.running.then_some(s.port)} { break port; }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        }).await.unwrap();
+        let mut studio = connect(port, "studio", "statistics-editor").await;
+        let mut obs = connect(port, "runtime", "abcdefghijklmnopqrstuvwxyzABCDEF").await;
+        let counter_file = folder.join("counter-totals.json");
+        assert!(!counter_file.exists());
+
+        // A repeat is forwarded normally, but it is not a second counter edge.
+        input.send(InputEvent::KeyPress {rawcode:65}).unwrap();
+        input.send(InputEvent::KeyPress {rawcode:65}).unwrap();
+        input.send(InputEvent::KeyRelease {rawcode:65}).unwrap();
+        for dx in [700, 700, -700] {
+            input.send(InputEvent::MouseMove {dx,dy:0,distance_counts:None}).unwrap();
+            tokio::time::sleep(Duration::from_millis(8)).await;
+        }
+        for client in [&mut studio, &mut obs] {
+            let summary = receive(client, |v| v["flicks"][0][1]["count"] == 2).await;
+            assert_eq!(summary["counters"][0][1].as_f64(), Some(1.));
+            assert_eq!(summary["profile_id"], document["activeProfileId"]);
+        }
+        let modified = tokio::time::timeout(Duration::from_secs(5), async {
+            loop {
+                if let Ok(file) = std::fs::metadata(&counter_file) { break file.modified().unwrap(); }
+                tokio::time::sleep(Duration::from_millis(15)).await;
+            }
+        }).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(1250)).await;
+        assert_eq!(std::fs::metadata(&counter_file).unwrap().modified().unwrap(), modified);
+        // A newly attached OBS source sees the same tally via the latest-state snapshot.
+        let mut late = connect(port, "runtime", "abcdefghijklmnopqrstuvwxyzABCDEF").await;
+        let summary = receive(&mut late, |v| v["type"] == "input_statistics").await;
+        assert_eq!(summary["counters"][0][1].as_f64(), Some(1.));
+
+        // The same live connection must still receive every ordinary motion
+        // packet while the statistics stream coalesces bursts independently.
+        const MOVES: usize = 160;
+        let feed = input.clone();
+        let start = std::time::Instant::now();
+        let producer = tokio::spawn(async move {
+            let mut tick = tokio::time::interval(Duration::from_millis(8));
+            for i in 0..MOVES {
+                tick.tick().await;
+                let dx = if i % 2 == 0 { 700 } else { -700 };
+                feed.send(InputEvent::MouseMove {dx,dy:0,distance_counts:None}).unwrap();
+            }
+        });
+        let reports = tokio::time::timeout(Duration::from_secs(5), async {
+            let mut motion = 0;
+            let mut reports = 0;
+            while motion < MOVES {
+                let Message::Text(text) = late.next().await.unwrap().unwrap() else { continue };
+                let packet: Value = serde_json::from_str(&text).unwrap();
+                motion += usize::from(packet["event_type"] == "mouse_moved");
+                reports += usize::from(packet["type"] == "input_statistics");
+            }
+            reports
+        }).await.unwrap();
+        producer.await.unwrap();
+        assert!(reports > 0 && reports as u128 <= start.elapsed().as_millis() / 100 + 2);
+        assert_eq!(std::fs::metadata(&counter_file).unwrap().modified().unwrap(), modified);
+
+        drop((studio, obs, late));
+        signal.send_replace(ServerSignal::Shutdown);
+        task.join().await.unwrap();
+        assert_eq!(std::fs::metadata(&counter_file).unwrap().modified().unwrap(), modified);
+        for name in ["studio.json", "activity.json", "counter-totals.json"] {
             std::fs::remove_file(folder.join(name)).unwrap();
         }
         std::fs::remove_dir(folder).unwrap();

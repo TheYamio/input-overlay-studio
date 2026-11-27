@@ -94,6 +94,14 @@ Choose a style: Clean Line, Fade Trail, Neon Trail, Speed Gradient or Segmented 
 
 **Camera follow** controls smoothing in **Follow / Recenter**. **DPI Normalized Scale** uses the profile DPI for movement scale. Adjust the background opacity for a transparent trail surface.
 
+## Counter and Mouse Flick Stats
+
+Add either module from **Studio → Add module**. Studio and OBS show the same capture statistics for the active overlay profile.
+
+- **Counter** can show clicks per second (CPS), key presses per minute (KPM), or actions per minute (APM). Actions include key presses, mouse clicks and wheel events. Choose the rolling window in seconds. Holding a key or mouse button counts as one press.
+- In **Custom** mode, bind keys to increase and optionally decrease the tally. Enable **Keep tally between launches** to save that module's total on this computer. The tally stays out of profile and preset exports.
+- **Mouse Flick Stats** shows the number of qualifying fast movements, peak speed and their combined travel within the rolling window. Set the speed and travel thresholds and the display unit. The capture service estimates physical values from the profile DPI and closes a flick on a brief pause or a reversal.
+
 ## Preset library
 
 Choose a standard layout or a creator-made preset. **Full layouts** loads the shown buttons, shapes, artwork and positions while retaining the profile's game, DPI and sensitivity. **Colors on my layout** previews your composition in each palette and applies colors and surface transparency.

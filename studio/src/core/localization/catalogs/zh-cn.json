@@ -4,6 +4,12 @@
   "name": "简体中文",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "按下一个键…",
+      "unassigned": "未分配",
+      "differentKeys": "请为增加和减少选择不同的按键。",
+      "clearDecrease": "清除减少键"
+    },
     "presets": {
       "previewLayout": "预览布局",
       "previewColors": "预览颜色",
@@ -1230,6 +1236,23 @@
       "settings.native-startup-storage": "启动时无法保存捕获设置。捕获已关闭。请检查数据文件夹的访问权限并重新应用设置。"
     },
     "settings": {
+      "overlay.counter.mode.label": "计数模式",
+      "overlay.counter.window.label": "统计窗口（秒）",
+      "overlay.counter.increment.label": "增加键",
+      "overlay.counter.decrement.label": "减少键",
+      "overlay.counter.persist.label": "重启后保留计数",
+      "overlay.counter.caption.label": "标签",
+      "overlay.flicks.window.label": "统计窗口（秒）",
+      "overlay.flicks.threshold.label": "最低速度（米/秒）",
+      "overlay.flicks.minimum-distance.label": "最短距离（厘米）",
+      "overlay.flicks.unit.label": "距离单位",
+      "overlay.flicks.caption.label": "标签",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "自定义",
+      "overlay.flicks.unit.option.63-6d": "厘米",
+      "overlay.flicks.unit.option.6d": "米",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "始终居中",
       "overlay.trail.move-grid.label": "网格随鼠标移动",
       "overlay.instance.name.label": "模块名称",
@@ -1526,6 +1549,10 @@
       "render.performance.fps.help": "动画帧率上限。30 比 60 使用更少帧；Auto 跟随屏幕，最高 120 FPS。输入捕获独立运行。"
     },
     "modules": {
+      "overlay.counter.label": "计数器",
+      "overlay.counter.description": "统计点击、操作、按键或自定义次数",
+      "overlay.flicks.label": "鼠标甩动统计",
+      "overlay.flicks.description": "统计快速移动次数，并显示峰值速度和距离",
       "core.capture.label": "输入捕获",
       "core.capture.description": "现有捕捉适配器",
       "core.input.label": "实时输入",

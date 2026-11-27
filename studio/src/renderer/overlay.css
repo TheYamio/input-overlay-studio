@@ -26,6 +26,7 @@
 .metric,.sensitivity-strip{display:block;overflow:hidden}
 .module-text-content{position:absolute;width:max-content;transform-origin:top left;max-width:none}
 .metric-content{display:flex;flex-direction:column;gap:10px;white-space:nowrap}
+.statistics-content{gap:4px}.statistics-detail{font-variant-numeric:tabular-nums}.statistics-detail:empty{display:none}
 .sensitivity-content{display:flex;align-items:center;gap:24px;white-space:nowrap}
 .sensitivity-content>div{display:flex;align-items:baseline;gap:9px}
 .sensitivity-strip[data-text-layout="Vertical"] .sensitivity-content{flex-direction:column;align-items:flex-start;gap:10px}

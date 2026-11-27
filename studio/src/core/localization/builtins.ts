@@ -25,6 +25,7 @@ export function createStudioLocalization(standardPacks:readonly LocalePack[] = [
     polish:polishEnglish,setup:setupEnglish,connection:connectionEnglish,support:supportEnglish,ui:english,language:{...languageEn,loadError:'Could not load this language. Your previous language is still selected.',experimental:'Experimental',experimentalHelp:'Translations may contain inaccuracies. Missing translations use English.'},errors:{...errorsEn,...nativeErrorEnglish},
     settings:Object.fromEntries([...builtinCatalog.settings.all(),...supportDefinitions].flatMap(setting => [setting.label,setting.help,setting.disabledReason].filter(Boolean).map(text => [text!.key.split(':')[1],text!.fallback]))),
     modules:Object.fromEntries(builtinCatalog.modules.all().flatMap(module => [module.label,module.description].map(text => [text.key.split(':')[1],text.fallback]))),
+    statistics:{pressKey:'Press a key…',unassigned:'Unassigned',differentKeys:'Choose different keys for increase and decrease.',clearDecrease:'Clear decrease key'},
     preview:{
       background:'Preview background',light:'Light',dark:'Dark',screenshot:'Game screenshot',
       chooseScreenshot:'Choose screenshot',replaceScreenshot:'Replace screenshot',

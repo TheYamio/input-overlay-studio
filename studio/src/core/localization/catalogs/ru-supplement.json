@@ -4,6 +4,12 @@
   "name": "Русский",
   "direction": "ltr",
   "namespaces": {
+    "statistics": {
+      "pressKey": "Нажмите клавишу…",
+      "unassigned": "Не назначена",
+      "differentKeys": "Выберите разные клавиши для увеличения и уменьшения.",
+      "clearDecrease": "Очистить клавишу уменьшения"
+    },
     "presets": {
       "previewLayout": "Предпросмотр раскладки",
       "previewColors": "Предпросмотр цветов",
@@ -1206,6 +1212,23 @@
       "settings.native-startup-storage": "Не удалось сохранить настройки захвата при запуске. Захват выключен. Проверьте доступ к папке данных и примените настройки снова."
     },
     "settings": {
+      "overlay.counter.mode.label": "Режим счётчика",
+      "overlay.counter.window.label": "Окно подсчёта (с)",
+      "overlay.counter.increment.label": "Клавиша увеличения",
+      "overlay.counter.decrement.label": "Клавиша уменьшения",
+      "overlay.counter.persist.label": "Сохранять счёт между запусками",
+      "overlay.counter.caption.label": "Подпись",
+      "overlay.flicks.window.label": "Окно подсчёта (с)",
+      "overlay.flicks.threshold.label": "Минимальная скорость (м/с)",
+      "overlay.flicks.minimum-distance.label": "Минимальный путь (см)",
+      "overlay.flicks.unit.label": "Единицы дистанции",
+      "overlay.flicks.caption.label": "Подпись",
+      "overlay.counter.mode.option.43-50-53": "CPS",
+      "overlay.counter.mode.option.41-50-4d": "APM",
+      "overlay.counter.mode.option.4b-50-4d": "KPM",
+      "overlay.counter.mode.option.43-75-73-74-6f-6d": "Пользовательский",
+      "overlay.flicks.unit.option.63-6d": "см",
+      "overlay.flicks.unit.option.6d": "м",
       "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Всегда по центру",
       "overlay.trail.move-grid.label": "Перемещать сетку вместе с мышью",
       "overlay.instance.name.label": "Имя модуля",
@@ -1502,6 +1525,10 @@
       "render.performance.fps.help": "Предельная частота анимации. 30 использует меньше кадров, чем 60; Auto следует экрану до 120 FPS. Захват ввода работает независимо."
     },
     "modules": {
+      "overlay.counter.label": "Счётчик",
+      "overlay.counter.description": "Клики, действия, нажатия клавиш или ручной подсчёт",
+      "overlay.flicks.label": "Статистика фликов",
+      "overlay.flicks.description": "Количество быстрых движений, их пиковая скорость и дистанция",
       "core.capture.label": "Захват",
       "core.capture.description": "Существующий адаптер",
       "core.input.label": "Ввод",

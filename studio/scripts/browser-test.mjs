@@ -202,6 +202,38 @@ try {
     await expect.poll(() => [...wss.clients].filter(ws => ws.authed && ws.gotConfig).length).toBe(2);
     await expect(overlay.locator('.overlay-key.pressed')).toHaveCount(0);
   });
+  await check('Counter and Mouse Flick Stats use the same bounded statistics in Studio and OBS', async () => {
+    const add = async text => {
+      await page.getByRole('button', {name:'Add module',exact:true}).click();
+      await page.locator('.module-library button').filter({hasText:text}).click();
+    };
+    await add('Counter');
+    const inspector = page.locator('.property-scroll');
+    await inspector.getByLabel('Counter mode', {exact:true}).selectOption('Custom');
+    const increase = inspector.getByLabel('Increase key', {exact:true});
+    await increase.press('F7');
+    await expect(increase).toHaveValue('F7');
+    await inspector.getByLabel('Keep tally between launches', {exact:true}).check();
+    const counter = () => document.profiles[0].modules.find(m => m.type === 'counter');
+    await expect.poll(() => counter()?.counterIncrement).toBe(118);
+    await expect.poll(() => counter()?.counterPersist).toBe(true);
+    await add('Mouse Flick Stats');
+    await inspector.getByLabel('Distance unit', {exact:true}).selectOption('m');
+    const flick = () => document.profiles[0].modules.find(m => m.type === 'flicks');
+    await expect.poll(() => flick()?.flickUnit).toBe('m');
+    const meter = id => `.overlay-module[data-module-id="${id}"]`;
+    await expect(overlay.locator(meter(flick().id))).toBeVisible();
+    const stats = {type:'input_statistics',profile_id:document.activeProfileId,
+      counters:[[counter().id,42]],flicks:[[flick().id,{count:3,peak_mps:2.35,distance_cm:150}]]};
+    broadcast(stats);
+    for(const surface of [page.locator('.preview-viewport'),overlay]) {
+      await expect(surface.locator(meter(counter().id)).locator('strong')).toHaveText('42');
+      await expect(surface.locator(meter(flick().id)).locator('strong')).toHaveText('3');
+      await expect(surface.locator(meter(flick().id)).locator('.statistics-detail')).toHaveText('Peak 2.35 m/s · Path 1.5 m');
+    }
+    broadcast({...stats,counters:[[counter().id,-1]]});
+    await expect(overlay.locator(meter(counter().id)).locator('strong')).toHaveText('42');
+  });
   await check('overlay continues without an editor window', async () => {
     await page.close(); broadcast({ event_type: 'key_pressed', rawcode: 68 }); await expect(overlay.locator('[data-key="68"]')).toHaveClass(/pressed/); broadcast({ event_type: 'input_reset' });
   });

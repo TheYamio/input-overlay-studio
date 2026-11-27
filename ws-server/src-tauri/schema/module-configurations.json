@@ -1918,7 +1918,16 @@
       "showDpi": true,
       "showSens": true,
       "showEdpi": true,
-      "showCm": true
+      "showCm": true,
+      "counterMode": "CPS",
+      "counterWindow": 5,
+      "counterIncrement": 107,
+      "counterDecrement": 109,
+      "counterPersist": false,
+      "flickWindow": 10,
+      "flickThreshold": 1,
+      "flickMinDistance": 0.5,
+      "flickUnit": "cm"
     }
   },
   "overlay.sensitivity": {
@@ -3861,7 +3870,16 @@
       "showDpi": true,
       "showSens": true,
       "showEdpi": true,
-      "showCm": true
+      "showCm": true,
+      "counterMode": "CPS",
+      "counterWindow": 5,
+      "counterIncrement": 107,
+      "counterDecrement": 109,
+      "counterPersist": false,
+      "flickWindow": 10,
+      "flickThreshold": 1,
+      "flickMinDistance": 0.5,
+      "flickUnit": "cm"
     }
   },
   "overlay.trail": {
@@ -6157,7 +6175,16 @@
       "showDpi": true,
       "showSens": true,
       "showEdpi": true,
-      "showCm": true
+      "showCm": true,
+      "counterMode": "CPS",
+      "counterWindow": 5,
+      "counterIncrement": 107,
+      "counterDecrement": 109,
+      "counterPersist": false,
+      "flickWindow": 10,
+      "flickThreshold": 1,
+      "flickMinDistance": 0.5,
+      "flickUnit": "cm"
     }
   },
   "overlay.mouse": {
@@ -8892,7 +8919,16 @@
       "showDpi": true,
       "showSens": true,
       "showEdpi": true,
-      "showCm": true
+      "showCm": true,
+      "counterMode": "CPS",
+      "counterWindow": 5,
+      "counterIncrement": 107,
+      "counterDecrement": 109,
+      "counterPersist": false,
+      "flickWindow": 10,
+      "flickThreshold": 1,
+      "flickMinDistance": 0.5,
+      "flickUnit": "cm"
     }
   },
   "overlay.keyboard": {
@@ -11573,7 +11609,1548 @@
       "showDpi": true,
       "showSens": true,
       "showEdpi": true,
-      "showCm": true
+      "showCm": true,
+      "counterMode": "CPS",
+      "counterWindow": 5,
+      "counterIncrement": 107,
+      "counterDecrement": 109,
+      "counterPersist": false,
+      "flickWindow": 10,
+      "flickThreshold": 1,
+      "flickMinDistance": 0.5,
+      "flickUnit": "cm"
+    }
+  },
+  "overlay.counter": {
+    "schemaVersion": 1,
+    "builtinType": "counter",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "Instant",
+            "Soft Press",
+            "Glow",
+            "Pulse",
+            "Analog Fill"
+          ]
+        },
+        "appearance": {
+          "default": {
+            "backgroundOpacity": 1,
+            "textColor": "#d9e0e7",
+            "activeTextColor": "#10150e",
+            "borderColor": "#ffffff",
+            "activeBorderColor": "#a5ef6b",
+            "borderOpacity": 0.16,
+            "borderWidth": 1,
+            "autoFitText": true,
+            "fontFamily": "Segoe UI",
+            "fontSize": 16,
+            "fontWeight": 600,
+            "letterSpacing": 1,
+            "textOutline": 0,
+            "textShadow": 0,
+            "pressDuration": 90,
+            "releaseDuration": 140,
+            "pressTravel": 2,
+            "glowStrength": 22
+          },
+          "type": "object",
+          "properties": {
+            "lighting": {
+              "type": "string",
+              "enum": [
+                "Fill",
+                "Outline",
+                "Glow",
+                "Fill + glow",
+                "Gradient",
+                "Ripple",
+                "Analog Fill",
+                "Off"
+              ]
+            },
+            "motion": {
+              "type": "string",
+              "enum": [
+                "None",
+                "Press",
+                "Scale",
+                "Lift",
+                "Bounce",
+                "Pulse"
+              ]
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "Linear",
+                "Ease out",
+                "Ease in out",
+                "Spring"
+              ]
+            },
+            "pressDelay": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "releaseDelay": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2000
+            },
+            "lightingOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "secondaryColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "gradientAngle": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "motionScale": {
+              "type": "number",
+              "minimum": 0.8,
+              "maximum": 1.2
+            },
+            "showLabels": {
+              "type": "boolean"
+            },
+            "shapeId": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "backgroundOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "textColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "activeTextColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "borderColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "activeBorderColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "borderOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "borderWidth": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 8
+            },
+            "autoFitText": {
+              "type": "boolean"
+            },
+            "fontFamily": {
+              "type": "string",
+              "enum": [
+                "Segoe UI",
+                "Arial",
+                "Verdana",
+                "Consolas",
+                "Georgia",
+                "Unicode"
+              ]
+            },
+            "fontSize": {
+              "type": "number",
+              "minimum": 6,
+              "maximum": 96
+            },
+            "fontWeight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "letterSpacing": {
+              "type": "number",
+              "minimum": -2,
+              "maximum": 12
+            },
+            "textOutline": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "textShadow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 12
+            },
+            "pressDuration": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 500
+            },
+            "releaseDuration": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "pressTravel": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 8
+            },
+            "glowStrength": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 40
+            }
+          },
+          "required": [
+            "backgroundOpacity",
+            "textColor",
+            "activeTextColor",
+            "borderColor",
+            "activeBorderColor",
+            "borderOpacity",
+            "borderWidth",
+            "autoFitText",
+            "fontFamily",
+            "fontSize",
+            "fontWeight",
+            "letterSpacing",
+            "textOutline",
+            "textShadow",
+            "pressDuration",
+            "releaseDuration",
+            "pressTravel",
+            "glowStrength"
+          ]
+        },
+        "textLayout": {
+          "default": "Horizontal",
+          "type": "string",
+          "enum": [
+            "Horizontal",
+            "Vertical"
+          ]
+        },
+        "caption": {
+          "default": "",
+          "type": "string",
+          "maxLength": 100
+        },
+        "counterMode": {
+          "default": "CPS",
+          "type": "string",
+          "enum": [
+            "CPS",
+            "APM",
+            "KPM",
+            "Custom"
+          ]
+        },
+        "counterWindow": {
+          "default": 5,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "counterIncrement": {
+          "default": 107,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255
+        },
+        "counterDecrement": {
+          "default": 109,
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "counterPersist": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "accent",
+        "background",
+        "radius",
+        "effect"
+      ],
+      "additionalProperties": false
+    },
+    "versions": {
+      "1": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "accent": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "radius": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "Instant",
+              "Soft Press",
+              "Glow",
+              "Pulse",
+              "Analog Fill"
+            ]
+          },
+          "appearance": {
+            "default": {
+              "backgroundOpacity": 1,
+              "textColor": "#d9e0e7",
+              "activeTextColor": "#10150e",
+              "borderColor": "#ffffff",
+              "activeBorderColor": "#a5ef6b",
+              "borderOpacity": 0.16,
+              "borderWidth": 1,
+              "autoFitText": true,
+              "fontFamily": "Segoe UI",
+              "fontSize": 16,
+              "fontWeight": 600,
+              "letterSpacing": 1,
+              "textOutline": 0,
+              "textShadow": 0,
+              "pressDuration": 90,
+              "releaseDuration": 140,
+              "pressTravel": 2,
+              "glowStrength": 22
+            },
+            "type": "object",
+            "properties": {
+              "lighting": {
+                "type": "string",
+                "enum": [
+                  "Fill",
+                  "Outline",
+                  "Glow",
+                  "Fill + glow",
+                  "Gradient",
+                  "Ripple",
+                  "Analog Fill",
+                  "Off"
+                ]
+              },
+              "motion": {
+                "type": "string",
+                "enum": [
+                  "None",
+                  "Press",
+                  "Scale",
+                  "Lift",
+                  "Bounce",
+                  "Pulse"
+                ]
+              },
+              "easing": {
+                "type": "string",
+                "enum": [
+                  "Linear",
+                  "Ease out",
+                  "Ease in out",
+                  "Spring"
+                ]
+              },
+              "pressDelay": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "releaseDelay": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "lightingOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "secondaryColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "gradientAngle": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "motionScale": {
+                "type": "number",
+                "minimum": 0.8,
+                "maximum": 1.2
+              },
+              "showLabels": {
+                "type": "boolean"
+              },
+              "shapeId": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "backgroundOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "textColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "activeTextColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "borderColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "activeBorderColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "borderOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "borderWidth": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "autoFitText": {
+                "type": "boolean"
+              },
+              "fontFamily": {
+                "type": "string",
+                "enum": [
+                  "Segoe UI",
+                  "Arial",
+                  "Verdana",
+                  "Consolas",
+                  "Georgia",
+                  "Unicode"
+                ]
+              },
+              "fontSize": {
+                "type": "number",
+                "minimum": 6,
+                "maximum": 96
+              },
+              "fontWeight": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 900
+              },
+              "letterSpacing": {
+                "type": "number",
+                "minimum": -2,
+                "maximum": 12
+              },
+              "textOutline": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "textShadow": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 12
+              },
+              "pressDuration": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 500
+              },
+              "releaseDuration": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "pressTravel": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "glowStrength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 40
+              }
+            },
+            "required": [
+              "backgroundOpacity",
+              "textColor",
+              "activeTextColor",
+              "borderColor",
+              "activeBorderColor",
+              "borderOpacity",
+              "borderWidth",
+              "autoFitText",
+              "fontFamily",
+              "fontSize",
+              "fontWeight",
+              "letterSpacing",
+              "textOutline",
+              "textShadow",
+              "pressDuration",
+              "releaseDuration",
+              "pressTravel",
+              "glowStrength"
+            ]
+          },
+          "textLayout": {
+            "default": "Horizontal",
+            "type": "string",
+            "enum": [
+              "Horizontal",
+              "Vertical"
+            ]
+          },
+          "caption": {
+            "default": "",
+            "type": "string",
+            "maxLength": 100
+          },
+          "counterMode": {
+            "default": "CPS",
+            "type": "string",
+            "enum": [
+              "CPS",
+              "APM",
+              "KPM",
+              "Custom"
+            ]
+          },
+          "counterWindow": {
+            "default": 5,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60
+          },
+          "counterIncrement": {
+            "default": 107,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 255
+          },
+          "counterDecrement": {
+            "default": 109,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "counterPersist": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accent",
+          "background",
+          "radius",
+          "effect"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "migrations": [],
+    "projection": {
+      "id": "module-projection-default",
+      "type": "counter",
+      "name": "Counter",
+      "x": 120,
+      "y": 160,
+      "w": 300,
+      "h": 110,
+      "appearance": {
+        "backgroundOpacity": 0,
+        "textColor": "#d9e0e7",
+        "activeTextColor": "#10150e",
+        "borderColor": "#ffffff",
+        "activeBorderColor": "#a5ef6b",
+        "borderOpacity": 0.16,
+        "borderWidth": 0,
+        "autoFitText": true,
+        "fontFamily": "Segoe UI",
+        "fontSize": 16,
+        "fontWeight": 600,
+        "letterSpacing": 1,
+        "textOutline": 0,
+        "textShadow": 0,
+        "pressDuration": 90,
+        "releaseDuration": 140,
+        "pressTravel": 2,
+        "glowStrength": 22
+      },
+      "image": {
+        "enabled": false,
+        "assetId": "",
+        "fit": "Cover",
+        "scale": 1,
+        "x": 0,
+        "y": 0,
+        "rotation": 0,
+        "opacity": 0.75,
+        "blend": "normal",
+        "brightness": 1,
+        "contrast": 1,
+        "saturation": 1,
+        "tint": "#ffffff",
+        "tintOpacity": 0,
+        "press": "Tint",
+        "pressTint": 0.55
+      },
+      "buttonStyles": {},
+      "buttonGeometry": {},
+      "buttonImages": {},
+      "trailAppearance": {
+        "gridColor": "#ffffff",
+        "gridOpacity": 0.05,
+        "gridSpacing": 36,
+        "centerColor": "#ffffff",
+        "centerSize": 6,
+        "markerColor": "#a5ef6b",
+        "markerSize": 4,
+        "slowColor": "#55cfff",
+        "fastColor": "#ff9055",
+        "speedRange": 10,
+        "leftClickColor": "#a5ef6b",
+        "rightClickColor": "#ff9cbd",
+        "clickDuration": 500,
+        "clickSize": 24,
+        "followMs": 240
+      },
+      "wheelDuration": 110,
+      "textLayout": "Horizontal",
+      "visible": true,
+      "locked": false,
+      "z": 0,
+      "accent": "#a5ef6b",
+      "background": "#161b20",
+      "opacity": 1,
+      "radius": 12,
+      "effect": "Soft Press",
+      "keys": [
+        {
+          "id": "87",
+          "code": 87,
+          "label": "W",
+          "x": 62,
+          "y": 0,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "65",
+          "code": 65,
+          "label": "A",
+          "x": 0,
+          "y": 62,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "83",
+          "code": 83,
+          "label": "S",
+          "x": 62,
+          "y": 62,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "68",
+          "code": 68,
+          "label": "D",
+          "x": 124,
+          "y": 62,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "160",
+          "code": 160,
+          "label": "SHIFT",
+          "x": 0,
+          "y": 124,
+          "w": 84,
+          "h": 54
+        },
+        {
+          "id": "162",
+          "code": 162,
+          "label": "CTRL",
+          "x": 0,
+          "y": 186,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "32",
+          "code": 32,
+          "label": "SPACE",
+          "x": 62,
+          "y": 186,
+          "w": 116,
+          "h": 54
+        }
+      ],
+      "layout": "WASD + modifiers",
+      "gap": 8,
+      "mouseMode": "Compact Buttons",
+      "buttons": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "buttonLabels": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "↑",
+        "↓"
+      ],
+      "trailStyle": "Fade Trail",
+      "position": "Follow / Recenter",
+      "scaleMode": "DPI Normalized Scale",
+      "scale": 0.65,
+      "duration": 1200,
+      "thickness": 2,
+      "glow": 10,
+      "grid": true,
+      "moveGrid": false,
+      "center": true,
+      "marker": "Dot",
+      "clickEffects": "Ripple",
+      "originX": 0.5,
+      "originY": 0.5,
+      "unit": "Auto",
+      "decimals": 1,
+      "caption": "",
+      "sensitivityStyle": "Standard",
+      "showGame": true,
+      "showDpi": true,
+      "showSens": true,
+      "showEdpi": true,
+      "showCm": true,
+      "counterMode": "CPS",
+      "counterWindow": 5,
+      "counterIncrement": 107,
+      "counterDecrement": 109,
+      "counterPersist": false,
+      "flickWindow": 10,
+      "flickThreshold": 1,
+      "flickMinDistance": 0.5,
+      "flickUnit": "cm"
+    }
+  },
+  "overlay.flicks": {
+    "schemaVersion": 1,
+    "builtinType": "flicks",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "Instant",
+            "Soft Press",
+            "Glow",
+            "Pulse",
+            "Analog Fill"
+          ]
+        },
+        "appearance": {
+          "default": {
+            "backgroundOpacity": 1,
+            "textColor": "#d9e0e7",
+            "activeTextColor": "#10150e",
+            "borderColor": "#ffffff",
+            "activeBorderColor": "#a5ef6b",
+            "borderOpacity": 0.16,
+            "borderWidth": 1,
+            "autoFitText": true,
+            "fontFamily": "Segoe UI",
+            "fontSize": 16,
+            "fontWeight": 600,
+            "letterSpacing": 1,
+            "textOutline": 0,
+            "textShadow": 0,
+            "pressDuration": 90,
+            "releaseDuration": 140,
+            "pressTravel": 2,
+            "glowStrength": 22
+          },
+          "type": "object",
+          "properties": {
+            "lighting": {
+              "type": "string",
+              "enum": [
+                "Fill",
+                "Outline",
+                "Glow",
+                "Fill + glow",
+                "Gradient",
+                "Ripple",
+                "Analog Fill",
+                "Off"
+              ]
+            },
+            "motion": {
+              "type": "string",
+              "enum": [
+                "None",
+                "Press",
+                "Scale",
+                "Lift",
+                "Bounce",
+                "Pulse"
+              ]
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "Linear",
+                "Ease out",
+                "Ease in out",
+                "Spring"
+              ]
+            },
+            "pressDelay": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "releaseDelay": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2000
+            },
+            "lightingOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "secondaryColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "gradientAngle": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "motionScale": {
+              "type": "number",
+              "minimum": 0.8,
+              "maximum": 1.2
+            },
+            "showLabels": {
+              "type": "boolean"
+            },
+            "shapeId": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "backgroundOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "textColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "activeTextColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "borderColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "activeBorderColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "borderOpacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "borderWidth": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 8
+            },
+            "autoFitText": {
+              "type": "boolean"
+            },
+            "fontFamily": {
+              "type": "string",
+              "enum": [
+                "Segoe UI",
+                "Arial",
+                "Verdana",
+                "Consolas",
+                "Georgia",
+                "Unicode"
+              ]
+            },
+            "fontSize": {
+              "type": "number",
+              "minimum": 6,
+              "maximum": 96
+            },
+            "fontWeight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "letterSpacing": {
+              "type": "number",
+              "minimum": -2,
+              "maximum": 12
+            },
+            "textOutline": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "textShadow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 12
+            },
+            "pressDuration": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 500
+            },
+            "releaseDuration": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "pressTravel": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 8
+            },
+            "glowStrength": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 40
+            }
+          },
+          "required": [
+            "backgroundOpacity",
+            "textColor",
+            "activeTextColor",
+            "borderColor",
+            "activeBorderColor",
+            "borderOpacity",
+            "borderWidth",
+            "autoFitText",
+            "fontFamily",
+            "fontSize",
+            "fontWeight",
+            "letterSpacing",
+            "textOutline",
+            "textShadow",
+            "pressDuration",
+            "releaseDuration",
+            "pressTravel",
+            "glowStrength"
+          ]
+        },
+        "textLayout": {
+          "default": "Horizontal",
+          "type": "string",
+          "enum": [
+            "Horizontal",
+            "Vertical"
+          ]
+        },
+        "caption": {
+          "default": "",
+          "type": "string",
+          "maxLength": 100
+        },
+        "flickWindow": {
+          "default": 10,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "flickThreshold": {
+          "default": 1,
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "flickMinDistance": {
+          "default": 0.5,
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 20
+        },
+        "flickUnit": {
+          "default": "cm",
+          "type": "string",
+          "enum": [
+            "cm",
+            "m"
+          ]
+        }
+      },
+      "required": [
+        "accent",
+        "background",
+        "radius",
+        "effect"
+      ],
+      "additionalProperties": false
+    },
+    "versions": {
+      "1": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "accent": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "radius": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "Instant",
+              "Soft Press",
+              "Glow",
+              "Pulse",
+              "Analog Fill"
+            ]
+          },
+          "appearance": {
+            "default": {
+              "backgroundOpacity": 1,
+              "textColor": "#d9e0e7",
+              "activeTextColor": "#10150e",
+              "borderColor": "#ffffff",
+              "activeBorderColor": "#a5ef6b",
+              "borderOpacity": 0.16,
+              "borderWidth": 1,
+              "autoFitText": true,
+              "fontFamily": "Segoe UI",
+              "fontSize": 16,
+              "fontWeight": 600,
+              "letterSpacing": 1,
+              "textOutline": 0,
+              "textShadow": 0,
+              "pressDuration": 90,
+              "releaseDuration": 140,
+              "pressTravel": 2,
+              "glowStrength": 22
+            },
+            "type": "object",
+            "properties": {
+              "lighting": {
+                "type": "string",
+                "enum": [
+                  "Fill",
+                  "Outline",
+                  "Glow",
+                  "Fill + glow",
+                  "Gradient",
+                  "Ripple",
+                  "Analog Fill",
+                  "Off"
+                ]
+              },
+              "motion": {
+                "type": "string",
+                "enum": [
+                  "None",
+                  "Press",
+                  "Scale",
+                  "Lift",
+                  "Bounce",
+                  "Pulse"
+                ]
+              },
+              "easing": {
+                "type": "string",
+                "enum": [
+                  "Linear",
+                  "Ease out",
+                  "Ease in out",
+                  "Spring"
+                ]
+              },
+              "pressDelay": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "releaseDelay": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "lightingOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "secondaryColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "gradientAngle": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "motionScale": {
+                "type": "number",
+                "minimum": 0.8,
+                "maximum": 1.2
+              },
+              "showLabels": {
+                "type": "boolean"
+              },
+              "shapeId": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "backgroundOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "textColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "activeTextColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "borderColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "activeBorderColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "borderOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "borderWidth": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "autoFitText": {
+                "type": "boolean"
+              },
+              "fontFamily": {
+                "type": "string",
+                "enum": [
+                  "Segoe UI",
+                  "Arial",
+                  "Verdana",
+                  "Consolas",
+                  "Georgia",
+                  "Unicode"
+                ]
+              },
+              "fontSize": {
+                "type": "number",
+                "minimum": 6,
+                "maximum": 96
+              },
+              "fontWeight": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 900
+              },
+              "letterSpacing": {
+                "type": "number",
+                "minimum": -2,
+                "maximum": 12
+              },
+              "textOutline": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "textShadow": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 12
+              },
+              "pressDuration": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 500
+              },
+              "releaseDuration": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "pressTravel": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "glowStrength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 40
+              }
+            },
+            "required": [
+              "backgroundOpacity",
+              "textColor",
+              "activeTextColor",
+              "borderColor",
+              "activeBorderColor",
+              "borderOpacity",
+              "borderWidth",
+              "autoFitText",
+              "fontFamily",
+              "fontSize",
+              "fontWeight",
+              "letterSpacing",
+              "textOutline",
+              "textShadow",
+              "pressDuration",
+              "releaseDuration",
+              "pressTravel",
+              "glowStrength"
+            ]
+          },
+          "textLayout": {
+            "default": "Horizontal",
+            "type": "string",
+            "enum": [
+              "Horizontal",
+              "Vertical"
+            ]
+          },
+          "caption": {
+            "default": "",
+            "type": "string",
+            "maxLength": 100
+          },
+          "flickWindow": {
+            "default": 10,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60
+          },
+          "flickThreshold": {
+            "default": 1,
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 10
+          },
+          "flickMinDistance": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 20
+          },
+          "flickUnit": {
+            "default": "cm",
+            "type": "string",
+            "enum": [
+              "cm",
+              "m"
+            ]
+          }
+        },
+        "required": [
+          "accent",
+          "background",
+          "radius",
+          "effect"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "migrations": [],
+    "projection": {
+      "id": "module-projection-default",
+      "type": "flicks",
+      "name": "Mouse Flick Stats",
+      "x": 120,
+      "y": 160,
+      "w": 300,
+      "h": 110,
+      "appearance": {
+        "backgroundOpacity": 0,
+        "textColor": "#d9e0e7",
+        "activeTextColor": "#10150e",
+        "borderColor": "#ffffff",
+        "activeBorderColor": "#a5ef6b",
+        "borderOpacity": 0.16,
+        "borderWidth": 0,
+        "autoFitText": true,
+        "fontFamily": "Segoe UI",
+        "fontSize": 16,
+        "fontWeight": 600,
+        "letterSpacing": 1,
+        "textOutline": 0,
+        "textShadow": 0,
+        "pressDuration": 90,
+        "releaseDuration": 140,
+        "pressTravel": 2,
+        "glowStrength": 22
+      },
+      "image": {
+        "enabled": false,
+        "assetId": "",
+        "fit": "Cover",
+        "scale": 1,
+        "x": 0,
+        "y": 0,
+        "rotation": 0,
+        "opacity": 0.75,
+        "blend": "normal",
+        "brightness": 1,
+        "contrast": 1,
+        "saturation": 1,
+        "tint": "#ffffff",
+        "tintOpacity": 0,
+        "press": "Tint",
+        "pressTint": 0.55
+      },
+      "buttonStyles": {},
+      "buttonGeometry": {},
+      "buttonImages": {},
+      "trailAppearance": {
+        "gridColor": "#ffffff",
+        "gridOpacity": 0.05,
+        "gridSpacing": 36,
+        "centerColor": "#ffffff",
+        "centerSize": 6,
+        "markerColor": "#a5ef6b",
+        "markerSize": 4,
+        "slowColor": "#55cfff",
+        "fastColor": "#ff9055",
+        "speedRange": 10,
+        "leftClickColor": "#a5ef6b",
+        "rightClickColor": "#ff9cbd",
+        "clickDuration": 500,
+        "clickSize": 24,
+        "followMs": 240
+      },
+      "wheelDuration": 110,
+      "textLayout": "Horizontal",
+      "visible": true,
+      "locked": false,
+      "z": 0,
+      "accent": "#a5ef6b",
+      "background": "#161b20",
+      "opacity": 1,
+      "radius": 12,
+      "effect": "Soft Press",
+      "keys": [
+        {
+          "id": "87",
+          "code": 87,
+          "label": "W",
+          "x": 62,
+          "y": 0,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "65",
+          "code": 65,
+          "label": "A",
+          "x": 0,
+          "y": 62,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "83",
+          "code": 83,
+          "label": "S",
+          "x": 62,
+          "y": 62,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "68",
+          "code": 68,
+          "label": "D",
+          "x": 124,
+          "y": 62,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "160",
+          "code": 160,
+          "label": "SHIFT",
+          "x": 0,
+          "y": 124,
+          "w": 84,
+          "h": 54
+        },
+        {
+          "id": "162",
+          "code": 162,
+          "label": "CTRL",
+          "x": 0,
+          "y": 186,
+          "w": 54,
+          "h": 54
+        },
+        {
+          "id": "32",
+          "code": 32,
+          "label": "SPACE",
+          "x": 62,
+          "y": 186,
+          "w": 116,
+          "h": 54
+        }
+      ],
+      "layout": "WASD + modifiers",
+      "gap": 8,
+      "mouseMode": "Compact Buttons",
+      "buttons": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "buttonLabels": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "↑",
+        "↓"
+      ],
+      "trailStyle": "Fade Trail",
+      "position": "Follow / Recenter",
+      "scaleMode": "DPI Normalized Scale",
+      "scale": 0.65,
+      "duration": 1200,
+      "thickness": 2,
+      "glow": 10,
+      "grid": true,
+      "moveGrid": false,
+      "center": true,
+      "marker": "Dot",
+      "clickEffects": "Ripple",
+      "originX": 0.5,
+      "originY": 0.5,
+      "unit": "Auto",
+      "decimals": 1,
+      "caption": "",
+      "sensitivityStyle": "Standard",
+      "showGame": true,
+      "showDpi": true,
+      "showSens": true,
+      "showEdpi": true,
+      "showCm": true,
+      "counterMode": "CPS",
+      "counterWindow": 5,
+      "counterIncrement": 107,
+      "counterDecrement": 109,
+      "counterPersist": false,
+      "flickWindow": 10,
+      "flickThreshold": 1,
+      "flickMinDistance": 0.5,
+      "flickUnit": "cm"
     }
   }
 }

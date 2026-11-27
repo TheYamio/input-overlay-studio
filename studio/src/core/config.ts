@@ -39,14 +39,17 @@ export function layoutKeys(layout: OverlayModule['layout']): Key[] {
   return keys;
 }
 export function makeModule(type: OverlayModule['type'], index = 0, instanceId:string=uid()): OverlayModule {
+  const statistics = type === 'counter' || type === 'flicks';
   return {
-    id: instanceId, type, name: { keyboard: 'Keyboard', mouse: 'Mouse Buttons', trail: 'Mouse Trail', distance: 'Distance', sensitivity: 'Sensitivity' }[type],
+    id: instanceId, type, name: { keyboard: 'Keyboard', mouse: 'Mouse Buttons', trail: 'Mouse Trail', distance: 'Distance', sensitivity: 'Sensitivity', counter: 'Counter', flicks: 'Mouse Flick Stats' }[type],
     x: 120 + index * 24, y: Math.min(type === 'trail' ? 740 : type === 'keyboard' ? 780 : 970, 160 + index * 24), w: type === 'trail' ? 470 : type === 'sensitivity' ? 650 : 300, h: type === 'trail' ? 340 : type === 'keyboard' ? 300 : 110,
-    appearance: { ...defaultAppearance(), ...(type === 'distance' || type === 'sensitivity' ? { backgroundOpacity: 0, borderWidth: 0 } : {}) }, image: defaultImageSettings(), buttonStyles: {}, buttonGeometry: {}, buttonImages: {}, trailAppearance: defaultTrailAppearance(), wheelDuration: 110, textLayout: 'Horizontal',
+    appearance: { ...defaultAppearance(), ...(type === 'distance' || type === 'sensitivity' || statistics ? { backgroundOpacity: 0, borderWidth: 0 } : {}) }, image: defaultImageSettings(), buttonStyles: {}, buttonGeometry: {}, buttonImages: {}, trailAppearance: defaultTrailAppearance(), wheelDuration: 110, textLayout: 'Horizontal',
     visible: true, locked: false, z: index, accent: '#a5ef6b', background: '#161b20', opacity: 1, radius: 12, effect: 'Soft Press',
     keys: layoutKeys('WASD + modifiers'), layout: 'WASD + modifiers', gap: 8, mouseMode: 'Compact Buttons', buttons: [1, 2, 3, 4, 5, 6, 7], buttonLabels: ['M1', 'M2', 'M3', 'M4', 'M5', '↑', '↓'],
     trailStyle: 'Fade Trail', position: 'Follow / Recenter', scaleMode: 'DPI Normalized Scale', scale: .65, duration: 1200, thickness: 2, glow: 10, grid: true, moveGrid: false, center: true, marker: 'Dot', clickEffects: 'Ripple', originX: .5, originY: .5,
-    unit: 'Auto', decimals: 1, caption: 'DISTANCE', sensitivityStyle: 'Standard', showGame: true, showDpi: true, showSens: true, showEdpi: true, showCm: true,
+    unit: 'Auto', decimals: 1, caption: statistics ? '' : 'DISTANCE', sensitivityStyle: 'Standard', showGame: true, showDpi: true, showSens: true, showEdpi: true, showCm: true,
+    counterMode: 'CPS', counterWindow: 5, counterIncrement: 107, counterDecrement: 109, counterPersist: false,
+    flickWindow: 10, flickThreshold: 1, flickMinDistance: .5, flickUnit: 'cm',
   };
 }
 export function factoryModules(theme: Profile['theme'] = 'Obsidian'): OverlayModule[] {

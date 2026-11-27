@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.8.2
+
+- Added **Counter** for CPS, APM, KPM and a custom tally with configurable keys. The custom tally can be kept between launches.
+- Added **Mouse Flick Stats** with a rolling count, peak speed and total travel. Set speed and distance thresholds and choose the display unit.
+- Added **Always-Centered** positioning for Mouse Trail, with an option to move the grid with the mouse. Thanks to [w3zl](https://github.com/TheYamio/input-overlay-studio/pull/2).
+- Studio and OBS share the same statistics. Capture keeps forwarding input while the statistics update separately, and saved tallies are written only when their values change.
+
+**Update from 0.8.0.** Choose **Exit** in the system tray, extract the full Windows ZIP, and start Studio with the same data and capture settings. In the properties of each existing OBS Browser Source, click **Refresh cache of current page** to load the new overlay. Keep the existing source URL.
+
 ## v0.8.0
 
 - Refined Midnight Iris across Studio, Profiles, Presets, Settings, the setup guide and dialogs. Settings now has quick links to its main sections.

@@ -9,6 +9,7 @@ import {parseModuleDocument} from './document-snapshot';
 import {moduleConfigurations} from './module-format';
 import {serializeDocument,withDocument} from './document-serialization';
 import { decodeInput, decodeSnapshot, type InputEngine } from './input';
+import { decodeStatistics } from './input-statistics';
 export type ConnectionState = 'Offline' | 'Connecting' | 'Authenticating' | 'Connected' | 'Authentication failed' | 'Paused';
 export interface ConnectionOptions { url: string; token: string }
 export class InputConnection {
@@ -75,7 +76,7 @@ export class InputConnection {
           value.obs_token !== this.options?.token ? value.obs_token : undefined;
         this.negotiation=negotiate(value);this.heartbeatSupported=this.negotiation.heartbeat;
         if (!this.authenticated) { this.onStatus('Authentication failed'); this.stopped = true; this.engine.reset(); ws.close(); return; }
-        this.attempts = 0; this.lastInputSequence = -1; this.lastConfigSequence = -1; this.engine.reset(); this.onStatus('Connected');
+        this.attempts = 0; this.lastInputSequence = -1; this.lastConfigSequence = -1; this.engine.setStatistics(); this.engine.reset(); this.onStatus('Connected');
         if (this.negotiation.snapshot) ws.send(JSON.stringify({ type: 'input_snapshot' }));
         if(this.negotiation.issue)this.onError(this.negotiation.issue);
         ws.send(JSON.stringify({ type: 'studio_get' })); return;
@@ -102,6 +103,13 @@ export class InputConnection {
       }
       if (value.type === 'distance_total' && typeof value.cm === 'number' && Number.isFinite(value.cm) && value.cm >= 0) {
         this.engine.setDistance(value.cm); return;
+      }
+      if (value.type === 'input_statistics') {
+        if (this.negotiation.features['input.statistics'] === 1) {
+          const stats = decodeStatistics(value);
+          if (stats) this.engine.setStatistics(stats);
+        }
+        return;
       }
       if (value.type === 'studio_config' || value.type === 'studio_conflict') {
         if (Number.isSafeInteger(value.config_sequence)) {
@@ -154,7 +162,7 @@ export class InputConnection {
     };
     ws.onerror = () => { /* close handles backoff without exposing URL credentials */ };
     ws.onclose = () => {
-      clearInterval(this.watchdog); clearTimeout(this.saveTimer); this.onConnectionStatus(null);this.statusSequence=-1;this.runtimeAck=undefined;this.authenticated = false; this.inFlight = undefined; this.engine.reset();
+      clearInterval(this.watchdog); clearTimeout(this.saveTimer); this.onConnectionStatus(null);this.statusSequence=-1;this.runtimeAck=undefined;this.authenticated = false; this.inFlight = undefined; this.engine.setStatistics(); this.engine.reset();
       if (this.stopped) return;
       this.onStatus('Offline');
       this.timer = setTimeout(() => this.open(), Math.min(1000 * 2 ** this.attempts++, 15000));
@@ -188,6 +196,7 @@ export class InputConnection {
   }
   stop() {
     this.obsToken = undefined;
+    this.engine.setStatistics();
     this.stopped = true;this.onConnectionStatus(null);this.statusSequence=-1;this.runtimeAck=undefined; this.configGeneration++; clearTimeout(this.timer); clearTimeout(this.saveTimer); clearInterval(this.watchdog); this.authenticated = false; this.inFlight = undefined;
     if (this.socket) { this.socket.onclose = null; this.socket.close(); this.socket = undefined; }
     this.engine.reset();
