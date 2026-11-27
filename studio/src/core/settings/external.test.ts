@@ -14,7 +14,7 @@ describe('Capture schema and explicit-apply sessions',()=>{
  it('registers every existing native field, ownership, platform and application policy',()=>{
   for(const key of Object.keys(config))expect(externalDefinitions.some(d=>d.binding.store==='native'&&d.binding.path[0]===key),key).toBe(true);
   expect(builtinCatalog.settings.get('capture.server.token')).toMatchObject({sensitive:true,apply:'reconnect'});expect(builtinCatalog.settings.get('capture.server.cpu-affinity')).toMatchObject({platforms:['windows'],apply:'restart'});
-  expect(builtinCatalog.settings.get('capture.server.linux-mouse')!.platforms).toEqual(['linux']);expect(builtinCatalog.settings.all().filter(d=>d.binding.store==='document')).toHaveLength(132);
+  expect(builtinCatalog.settings.get('capture.server.linux-mouse')!.platforms).toEqual(['linux']);expect(builtinCatalog.settings.all().filter(d=>d.binding.store==='document')).toHaveLength(133);
  });
  it('keeps observations/drafts outside persistence, input and the visual document',()=>{
   const f=fixture();expect(f.draft.read('capture.server.port')).toBe(4455);f.draft.set('capture.server.port',4457);f.draft.set('capture.server.allowed-inputs',['key_w']);expect(f.invoke).not.toHaveBeenCalled();expect(JSON.stringify(initialDocument())).not.toContain('synthetic-secret');f.draft.dispose();f.native.dispose();

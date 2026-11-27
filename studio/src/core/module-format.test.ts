@@ -19,6 +19,16 @@ function local(raw:string){const data=new Map([[key,raw]]),storage={getItem:(k:s
 afterEach(()=>vi.unstubAllGlobals());
 
 describe('versioned module envelopes',()=>{
+ it('roundtrips Always-Centered trails and defaults older grids to stationary',()=>{
+  const document=initialDocument(),trail=document.profiles[0].modules.find(m=>m.type==='trail')!;
+  trail.position='Always-Centered';trail.moveGrid=true;
+  const wire=encodeDocument(document);
+  expect(encodeDocument(parseDocument(JSON.stringify(wire)))).toEqual(wire);
+  const saved=wire.profiles[0].modules.find(m=>m.type==='overlay.trail')!;
+  expect(saved.config).toMatchObject({position:'Always-Centered',moveGrid:true});
+  saved.config.position='Follow / Recenter';delete saved.config.moveGrid;
+  expect(parseDocument(JSON.stringify(wire)).profiles[0].modules.find(m=>m.type==='trail')!.moveGrid).toBe(false);
+ });
  it('serializes cleared optional builtin overrides with the canonical JSON semantics',()=>{
   const document=initialDocument();document.profiles[0].modules[0].keys[0].style=undefined;document.profiles[0].modules[0].image.groupId=undefined;
   const wire=encodeDocument(document);expect(wire.profiles[0].modules[0].config.image).not.toHaveProperty('groupId');expect(encodeDocument(parseDocument(JSON.stringify(wire)))).toEqual(wire);

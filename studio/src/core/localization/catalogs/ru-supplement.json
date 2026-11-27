@@ -1206,6 +1206,8 @@
       "settings.native-startup-storage": "Не удалось сохранить настройки захвата при запуске. Захват выключен. Проверьте доступ к папке данных и примените настройки снова."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Всегда по центру",
+      "overlay.trail.move-grid.label": "Перемещать сетку вместе с мышью",
       "overlay.instance.name.label": "Имя модуля",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "Разблокируйте модуль для изменения позиции или размера.",

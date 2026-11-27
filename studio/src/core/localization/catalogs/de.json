@@ -1230,6 +1230,8 @@
       "settings.native-startup-storage": "Die Aufnahmeeinstellungen konnten beim Start nicht gespeichert werden. Die Aufnahme ist deaktiviert. Prüfe den Zugriff auf den Datenordner und wende die Einstellungen erneut an."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Immer zentriert",
+      "overlay.trail.move-grid.label": "Raster mit der Maus bewegen",
       "overlay.instance.name.label": "Modulname",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "Entfernen Sie den Modul, um seine Position oder Größe zu ändern.",

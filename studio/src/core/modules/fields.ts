@@ -4,7 +4,7 @@ export const surfaceFields=['accent','background','radius','effect','appearance'
 export const builtinConfigFields={
  distance:[...surfaceFields,'unit','decimals','caption'],
  sensitivity:[...surfaceFields,'sensitivityStyle','showGame','showDpi','showSens','showEdpi','showCm'],
- trail:[...surfaceFields,'trailAppearance','trailStyle','position','scaleMode','scale','duration','thickness','glow','grid','center','marker','clickEffects','originX','originY'],
+ trail:[...surfaceFields,'trailAppearance','trailStyle','position','scaleMode','scale','duration','thickness','glow','grid','moveGrid','center','marker','clickEffects','originX','originY'],
  mouse:[...surfaceFields,'image','gap','mouseMode','buttons','buttonLabels','buttonStyles','buttonGeometry','buttonImages','wheelDuration','mouseBodyShapeId'],
  keyboard:[...surfaceFields,'image','gap','keys','layout'],
 } as const;

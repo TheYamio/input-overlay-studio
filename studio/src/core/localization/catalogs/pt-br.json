@@ -1230,6 +1230,8 @@
       "settings.native-startup-storage": "Não foi possível salvar as configurações de captura na inicialização. A captura está desativada. Verifique o acesso à pasta de dados e aplique as configurações novamente."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Sempre centralizado",
+      "overlay.trail.move-grid.label": "Mover a grade com o mouse",
       "overlay.instance.name.label": "Nome do módulo",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "Desbloquear o módulo para alterar sua posição ou tamanho.",

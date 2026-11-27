@@ -70,6 +70,7 @@ pub fn migrate(mut document:Value)->Result<Value,&'static str>{
     let target=Value::Object(config);if !crate::studio_validation::validate(&target,&definition["versions"][step["to"].as_u64().unwrap().to_string()]){return Err("invalid module migration result");}
     module["config"]=target;module["schemaVersion"]=step["to"].clone();
    }
+   if module["schemaVersion"]==definition["schemaVersion"]{crate::studio_validation::apply_defaults(&mut module["config"],&definition["schema"]);}
   }}
  }
  Ok(document)
@@ -82,6 +83,16 @@ mod tests{
  fn each_builtin_migration_matches_the_frontend_and_preserves_opaque_resources(){
   let cases:Value=serde_json::from_str(include_str!("../test-fixtures/module-migrations.json")).unwrap();
   for case in cases.as_array().unwrap(){let before=case["legacy"].clone();let current=migrate(before.clone()).unwrap();assert_eq!(current,case["current"],"{}",case["type"]);assert!(valid(&current));assert_eq!(current["profiles"][0]["modules"][1],before["profiles"][0]["modules"][1]);assert_eq!(migrate(current.clone()).unwrap(),current);}
+ }
+ #[test]
+ fn current_trails_default_to_a_stationary_grid_and_preserve_centered_options(){
+  let mut document:Value=serde_json::from_str(include_str!("../schema/default-current.json")).unwrap();
+  let index=document["profiles"][0]["modules"].as_array().unwrap().iter().position(|m|m["type"]=="overlay.trail").unwrap();
+  document["profiles"][0]["modules"][index]["config"].as_object_mut().unwrap().remove("moveGrid");
+  let mut current=migrate(document).unwrap();assert_eq!(current["profiles"][0]["modules"][index]["config"]["moveGrid"],false);
+  current["profiles"][0]["modules"][index]["config"]["position"]=json!("Always-Centered");
+  current["profiles"][0]["modules"][index]["config"]["moveGrid"]=json!(true);
+  assert!(valid(&current));assert_eq!(migrate(current.clone()).unwrap(),current);
  }
  #[test]
  fn invalid_legacy_migration_never_coerces_or_mutates_its_source(){

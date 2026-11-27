@@ -1230,6 +1230,8 @@
       "settings.native-startup-storage": "No se pudieron guardar los ajustes de captura al iniciar. La captura está desactivada. Revisa el acceso a la carpeta de datos y aplica los ajustes de nuevo."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Siempre centrado",
+      "overlay.trail.move-grid.label": "Mover la cuadrícula con el ratón",
       "overlay.instance.name.label": "Nombre del módulo",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "Desbloquear el módulo para cambiar su posición o tamaño.",

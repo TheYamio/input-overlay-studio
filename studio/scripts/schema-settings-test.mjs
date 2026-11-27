@@ -52,6 +52,22 @@ try {
  await check('trail controls retain decimal origin, style and marker semantics',async()=>{
   const {context,page}=await open();await select(page,'Mouse Trail','All properties');await page.getByLabel('Style',{exact:true}).selectOption('Speed Gradient');await page.getByLabel('Thickness',{exact:true}).fill('3.5');await page.getByLabel('Origin X (0–1)',{exact:true}).fill('0,37');await page.getByLabel('Cursor marker',{exact:true}).selectOption('Crosshair');await details(page,'Speed gradient');await page.getByLabel('Speed color range',{exact:true}).fill('3.5');const saved=await exportJSON(page);expect(saved.profiles[0].modules.find(m=>m.type==='trail')).toMatchObject({trailStyle:'Speed Gradient',thickness:3.5,originX:.37,marker:'Crosshair',trailAppearance:{speedRange:3.5}});await context.close();
  });
+ await check('Always-Centered exposes its grid option and persists through undo, redo and reload',async()=>{
+  const {context,page}=await open();await select(page,'Mouse Trail','All properties');
+  const position=page.getByLabel('Positioning',{exact:true}),grid=page.getByLabel('Move grid with mouse',{exact:true});
+  await expect(grid).toHaveCount(0);
+  await position.selectOption('Always-Centered');await expect(grid).not.toBeChecked();
+  await grid.focus();await grid.press('Space');await synced(page);await expect(grid).toBeChecked();
+  await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(grid).not.toBeChecked();
+  await page.getByRole('button',{name:'Redo',exact:true}).click();await expect(grid).toBeChecked();
+  await position.selectOption('Fixed Field');await expect(grid).toHaveCount(0);
+  await position.selectOption('Always-Centered');await expect(grid).toBeChecked();await synced(page);
+  await page.reload();await synced(page);await select(page,'Mouse Trail','All properties');
+  await expect(position).toHaveValue('Always-Centered');await expect(grid).toBeChecked();
+  await page.setViewportSize({width:1000,height:720});await expect(grid).toBeVisible();
+  const saved=await exportJSON(page);expect(saved.profiles[0].modules.find(m=>m.type==='trail')).toMatchObject({position:'Always-Centered',moveGrid:true});
+  await context.close();
+ });
  await check('distance and statistics controls retain captions, precision and visibility',async()=>{
   const {context,page}=await open();await select(page,'Distance','All properties');await page.getByLabel('Caption',{exact:true}).fill('TRAVEL');await page.getByLabel('Units',{exact:true}).selectOption('m');await page.getByLabel('Decimal places',{exact:true}).fill('2');await select(page,'Sensitivity','All properties');await page.getByLabel('Format',{exact:true}).selectOption('Detailed');await page.getByLabel('eDPI',{exact:true}).uncheck();await page.getByLabel('Text layout',{exact:true}).selectOption('Vertical');await synced(page);expect(document.profiles[0].modules.find(m=>m.type==='distance')).toMatchObject({caption:'TRAVEL',unit:'m',decimals:2});expect(document.profiles[0].modules.find(m=>m.type==='sensitivity')).toMatchObject({sensitivityStyle:'Detailed',showEdpi:false,textLayout:'Vertical'});await context.close();
  });

@@ -90,6 +90,8 @@ Short presses are shown with the configured delay, and another press cancels a p
 
 Choose a style: Clean Line, Fade Trail, Neon Trail, Speed Gradient or Segmented Trail. **Trail Appearance** controls the grid, center, marker, slow/fast colors and click effects, including their size and duration.
 
+**Always-Centered** keeps the cursor at the exact field center and shifts the trail immediately opposite to mouse movement. The grid stays stationary by default; enable **Move grid with mouse** in this mode to scroll it with the trail. Origin and camera-follow settings do not affect this mode.
+
 **Camera follow** controls smoothing in **Follow / Recenter**. **DPI Normalized Scale** uses the profile DPI for movement scale. Adjust the background opacity for a transparent trail surface.
 
 ## Preset library

@@ -1490,7 +1490,8 @@
                   "type": "string",
                   "enum": [
                     "Fixed Field",
-                    "Follow / Recenter"
+                    "Follow / Recenter",
+                    "Always-Centered"
                   ]
                 },
                 "scaleMode": {
@@ -1521,6 +1522,10 @@
                   "maximum": 30
                 },
                 "grid": {
+                  "type": "boolean"
+                },
+                "moveGrid": {
+                  "default": false,
                   "type": "boolean"
                 },
                 "center": {
@@ -2777,7 +2782,8 @@
                   "type": "string",
                   "enum": [
                     "Fixed Field",
-                    "Follow / Recenter"
+                    "Follow / Recenter",
+                    "Always-Centered"
                   ]
                 },
                 "scaleMode": {
@@ -2808,6 +2814,10 @@
                   "maximum": 30
                 },
                 "grid": {
+                  "type": "boolean"
+                },
+                "moveGrid": {
+                  "default": false,
                   "type": "boolean"
                 },
                 "center": {

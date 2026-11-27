@@ -1230,6 +1230,8 @@
       "settings.native-startup-storage": "Başlangıçta yakalama ayarları kaydedilemedi. Yakalama kapatıldı. Veri klasörüne erişimi kontrol edip ayarları yeniden uygulayın."
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "Her zaman ortada",
+      "overlay.trail.move-grid.label": "Izgarayı fareyle hareket ettir",
       "overlay.instance.name.label": "Modül adı",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "Modülün konumunu veya boyutunu değiştirmek için kilitlenir.",

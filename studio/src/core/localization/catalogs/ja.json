@@ -1230,6 +1230,8 @@
       "settings.native-startup-storage": "起動時にキャプチャ設定を保存できませんでした。キャプチャは無効です。データフォルダーへのアクセスを確認し、設定を再適用してください。"
     },
     "settings": {
+      "overlay.trail.position.option.41-6c-77-61-79-73-2d-43-65-6e-74-65-72-65-64": "常に中央",
+      "overlay.trail.move-grid.label": "マウスに合わせてグリッドを移動",
       "overlay.instance.name.label": "モジュール名",
       "overlay.instance.x.label": "X",
       "overlay.instance.locked.reason": "モジュールをオフにして位置やサイズを変更します。",

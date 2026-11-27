@@ -77,7 +77,7 @@ describe('animation schema presentation without a data migration',()=>{
   });
   it('retains registered schemas, optional defaults and stable IDs in presentation metadata',()=>{
     const {settings}=createBuiltinDefinitions(),registry=new SettingsSchemaRegistry().register(...settings);
-    expect(settings.filter(setting=>setting.binding.store==='document')).toHaveLength(132);expect(registry.readDefault('overlay.animation.press-delay',{moduleType:'keyboard'})).toBeUndefined();
+    expect(settings.filter(setting=>setting.binding.store==='document')).toHaveLength(133);expect(registry.readDefault('overlay.animation.press-delay',{moduleType:'keyboard'})).toBeUndefined();
     const preset=registry.get('overlay.surface.effect-preset')!;expect(preset.ui).toMatchObject({group:animationGroup,component:'animation.effect-preset',section:'animation.preset'});
     expect(registry.get('overlay.animation.press-travel')!.ui.step).toBe(.5);expect(registry.get('overlay.animation.motion-scale')!.ui.step).toBe(.01);
   });
